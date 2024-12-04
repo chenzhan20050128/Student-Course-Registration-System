@@ -1,3 +1,6 @@
+### 前端的文件都暂时忽略 cz
+src/main/resources/
+
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
