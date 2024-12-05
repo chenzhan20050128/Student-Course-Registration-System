@@ -7,11 +7,12 @@ import com.scrs.pojo.User;
 import com.scrs.service.StudentService;
 import com.scrs.service.TeacherService;
 import com.scrs.service.UserService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.servlet.http.HttpSession;
 
 /**
  * 该控制器负责处理账户相关的请求，特别是用户登录操作。
