@@ -1,6 +1,6 @@
 package com.scrs.pojo;/*
- * @date 12/05 13:45
- */
+                      * @date 12/05 13:45
+                      */
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -16,5 +16,7 @@ public class Course {
     private Integer num;
     private Integer stock;
     private String cimage;
+    private String credit;
     private String cbook;
+
 }
