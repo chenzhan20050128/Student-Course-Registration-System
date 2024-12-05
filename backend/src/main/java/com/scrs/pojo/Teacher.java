@@ -10,7 +10,7 @@ import lombok.Data;
 public class Teacher {
     private Integer id;
 
-    private String name;
+    private String tname;//注意是tname不是name！
 
     private String password;
 

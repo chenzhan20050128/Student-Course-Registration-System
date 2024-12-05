@@ -68,7 +68,7 @@ public class AccountController {
             Boolean b = teacherService.login(username, password);
             if (b != null && b) {
                 QueryWrapper<Teacher> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("name", username); // teacher类的字段名称是name
+                queryWrapper.eq("tname", username); // teacher类的字段名称是tname
                 Teacher teacher = teacherService.getOne(queryWrapper);
                 session.setAttribute("currentUsername", username);
                 session.setAttribute("password", password);
