@@ -1,7 +1,10 @@
 //import './assets/main.css'
 
 import { createApp } from 'vue';
-import App from './view/App.vue';
+import App from './views/App.vue';
 import router from './router';
+import axios from './http';
 
-createApp(App).use(router).mount('#app')
+const app = createApp(App);
+app.config.globalProperties.$http = axios;
+app.use(router).mount('#app');
