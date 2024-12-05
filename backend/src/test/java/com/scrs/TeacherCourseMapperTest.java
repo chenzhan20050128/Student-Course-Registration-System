@@ -4,6 +4,7 @@ package com.scrs;/*
 
 import com.scrs.mapper.TeacherCourseMapper;
 import com.scrs.pojo.TeacherCourse;
+import com.scrs.service.TeacherCourseService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +19,30 @@ public class TeacherCourseMapperTest {
 
     @Autowired
     private TeacherCourseMapper teacherCourseMapper;
+
+    @Autowired
+    private TeacherCourseService teacherCourseService;
+
+    @Test
+    public void testListTeacherCourse() {
+        Integer teacherCourseId = 1;
+        List<TeacherCourse> result = teacherCourseMapper.listTeacherCourse(teacherCourseId);
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        for (TeacherCourse tc : result) {
+            assertEquals(teacherCourseId, tc.getId());
+            assertNotNull(tc.getTeacher());
+            assertNotNull(tc.getCourse());
+            System.out.println(tc.toString());
+        }
+
+        // 进一步检查返回的结果是否符合预期
+        for (TeacherCourse tc : result) {
+            assertEquals(teacherCourseId, tc.getId());
+            assertNotNull(tc.getTeacher());
+            assertNotNull(tc.getCourse());
+        }
+    }
 
     @Test
     public void testListTeacherCourse_WithValidId() {
@@ -41,15 +66,16 @@ public class TeacherCourseMapperTest {
     }
 
     @Test
-    public void testListTeacherCourse_WithNullId() {
-        List<TeacherCourse> result = teacherCourseMapper.listTeacherCourse(null);
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        // 检查返回的所有TeacherCourse对象是否有效
-        for (TeacherCourse tc : result) {
-            assertNotNull(tc.getId());
+    public void testListTeacherCourse_Service() {
+        Integer testId = 1;
+        List<TeacherCourse> teacherCourseList = teacherCourseService.listTeacherCourse(testId);
+        for (TeacherCourse tc : teacherCourseList) {
+            assertEquals(testId, tc.getId());
             assertNotNull(tc.getTeacher());
             assertNotNull(tc.getCourse());
+            System.out.println(tc.getTeacher());
+            System.out.println(tc.getCourse());
+            System.out.println(tc.toString());
         }
     }
 
