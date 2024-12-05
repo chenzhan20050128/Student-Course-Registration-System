@@ -5,6 +5,7 @@ package com.scrs.pojo;/*
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+
 @Data
 @TableName("course")
 public class Course {
