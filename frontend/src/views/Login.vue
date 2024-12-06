@@ -35,24 +35,23 @@ export default {
     };
   },
   methods: {
-    handleLogin() {
+    async handleLogin() {
       // 处理登录逻辑
       const loginData = {
         username: this.username,
         password: this.password,
         role: this.role
       };
-      // 发送登录请求到后端
-      this.$http.post('/api/login', loginData)
-        .then(response => {
-          // 处理登录成功逻辑
-          console.log('登录成功', response.data);
-          this.$router.push('/app');
-        })
-        .catch(error => {
-          // 处理登录失败逻辑
-          console.error('登录失败', error);
-        });
+      try {
+        // 发送登录请求到后端
+        const response = await this.$http.post('/login', loginData);
+        // 处理登录成功逻辑
+        console.log('登录成功', response.data);
+        this.$router.push('/app');
+      } catch (error) {
+        // 处理登录失败逻辑
+        console.error('登录失败', error);
+      }
     }
   }
 };
