@@ -1,5 +1,6 @@
 
-location: D:/upLoad/course
+file:
+  location: D:\technologySoftware\uploadFile
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/scrs
