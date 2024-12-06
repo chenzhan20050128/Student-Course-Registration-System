@@ -163,17 +163,17 @@ INSERT INTO `teacher` (`id`, `tname`, `password`, `email`, `sex`, `phone`, `age`
 DROP TABLE IF EXISTS `teacher_course`;
 CREATE TABLE `teacher_course` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
-  `teacher_id` INT NOT NULL COMMENT 'Teacher ID',
-  `course_id` INT NOT NULL COMMENT 'Course ID',
+  `tid` INT NOT NULL COMMENT 'Teacher ID',
+  `cid` INT NOT NULL COMMENT 'Course ID',
   PRIMARY KEY (`id`),
-  KEY `teacher_id` (`teacher_id`),
-  KEY `course_id` (`course_id`),
-  CONSTRAINT `teachercourse_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `teacher` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `teachercourse_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `tid` (`tid`),
+  KEY `cid` (`cid`),
+  CONSTRAINT `teacher_course_ibfk_1` FOREIGN KEY (`tid`) REFERENCES `teacher` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `teacher_course_ibfk_2` FOREIGN KEY (`cid`) REFERENCES `course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Insert records using the aforementioned mappings between courses and teachers
-INSERT INTO `teachercourse` (`id`, `teacher_id`, `course_id`) VALUES
+INSERT INTO `teacher_course` (`id`, `tid`, `cid`) VALUES
 (1, 1, 1),  -- Li Hua -> Data Structure
 (2, 5, 2),  -- Xiao Yuanming -> Advanced Mathematics
 (3, 2, 3),  -- Liu Qin -> Software Engineering and Computing
