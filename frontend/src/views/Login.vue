@@ -21,6 +21,7 @@
       </div>
       <button type="submit">登录</button>
     </form>
+    <button @click="goToRegister">注册</button>
   </div>
 </template>
 
@@ -52,6 +53,9 @@ export default {
         // 处理登录失败逻辑
         console.error('登录失败', error);
       }
+    },
+    goToRegister() {
+      this.$router.push('/register');
     }
   }
 };
