@@ -158,10 +158,10 @@ INSERT INTO `teacher` (`id`, `tname`, `password`, `email`, `sex`, `phone`, `age`
 (6, 'Nie Ziwei', 'pass3333', 'nie@mail.com', 'Male', '13500138123', 42, 'Mathematics and Applied Mathematics', 'teacher6.jpg');
 
 -- ----------------------------
--- Table structure for `teachercourse`
+-- Table structure for `teacher_course`
 -- ----------------------------
-DROP TABLE IF EXISTS `teachercourse`;
-CREATE TABLE `teachercourse` (
+DROP TABLE IF EXISTS `teacher_course`;
+CREATE TABLE `teacher_course` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
   `teacher_id` INT NOT NULL COMMENT 'Teacher ID',
   `course_id` INT NOT NULL COMMENT 'Course ID',
