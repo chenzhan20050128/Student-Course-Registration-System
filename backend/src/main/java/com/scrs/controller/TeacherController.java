@@ -5,11 +5,8 @@ package com.scrs.controller;/*
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.scrs.pojo.Course;
-import com.scrs.pojo.Major;
-import com.scrs.pojo.Teacher;
-import com.scrs.service.MajorService;
-import com.scrs.service.TeacherService;
+import com.scrs.pojo.*;
+import com.scrs.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -21,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,8 +33,20 @@ public class TeacherController {
     @Autowired
     private MajorService majorService;
 
+    @Autowired
+    private StudentService studentService;
+
+    @Autowired
+    private StudentCourseService studentCourseService;
+
+    @Autowired
+    private TeacherCourseService teacherCourseService;
+
+
     @Value("${file.location}") // 获取配置文件中的文件上传路径
     private String location;
+    @Autowired
+    private CourseService courseService;
 
     @RequestMapping("/listTeacher")
     public String listTeacher(
@@ -164,5 +174,71 @@ public class TeacherController {
     }
 
 
+    @RequestMapping("/listMyCourse")
+    public String listMyCourse(String cname, HttpSession session, Model model) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        List<TeacherCourse> teacherCourseList = teacherCourseService.listMyCourse(userId, cname);
+        PageInfo<TeacherCourse> pageInfo = new PageInfo<>(teacherCourseList);
+        model.addAttribute("pageInfo", pageInfo);
+        return "teacher-my-course";
+    }
 
+    @RequestMapping("/check/{id}")
+    public String check(@PathVariable Integer id,Model model){
+        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("cid", id);
+        List<StudentCourse> studentCourseList = studentCourseService.list(queryWrapper);
+        List<Student> studentList = new ArrayList<>();
+        for (StudentCourse sc: studentCourseList){
+            Student student = studentService.getById(sc.getSid());
+            studentList.add(student);
+        }
+
+        model.addAttribute("studentList", studentList);
+        return "teacher-my-course-student";
+    }
+
+    @RequestMapping("/preUpload/{cid}")
+    public String preUpload(@PathVariable Integer cid, Model model) {
+        Course course = courseService.getById(cid);
+        model.addAttribute("course", course);
+        return "teacher-upload";
+    }
+
+    @RequestMapping("/upload")
+    public String upload(Course course,MultipartFile file){
+        if (!file.isEmpty()){
+            transfileBook(course, file);
+        }
+        courseService.updateById(course);
+        return "redirect:/teacher/listMyCourse";
+    }
+
+    private void transfileBook(Course course, MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        int i = 0;
+        if (originalFilename != null) {
+            i = originalFilename.lastIndexOf(".");
+        }
+        String suffix = originalFilename.substring(i);
+        String prefix = System.nanoTime() + "";
+        String filename = prefix + suffix;
+
+        // 创建一个File对象，表示文件所在的目录路径
+        File file1 = new File(location);
+        // 检查该目录是否存在
+        if (!file1.exists()) {
+            // 如果目录不存在，则创建该目录（包括必要的父目录）
+            file1.mkdirs();
+        }
+        // 创建一个File对象，表示具体的文件路径，将文件名添加到目录中
+        File file2 = new File(file1, filename);
+        try {
+            // 使用传输文件的方法将内容写入到file2的路径中
+            file.transferTo(file2);
+        } catch (IOException e) {
+            // 如果在文件传输过程中出现IO异常，则打印异常栈跟踪以进行调试
+            e.printStackTrace();
+        }
+    }
 }

@@ -70,4 +70,15 @@
         WHERE
             tc.id = #{id}
     </select>
+    <select id="listMyCourse" resultType="com.scrs.pojo.TeacherCourse">
+        select tc.id,tc.tid,tc.cid,t.tname,t.timage,t.phone,t.email,c.major,c.num,c.stock,c.cname,c.cimage,c.address
+        from  teacher_course tc,teacher t,course c
+        <where>
+            t.id=tc.tid and c.id=tc.cid and tc.id=#{userId}
+
+            <if test="cname != null and cname != ''">
+                and c.cname=#{cname}
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -11,4 +11,6 @@ import java.util.List;
 @Mapper
 public interface TeacherCourseMapper extends BaseMapper<TeacherCourse> {
     List<TeacherCourse> listTeacherCourse(Integer teacherCourseId);
+
+    List<TeacherCourse> listMyCourse(Integer userId, String cname);
 }
