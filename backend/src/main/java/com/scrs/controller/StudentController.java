@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,8 +62,8 @@ public class StudentController {
      */
     @RequestMapping("/listStudent")
     public String listStudent(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                              @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-                              Model model, Student student) {
+            @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+            Model model, Student student) {
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
@@ -77,7 +78,7 @@ public class StudentController {
         List<Student> students = studentService.list(queryWrapper);
         PageInfo<Student> pageInfo = new PageInfo<>(students);
 
-        System.out.println("PageInfo: " + pageInfo.toString());//测试
+        System.out.println("PageInfo: " + pageInfo.toString());// 测试
 
         model.addAttribute("pageInfo", pageInfo);
         return "admin-student-list";
@@ -95,6 +96,11 @@ public class StudentController {
         List<Major> listMajor = majorService.list(null);
         model.addAttribute("listCollege", listCollege);
         model.addAttribute("listMajor", listMajor);
+
+        // System.out.println("--preSaveStudent------------------cz-------------------");
+        // System.out.println("listCollege: " + listCollege.toString());
+        // System.out.println("listMajor: " + listMajor.toString());
+        // System.out.println("--------------------cz-------------------");
         return "admin-student-save";
     }
 
@@ -110,6 +116,9 @@ public class StudentController {
         if (file != null && !file.isEmpty()) {
             transfile(student, file);
         }
+        String defaultPassword = "123456";
+        String passwordAfterMD5 = DigestUtils.md5DigestAsHex(defaultPassword.getBytes());
+        student.setPassword(passwordAfterMD5);
         studentService.save(student);
 
         return "redirect:/student/listStudent";// 重定向到listStudent请求

@@ -15,10 +15,13 @@ import com.scrs.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -95,4 +98,83 @@ public class StudentCourseController {
 
         return "redirect:/studentCourse/listStudentCourse";
     }
+
+    @RequestMapping("/preUpdateStudentCourse/{id}")
+    public String preUpdateStudentCourse(@PathVariable Integer id, Model model,HttpSession session) {
+        session.setAttribute("studentCourseId", id);
+        StudentCourse studentCourse = studentCourseService.getById(id);
+        List<Course> courseList = courseService.list(null);
+        List<Student> studentList = studentService.list(null);
+        model.addAttribute("studentList", studentList);
+        model.addAttribute("courseList", courseList);
+        model.addAttribute("studentCourse", studentCourse);
+        return "admin-select-course-update";
+    }
+
+    @RequestMapping("/updateStudentCourse")
+    public String updateStudentCourse(Integer sid, Integer cid, Model model, HttpSession session) {
+        Integer studentCourseId = (Integer) session.getAttribute("studentCourseId");
+        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("sid", sid);
+        queryWrapper.eq("cid", cid);
+        StudentCourse one = studentCourseService.getOne(queryWrapper);
+        if (one != null) {
+            model.addAttribute("msg", "该学生已经选过该课程");
+            StudentCourse studentCourse = studentCourseService.getById(studentCourseId);
+            List<Course> courseList = courseService.list(null);
+            List<Student> studentList = studentService.list(null);
+            model.addAttribute("studentList", studentList);
+            model.addAttribute("courseList", courseList);
+            model.addAttribute("studentCourse", studentCourse);
+            return "admin-select-course-update";
+        }
+
+        Student student = studentService.getById(sid);
+        Course course = courseService.getById(cid);
+        if (student.getMajor() != null){
+            if (!student.getMajor().equals(course.getMajor())){
+                model.addAttribute("msg", "该学生不是该课程的专业");
+                StudentCourse studentCourse = studentCourseService.getById(studentCourseId);
+                List<Course> courseList = courseService.list(null);
+                List<Student> studentList = studentService.list(null);
+                model.addAttribute("studentList", studentList);
+                model.addAttribute("courseList", courseList);
+                model.addAttribute("studentCourse", studentCourse);
+                return "admin-select-course-update";
+            }
+        }
+
+        StudentCourse studentCourse = new StudentCourse();
+        studentCourse.setId(studentCourseId);
+        studentCourse.setSid(sid);
+        studentCourse.setCid(cid);
+        boolean b = studentCourseService.updateById(studentCourse);
+        if (!b){
+            model.addAttribute("msg", "更新失败");
+            return "admin-select-course-update";
+        }
+        return "redirect:/studentCourse/listStudentCourse";
+    }
+
+    @RequestMapping("/deleteStudentCourse/{id}")
+    public String deleteStudentCourse(@PathVariable Integer id) {
+        StudentCourse studentCourse = studentCourseService.getById(id);
+        studentCourseService.removeById(id);
+        return "redirect:/studentCourse/listStudentCourse";
+    }
+
+    @RequestMapping("/deleteBatchStudentCourse")
+    public String deleteBatchStudentCourse(@RequestBody String ids, Model model) {
+        String[] split = ids.split(",");
+        List<Integer> idList = new ArrayList<>();
+        for (String s : split) {
+            idList.add(Integer.parseInt(s));
+        }
+        boolean b = studentCourseService.removeByIds(idList);
+        if (!b) {
+            model.addAttribute("msg", "删除失败");
+        }
+        return "redirect:/studentCourse/listStudentCourse";
+    }
+
 }

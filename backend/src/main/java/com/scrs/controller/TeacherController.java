@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -78,6 +79,9 @@ public class TeacherController {
                 e.printStackTrace();
             }
         }
+        String defaultPassword = "123456";
+        String passwordAfterMD5 = DigestUtils.md5DigestAsHex(defaultPassword.getBytes());
+        teacher.setPassword(passwordAfterMD5);
         teacherService.save(teacher);
         return "redirect:/teacher/listTeacher";
     }
