@@ -9,7 +9,7 @@
         <result property="sid" column="sid"/>
         <result column="cid" property="cid"/>
         <result column="status" property="status"/>
-        <association property="student">
+        <association property="student" javaType="com.scrs.pojo.Student">
             <id column="id" property="id"/>
             <result property="sname" column="sname"/>
             <result column="password" property="password"/>
@@ -19,7 +19,7 @@
             <result property="major" column="major"/>
             <result property="simage" column="simage"/>
         </association>
-        <association property="course">
+        <association property="course" javaType="com.scrs.pojo.Course">
             <id column="id" property="id"/>
             <result property="cname" column="cname"/>
             <result property="major" column="major"/>
@@ -53,5 +53,31 @@
             sc.id = #{id}
         </if>
     </where>
-</select>
+    </select>
+    <select id="listMyCourse" resultType="com.scrs.pojo.StudentCourse">
+        SELECT
+        sc.id,
+        sc.cid,
+        sc.status,
+        s.sname,
+        s.simage,
+        s.college,
+        c.major AS course_major,
+        c.num,
+        c.stock,
+        c.cname,
+        c.cimage,
+        c.address,
+        c.cbook
+        FROM
+        student_course sc,
+        student s,
+        course c
+        <where>
+            s.id=sc.sid and c.id=sc.cid and s.id=#{userId}
+            <if test="cname != null and cname != ''">
+                and c.cname=#{cname}
+            </if>
+        </where>
+    </select>
 </mapper>

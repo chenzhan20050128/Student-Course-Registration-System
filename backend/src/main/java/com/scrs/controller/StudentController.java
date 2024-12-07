@@ -3,12 +3,8 @@ package com.scrs.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.scrs.pojo.College;
-import com.scrs.pojo.Major;
-import com.scrs.pojo.Student;
-import com.scrs.service.CollegeService;
-import com.scrs.service.MajorService;
-import com.scrs.service.StudentService;
+import com.scrs.pojo.*;
+import com.scrs.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -20,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,6 +44,18 @@ public class StudentController {
 
     @Autowired
     private MajorService majorService;
+
+    @Autowired
+    private CourseService courseService;
+
+    @Autowired
+    private StudentCourseService studentCourseService;
+
+    @Autowired
+    private TeacherCourseService teacherCourseService;
+
+    @Autowired
+    private TeacherService teacherService;
 
     @Value("${file.location}") // 获取配置文件中的文件上传路径
     private String location;
@@ -230,4 +239,46 @@ public class StudentController {
         }
         return "redirect:/student/listStudent";
     }
+
+
+    /*
+    现在是学生选课功能，在学生的界面 add by cz at 12.7 15:26
+     */
+
+    @RequestMapping("/listCourse")
+    public String listCourse(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                             @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+                             Model model, Course course) {
+        if (pageNum == null || pageNum <= 0) {
+            pageNum = 1;
+        }
+        if (pageSize == null || pageSize <= 0) {
+            pageSize = 6;
+        }
+        PageHelper.startPage(pageNum, pageSize);
+        QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
+        if (course.getCname() != null) {
+            queryWrapper.like("cname", course.getCname());
+        }
+        List<Course> courses = courseService.list(queryWrapper);
+        PageInfo<Course> pageInfo = new PageInfo<>(courses);
+        model.addAttribute("pageInfo", pageInfo);
+        return "student-course-list";
+    }
+
+    /**
+     * 选课记录
+     */
+    @RequestMapping("/listMyCourse")
+    public String listMyCourse(String cname, HttpSession session,Model model){
+        Integer userId = (Integer) session.getAttribute("userId");
+        List<StudentCourse> studentCourses = studentCourseService.listMyCourse(userId, cname);
+        //简化操作，与教师无关
+
+        PageInfo<StudentCourse> pageInfo = new PageInfo<>(studentCourses);
+        model.addAttribute("pageInfo", pageInfo);
+        return "student-my-course";
+    }
+
+
 }

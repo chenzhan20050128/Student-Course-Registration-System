@@ -19,7 +19,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
     @Override
     public Boolean login(String username, String password) {
         QueryWrapper<Teacher> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", username);
+        queryWrapper.eq("tname", username);
         String passwordAfterMD5 = DigestUtils.md5DigestAsHex(password.getBytes());
         queryWrapper.eq("password", passwordAfterMD5);
         Teacher teacher = teacherMapper.selectOne(queryWrapper);

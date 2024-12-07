@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface StudentCourseService extends IService<StudentCourse> {
     List<StudentCourse> listStudentCourse(Integer id);
+
+    List<StudentCourse> listMyCourse(Integer userId, String cname);
 }

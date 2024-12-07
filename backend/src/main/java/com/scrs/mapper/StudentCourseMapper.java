@@ -9,4 +9,6 @@ import java.util.List;
 @Mapper
 public interface StudentCourseMapper extends BaseMapper<StudentCourse> {
     List<StudentCourse> listStudentCourse(Integer id);
+
+    List<StudentCourse> listMyCourse(Integer userId, String cname);
 }

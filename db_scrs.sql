@@ -118,11 +118,10 @@ CREATE TABLE `student` (
 -- ----------------------------
 -- Records of `student`
 
-
 -- ----------------------------
 INSERT INTO `student` (`id`, `sname`, `password`, `sex`, `age`, `major`, `college`, `simage`) VALUES
-(1, 'Zhang San', 'password123', 'Male', 20, 'Computer Science and Technology', 'Computer Science College', 'image1.jpg'),
-(2, 'Li Si', 'securePass!45', 'Female', 21, 'Computer Science and Technology', 'Computer Science College', 'image2.jpg'),
+(1, 'Zhang San', '482c811da5d5b4bc6d497ffa98491e38', 'Male', 20, 'Computer Science and Technology', 'Computer Science College', 'image1.jpg'),
+(2, 'Li Si', '15901c034ced2564502166d642eb0c65', 'Female', 21, 'Computer Science and Technology', 'Computer Science College', 'image2.jpg'),
 (3, 'Wang Wu', 'myPass456', 'Male', 22, 'Computer Science and Technology', 'Computer Science College', 'image3.jpg'),
 (4, 'Zhao Liu', 'pass7890', 'Female', 23, 'Computer Science and Technology', 'Computer Science College', 'image4.jpg'),
 (5, 'Sun Qi', 'admin123', 'Male', 24, 'Computer Science and Technology', 'Computer Science College', 'image5.jpg'),
@@ -152,11 +151,10 @@ CREATE TABLE `teacher` (
 
 -- ----------------------------
 -- Records of `teacher`
-
 -- ----------------------------
 INSERT INTO `teacher` (`id`, `tname`, `password`, `email`, `sex`, `phone`, `age`, `major`, `timage`) VALUES
-(1, 'Li Hua', 'pass1234', 'wang@mail.com', 'Male', '13800138000', 35, 'Computer Science and Technology', 'teacher1.jpg'),
-(2, 'Liu Qin', 'pass5678', 'zhao@mail.com', 'Male', '13900139000', 40, 'Software Engineering', 'teacher2.jpg'),
+(1, 'Li Hua', 'b4af804009cb036a4ccdc33431ef9ac9', 'wang@mail.com', 'Male', '13800138000', 35, 'Computer Science and Technology', 'teacher1.jpg'),
+(2, 'Liu Qin', 'ee8ef2f5441316e0305ae007372de337', 'zhao@mail.com', 'Male', '13900139000', 40, 'Software Engineering', 'teacher2.jpg'),
 (3, 'Zhang Wei', 'pass1111', 'sun@mail.com', 'Male', '13700137000', 45, 'Computer Science and Technology', 'teacher3.jpg'),
 (4, 'Liu Tao', 'pass2222', 'li@mail.com', 'Female', '13600136000', 38, 'Software Engineering', 'teacher4.jpg'),
 (5, 'Xiao Yuanming', 'pass3333', 'chen@mail.com', 'Male', '13500135000', 42, 'Mathematics and Applied Mathematics', 'teacher5.jpg'),

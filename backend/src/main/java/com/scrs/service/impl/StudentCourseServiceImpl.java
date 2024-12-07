@@ -21,5 +21,8 @@ public class StudentCourseServiceImpl extends ServiceImpl<StudentCourseMapper, S
         return studentCourseMapper.listStudentCourse(id);
     }
 
-
+    @Override
+    public List<StudentCourse> listMyCourse(Integer userId, String cname) {
+        return studentCourseMapper.listMyCourse(userId, cname);
+    }
 }
