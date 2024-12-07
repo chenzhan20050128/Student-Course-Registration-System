@@ -50,7 +50,7 @@ public class StudentCourseController {
         PageInfo<StudentCourse> pageInfo = new PageInfo<>(studentCourseList);
         model.addAttribute("pageInfo", pageInfo);
 
-        return "studentCourse/listStudentCourse";
+        return "student-course-list";
     }
 
     @RequestMapping("/preSaveStudentCourse")
@@ -96,7 +96,7 @@ public class StudentCourseController {
         studentCourse.setCid(cid);
         studentCourseService.save(studentCourse);
 
-        return "redirect:/studentCourse/listStudentCourse";
+        return "student-course-list";
     }
 
     @RequestMapping("/preUpdateStudentCourse/{id}")
@@ -153,14 +153,14 @@ public class StudentCourseController {
             model.addAttribute("msg", "更新失败");
             return "admin-select-course-update";
         }
-        return "redirect:/studentCourse/listStudentCourse";
+        return "student-course-list";
     }
 
     @RequestMapping("/deleteStudentCourse/{id}")
     public String deleteStudentCourse(@PathVariable Integer id) {
         StudentCourse studentCourse = studentCourseService.getById(id);
         studentCourseService.removeById(id);
-        return "redirect:/studentCourse/listStudentCourse";
+        return "student-course-list";
     }
 
     @RequestMapping("/deleteBatchStudentCourse")
@@ -174,7 +174,7 @@ public class StudentCourseController {
         if (!b) {
             model.addAttribute("msg", "删除失败");
         }
-        return "redirect:/studentCourse/listStudentCourse";
+        return "student-course-list";
     }
 
 }

@@ -43,6 +43,12 @@ public class AccountController {
      */
     @RequestMapping("/login")
     public String login(String username, String password, Integer role, Model model, HttpSession session) {
+        if (username == "" || password == "" || role <= 0 || username == null || password == null || role == null) {
+            role = Integer.valueOf((String) session.getAttribute("role"));
+            username = (String) session.getAttribute("currentUsername");
+            password = (String) session.getAttribute("password");
+        }
+
         if (role == null) {
             model.addAttribute("msg", "请选择登录角色");
             return "index";
@@ -109,4 +115,12 @@ public class AccountController {
             return "index";
         }
     }
+
+
+    @RequestMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "index";
+    }
+
 }

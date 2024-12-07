@@ -280,5 +280,49 @@ public class StudentController {
         return "student-my-course";
     }
 
+    @RequestMapping("/selectCourse/{cid}")
+    public String selectCourse(@PathVariable Integer cid, HttpSession session, Model model){
+        Integer userId = (Integer) session.getAttribute("userId");
+        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("sid", userId);
+        queryWrapper.eq("cid", cid);
+        StudentCourse one = studentCourseService.getOne(queryWrapper);
+        if (one != null) {
+            model.addAttribute("msg", "你已经选过该课程");
+            return "student-course-list";
+        }
+        Course course = courseService.getById(cid);
+        if (course.getNum() >= course.getStock()){
+            model.addAttribute("msg", "该课程已经选满");
+            return "student-course-list";
+        }
+        course.setNum(course.getNum() + 1);
+        courseService.updateById(course);
+        StudentCourse studentCourse = new StudentCourse();
+        studentCourse.setSid(userId);
+        studentCourse.setCid(cid);
+        studentCourseService.save(studentCourse);
+        return "student-my-course";
+    }
 
+    /**
+     * 学生退选
+     */
+    @RequestMapping("/deleteMyCourse/{cid}")
+    public String deleteMyCourse(@PathVariable Integer cid, HttpSession session, Model model){
+        Integer userId = (Integer) session.getAttribute("userId");
+        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("sid", userId);
+        queryWrapper.eq("cid", cid);
+        StudentCourse one = studentCourseService.getOne(queryWrapper);
+        if (one == null) {
+            model.addAttribute("msg", "该学生没有选过该课程");
+            return "student-my-course";
+        }
+        one.setStatus(0);//表示退选
+        Course course = courseService.getById(cid);
+        course.setNum(course.getNum() - 1);
+        courseService.updateById(course);
+        return "student-my-course";
+    }
 }
