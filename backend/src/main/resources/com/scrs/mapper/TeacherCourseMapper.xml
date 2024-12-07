@@ -8,13 +8,15 @@
 然后，通过property属性，将该数据赋值给Java对象的指定属性。-->
 <mapper namespace="com.scrs.mapper.TeacherCourseMapper">
     <resultMap id="teacherCourse" type="com.scrs.pojo.TeacherCourse">
-        <result column="id" property="id"/>
-        <result column="tid" property="tid"/>
-        <result column="cid" property="cid"/>
-        
+    
+        <!-- TeacherCourse 基本字段 -->
+        <result column="tc_id" property="id"/>
+        <result column="tc_tid" property="tid"/>
+        <result column="tc_cid" property="cid"/>
+
+        <!-- 关联 Teacher 对象 -->
         <association property="teacher" javaType="com.scrs.pojo.Teacher">
-            <!-- teacher类-->
-            <result column="id" property="id"/>
+            <result column="t_id" property="id"/>
             <result column="tname" property="tname"/>
             <result column="password" property="password"/>
             <result column="sex" property="sex"/>
@@ -24,28 +26,48 @@
             <result column="major" property="major"/>
             <result column="timage" property="timage"/>
         </association>
+
+        <!-- 关联 Course 对象 -->
         <association property="course" javaType="com.scrs.pojo.Course">
-            <!-- course类-->
-            <result column="id" property="id"/>
+            <result column="c_id" property="id"/>
+            <result column="c_major" property="major"/>
+            <result column="stock" property="stock"/>
             <result column="cname" property="cname"/>
+            <result column="cimage" property="cimage"/>
             <result column="address" property="address"/>
             <result column="num" property="num"/>
-            <result column="stock" property="stock"/>
-            <result column="cimage" property="cimage"/>
             <result column="cbook" property="cbook"/>
-            <result column="major" property="major"/>
             <result column="credit" property="credit"/>
         </association>
     </resultMap>
-    <select id="listTeacherCourse" resultType="com.scrs.pojo.TeacherCourse">
-        select tc.id,t.tname,t.timage,t.phone,t.email,c.major,c.stock,c.cname,c.cimage,c.address
-        from teacher t,course c,teacher_course tc
-        <where>
-            AND t.id=tc.tid AND c.id=tc.cid
-            <if test="teacherCourseId != null and teacherCourseId != ''">
-                AND tc.id=#{teacherCourseId}
-            </if>
 
-        </where>
+    <select id="listTeacherCourse" resultMap="teacherCourse">
+        SELECT
+            tc.id AS tc_id,
+            tc.tid AS tc_tid,
+            tc.cid AS tc_cid,
+            t.id AS t_id,
+            t.tname,
+            t.password,
+            t.sex,
+            t.email,
+            t.phone,
+            t.age,
+            t.major,
+            t.timage,
+            c.id AS c_id,
+            c.major AS c_major,
+            c.stock,
+            c.cname,
+            c.cimage,
+            c.address
+        FROM
+            teacher_course tc
+        JOIN
+            teacher t ON t.id = tc.tid
+        JOIN
+            course c ON c.id = tc.cid
+        WHERE
+            tc.id = #{id}
     </select>
 </mapper>

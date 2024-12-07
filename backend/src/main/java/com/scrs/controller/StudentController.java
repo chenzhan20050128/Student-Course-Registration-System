@@ -76,6 +76,9 @@ public class StudentController {
         }
         List<Student> students = studentService.list(queryWrapper);
         PageInfo<Student> pageInfo = new PageInfo<>(students);
+
+        System.out.println("PageInfo: " + pageInfo.toString());//测试
+
         model.addAttribute("pageInfo", pageInfo);
         return "admin-student-list";
     }
@@ -104,7 +107,7 @@ public class StudentController {
      */
     @RequestMapping("/saveStudent")
     public String saveStudent(Student student, MultipartFile file) throws IOException {
-        if (!file.isEmpty()) {
+        if (file != null && !file.isEmpty()) {
             transfile(student, file);
         }
         studentService.save(student);

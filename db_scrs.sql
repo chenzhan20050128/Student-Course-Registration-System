@@ -9,6 +9,8 @@ Target Server Type    : MYSQL
 
 */
 
+-- source D:\technologySoftware\SCRS\scrs\db_scrs.sql
+
 DROP DATABASE IF EXISTS scrs;
 CREATE DATABASE scrs CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE scrs;
@@ -115,6 +117,8 @@ CREATE TABLE `student` (
 
 -- ----------------------------
 -- Records of `student`
+
+
 -- ----------------------------
 INSERT INTO `student` (`id`, `sname`, `password`, `sex`, `age`, `major`, `college`, `simage`) VALUES
 (1, 'Zhang San', 'password123', 'Male', 20, 'Computer Science and Technology', 'Computer Science College', 'image1.jpg'),
@@ -148,6 +152,7 @@ CREATE TABLE `teacher` (
 
 -- ----------------------------
 -- Records of `teacher`
+
 -- ----------------------------
 INSERT INTO `teacher` (`id`, `tname`, `password`, `email`, `sex`, `phone`, `age`, `major`, `timage`) VALUES
 (1, 'Li Hua', 'pass1234', 'wang@mail.com', 'Male', '13800138000', 35, 'Computer Science and Technology', 'teacher1.jpg'),
@@ -180,27 +185,55 @@ INSERT INTO `teacher_course` (`id`, `tid`, `cid`) VALUES
 (4, 6, 4),  -- Nie Ziwei -> Linear Algebra
 (5, 3, 5),  -- Zhang Wei -> Operating System
 (6, 4, 6);  -- Liu Tao -> Demand and Business Model Analysis
-
 -- ----------------------------
 -- Table structure for `user`
 -- ----------------------------
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
-  `username` VARCHAR(255) NOT NULL COMMENT 'Username',
+  `email` VARCHAR(255) COMMENT 'Email address',
   `password` VARCHAR(255) NOT NULL COMMENT 'Password',
-  `role` INT NOT NULL COMMENT 'Role',
+  `username` VARCHAR(255) NOT NULL COMMENT 'Username',
+  `phone` VARCHAR(20) COMMENT 'Phone number',
+  `image` VARCHAR(255) COMMENT 'Profile image path',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Records of `user`
 -- ----------------------------
-INSERT INTO `user` (`id`, `username`, `password`, `role`) VALUES
-(1, 'admin', 'admin123', 1),  -- Administrator account
-(2, 'student1', 'password123', 3),  -- Student account, example using Zhang San
-(3, 'student2', 'securePass!45', 3),  -- Student account using Li Si
-(4, 'teacher1', 'pass1234', 2),  -- Teacher account using Li Hua
-(5, 'teacher2', 'pass5678', 2);  -- Teacher account using Liu Qin
+INSERT INTO `user` (`id`, `email`, `password`, `username`, `phone`, `image`) VALUES
+(1, 'admin@example.com', '0192023a7bbd73250516f069df18b500', 'admin', '13800000000', '/images/default.jpg'),
+(2, 'student1@example.com', '482c811da5d5b4bc6d497ffa98491e38', 'Zhang San', '13811111111', 'image1.jpg.jpg'),
+(3, 'student2@example.com', '15901c034ced2564502166d642eb0c65', 'Li Si', '13822222222', 'image2.jpg'),
+(4, 'wang@mail.com', 'b4af804009cb036a4ccdc33431ef9ac9', 'Li Hua', '13800138000', 'teacher1.jpg'),
+(5, 'zhao@mail.com', 'ee8ef2f5441316e0305ae007372de337', 'Liu Qin', '13900139000', 'teacher2.jpg');
+
+/*
+Md5Test.java
+String[] passwords = {"admin123", "password123", "securePass!45", "pass1234", "pass5678"};
+       for (String password : passwords){
+            String passwordAfterMD5 = DigestUtils.md5DigestAsHex(password.getBytes());
+            System.out.println(passwordAfterMD5);
+     }
+
+*/
+
+
+CREATE TABLE `student_course` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `sid` INT NOT NULL,
+  `cid` INT NOT NULL,
+  `status` INT,
+  FOREIGN KEY (`sid`) REFERENCES `student`(`id`),
+  FOREIGN KEY (`cid`) REFERENCES `course`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `student_course` (`sid`, `cid`, `status`) VALUES
+(1, 1, 1),
+(2, 1, 1),
+(3, 2, 0),
+(4, 2, 1);
+
 
 SET FOREIGN_KEY_CHECKS=1;
