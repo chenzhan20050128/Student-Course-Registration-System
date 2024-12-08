@@ -46,9 +46,19 @@ export default {
       try {
         // 发送登录请求到后端
         const response = await this.$http.post('/login', loginData);
-        // 处理登录成功逻辑
-        console.log('登录成功', response.data);
-        this.$router.push('/app');
+        if (response.data.success) {
+          // 根据角色跳转到不同的首页视图
+          const role = response.data.role;
+          if (role === 1) {
+            this.$router.push('/admin-home');
+          } else if (role === 2) {
+            this.$router.push('/teacher-home');
+          } else if (role === 3) {
+            this.$router.push('/student-home');
+          }
+        } else {
+          alert(response.data.message);
+        }
       } catch (error) {
         // 处理登录失败逻辑
         console.error('登录失败', error);

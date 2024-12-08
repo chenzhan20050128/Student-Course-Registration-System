@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
-import App from '../views/App.vue';
-
-//记录路由
+import AdminHome from '../views/AdminHome.vue';
+import TeacherHome from '../views/TeacherHome.vue';
+import StudentHome from '../views/StudentHome.vue';
 
 const routes = [
   {
@@ -22,9 +22,19 @@ const routes = [
     component: Register
   },
   {
-    path: '/app',
-    name: 'App',
-    component: App
+    path: '/admin-home',
+    name: 'AdminHome',
+    component: AdminHome
+  },
+  {
+    path: '/teacher-home',
+    name: 'TeacherHome',
+    component: TeacherHome
+  },
+  {
+    path: '/student-home',
+    name: 'StudentHome',
+    component: StudentHome
   }
 ];
 
