@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Koho admin is super flexible, powerful, clean &amp; modern responsive bootstrap 5 admin template with unlimited possibilities.">
+    <meta name="keywords" content="admin template, Koho admin template, dashboard template, flat admin template, responsive admin template, web app">
+    <meta name="author" content="pixelstrap">
+    <link rel="icon" href="../assets/images/favicon/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../assets/images/favicon/favicon.png" type="image/x-icon">
+    <title>医院预约挂号系统</title>
+    <!-- Google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/font-awesome.css}">
+    <!-- ico-font-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/icofont.css}">
+    <!-- Themify icon-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/themify.css}">
+    <!-- Flag icon-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/flag-icon.css}">
+    <!-- Feather icon-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/feather-icon.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/scrollbar.css}">
+
+
+    <!-- Bootstrap css-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/bootstrap.css}">
+    <!-- App css-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+    <link id="color" rel="stylesheet" th:href="@{/css/color-1.css}" media="screen">
+    <!-- Responsive css-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/responsive.css}">
+    <script th:src="@{/webjars/jquery/3.3.1/jquery.js}"></script>
+</head>
+<body>
+<!-- tap on top starts-->
+<div class="tap-top"><i data-feather="chevrons-up"></i></div>
+<!-- tap on tap ends-->
+<!-- Loader starts-->
+<div class="loader-wrapper">
+    <div class="loader"></div>
+</div>
+<!-- Loader ends-->
+<!-- page-wrapper Start-->
+<div class="page-wrapper compact-wrapper" id="pageWrapper">
+    <!-- Page Header Start-->
+    <div class="page-header">
+        <div class="header-wrapper row m-0">
+            <form class="form-inline search-full col" action="#" method="get">
+                <div class="form-group w-100">
+                    <div class="Typeahead Typeahead--twitterUsers">
+                        <div class="u-posRelative">
+                            <input class="demo-input Typeahead-input form-control-plaintext w-100" type="text" placeholder="Search Koho .." name="q" title="" autofocus>
+                            <div class="spinner-border Typeahead-spinner" role="status"><span class="sr-only">Loading...</span></div><i class="close-search" data-feather="x"></i>
+                        </div>
+                        <div class="Typeahead-menu"></div>
+                    </div>
+                </div>
+            </form>
+            <div class="header-logo-wrapper col-auto p-0">
+                <div class="logo-wrapper"><a href="index.html"><img class="img-fluid for-light" src="../assets/images/logo/logo.png" alt=""><img class="img-fluid for-dark" src="../assets/images/logo/logo-dark.png" alt=""></a></div>
+                <div class="toggle-sidebar"><i class="status_toggle middle sidebar-toggle" data-feather="align-center"></i></div>
+            </div>
+            <div class="left-header col horizontal-wrapper ps-0">
+                <div class="input-group">
+                    <input class="form-control" type="text" placeholder="Search Here........"><span class="input-group-text mobile-search"><i data-feather="search"></i></span>
+                </div>
+            </div>
+            <div class="nav-right col-6 pull-right right-header p-0">
+                <ul class="nav-menus">
+                    <li class="language-nav">
+                        <div class="translate_wrapper">
+                            <div class="current_lang">
+                                <div class="lang"><i class="flag-icon flag-icon-cn"></i><span class="lang-txt">CN                               </span></div>
+                            </div>
+                            <div class="more_lang">
+                                <div class="lang selected" data-value="cn"><i class="flag-icon flag-icon-cn"></i><span class="lang-txt">简体中文</span></div>
+                                <div class="lang " data-value="en"><i class="flag-icon flag-icon-us"></i><span class="lang-txt">English<span> (US)</span></span></div>
+                                <div class="lang" data-value="de"><i class="flag-icon flag-icon-de"></i><span class="lang-txt">Deutsch</span></div>
+                                <div class="lang" data-value="es"><i class="flag-icon flag-icon-es"></i><span class="lang-txt">Español</span></div>
+                                <div class="lang" data-value="fr"><i class="flag-icon flag-icon-fr"></i><span class="lang-txt">Français</span></div>
+                                <div class="lang" data-value="pt"><i class="flag-icon flag-icon-pt"></i><span class="lang-txt">Português<span> (BR)</span></span></div>
+
+                                <div class="lang" data-value="ae"><i class="flag-icon flag-icon-ae"></i><span class="lang-txt">لعربية <span> (ae)</span></span></div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="mode"><i data-feather="moon"></i></div>
+                    </li>
+                    <li class="onhover-dropdown">
+                        <div class="notification-box"><i data-feather="star"></i></div>
+                        <div class="onhover-show-div bookmark-flip">
+                            <div class="flip-card">
+                                <div class="flip-card-inner">
+                                    <div class="front">
+                                        <ul class="droplet-dropdown bookmark-dropdown">
+                                            <li class="gradient-primary"><i data-feather="star"></i>
+                                                <h3 class="mb-0">Bookmark</h3>
+                                            </li>
+                                            <li>
+                                                <div class="row">
+                                                    <div class="col-4 text-center"><a href="file-manager.html"><i data-feather="file-text"></i></a></div>
+                                                    <div class="col-4 text-center"><a href="general-widget.html"><i data-feather="activity"></i></a></div>
+                                                    <div class="col-4 text-center"><a href="user-profile.html"><i data-feather="users"></i></a></div>
+                                                    <div class="col-4 text-center"><a href="clipboard.html"><i data-feather="clipboard"></i></a></div>
+                                                    <div class="col-4 text-center"><a href="to-do.html"><i data-feather="anchor"></i></a></div>
+                                                    <div class="col-4 text-center"><a href="internationalization.html"><i data-feather="settings"></i></a></div>
+                                                </div>
+                                            </li>
+                                            <li class="text-center">
+                                                <button class="flip-btn" id="flip-btn">Add New Bookmark</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="back">
+                                        <ul>
+                                            <li>
+                                                <div class="droplet-dropdown bookmark-dropdown flip-back-content">
+                                                    <input type="text" placeholder="search...">
+                                                </div>
+                                            </li>
+                                            <li class="pb-0">
+                                                <button class="d-block flip-back" id="flip-back">Back          </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="onhover-dropdown">
+                        <div class="notification-box"><i data-feather="bell"></i><span class="badge rounded-pill badge-primary">4                                </span></div>
+                        <ul class="notification-dropdown onhover-show-div">
+                            <li><i data-feather="bell">            </i>
+                                <h3 class="mb-0">Notifications</h3>
+                            </li>
+                            <li><a href="email_read.html">
+                                <p><i class="fa fa-circle-o me-3 font-primary"> </i>Delivery processing <span class="pull-right">10 min.</span></p></a></li>
+                            <li><a href="email_read.html">
+                                <p><i class="fa fa-circle-o me-3 font-success"></i>Order Complete<span class="pull-right">1 hr</span></p></a></li>
+                            <li><a href="email_read.html">
+                                <p><i class="fa fa-circle-o me-3 font-info"></i>Tickets Generated<span class="pull-right">3 hr</span></p></a></li>
+                            <li><a href="email_read.html">
+                                <p><i class="fa fa-circle-o me-3 font-danger"></i>Delivery Complete<span class="pull-right">6 hr</span></p></a></li>
+                            <li><a class="btn btn-primary" href="email_read.html">Check all notification</a></li>
+                        </ul>
+                    </li>
+                    <li class="onhover-dropdown"><i data-feather="message-square"></i>
+                        <ul class="chat-dropdown onhover-show-div">
+                            <li><i data-feather="message-square"></i>
+                                <h3 class="mb-0">Message Box</h3>
+                            </li>
+                            <li>
+                                <div class="d-flex"><img class="img-fluid rounded-circle me-3" src="../images/user/6.jpg" alt="">
+                                    <div class="status-circle online"></div>
+                                    <div class="flex-grow-1"><a href="user-profile.html"><span>Ain Chavez</span>
+                                        <p>Do you want to go see movie?</p></a></div>
+                                    <p class="f-12 font-success">2 mins ago</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="d-flex"><img class="img-fluid rounded-circle me-3" src="../images/user/1.jpg" alt="">
+                                    <div class="status-circle online"></div>
+                                    <div class="flex-grow-1"><a href="user-profile.html"><span>Erica Hughes</span>
+                                        <p>Thank you for rating us.</p></a></div>
+                                    <p class="f-12 font-success">5 mins ago</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="d-flex"><img class="img-fluid rounded-circle me-3" src="../images/user/7.jpg" alt="">
+                                    <div class="status-circle offline"></div>
+                                    <div class="flex-grow-1"><a href="user-profile.html"><span>Kori Thomas</span>
+                                        <p>What`s the project report update?</p></a></div>
+                                    <p class="f-12 font-danger">9 mins ago</p>
+                                </div>
+                            </li>
+                            <li class="text-center"> <a class="btn btn-primary" href="chat.html">View All     </a></li>
+                        </ul>
+                    </li>
+                    <li class="maximize"><a class="text-dark" href="#!" onclick="javascript:toggleFullScreen()"><i data-feather="maximize"></i></a></li>
+                    <li class="profile-nav onhover-dropdown p-0 me-0">
+                        <div class="d-flex profile-media"><img class="b-r-50" style="border-radius: 50%" th:src="'http://localhost:8088/'+${session.image}" alt="">
+                            <div class="flex-grow-1"><span>[[${session.currentUser}]]</span>
+                                <p class="mb-0 font-roboto"> <i class="middle fa fa-angle-down"></i></p>
+                            </div>
+                        </div>
+                        <ul class="profile-dropdown onhover-show-div">
+                            <li><a th:href="@{/profile}"><i data-feather="user"></i><span>个人中心 </span></a></li>
+
+                            <li><a th:href="@{/logout}"><i data-feather="log-in"> </i><span>退出系统</span></a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <script class="result-template" type="text/x-handlebars-template">
+                <div class="ProfileCard u-cf">
+                    <div class="ProfileCard-avatar"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-airplay m-0"><path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"></path><polygon points="12 15 17 21 7 21 12 15"></polygon></svg></div>
+                    <div class="ProfileCard-details">
+                        <div class="ProfileCard-realName">{{name}}</div>
+                    </div>
+                </div>
+            </script>
+            <script class="empty-template" type="text/x-handlebars-template"><div class="EmptyMessage">Your search turned up 0 results. This most likely means the backend is down, yikes!</div></script>
+        </div>
+    </div>
+    <!-- Page Header Ends                              -->
+    <!-- Page Body Start-->
+    <div class="page-body-wrapper">
+        <!-- Page Sidebar Start-->
+        <div class="sidebar-wrapper" th:replace="student-home::sidebar">
+
+        </div>
+        <!-- Page Sidebar Ends-->
+        <div class="page-body">
+            <div class="container-fluid">
+                <div class="page-title">
+                    <div class="row">
+                        <div class="col-6">
+                            <h3>编辑信息</h3>
+                        </div>
+                        <div class="col-6">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="index.html">                                       <i data-feather="home"></i></a></li>
+                                <li class="breadcrumb-item">个人中心</li>
+                                <li class="breadcrumb-item active">编辑信息</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Container-fluid starts-->
+            <div class="container-fluid">
+                <div class="edit-profile">
+                    <div class="row">
+                        <div class="col-xl-8">
+                            <div class="card">
+                                <div class="card-header pb-0">
+                                    <h2 class="card-title mb-0">我的信息</h2>
+                                    <div class="card-options"><a class="card-options-collapse" href="javascript:void(0)" data-bs-toggle="card-collapse"><i class="fe fe-chevron-up"></i></a><a class="card-options-remove" href="javascript:void(0)" data-bs-toggle="card-remove"><i class="fe fe-x"></i></a></div>
+                                </div>
+                                <div class="card-body">
+                                    <form enctype="multipart/form-data" method="post" th:action="@{/updateStudentProfile}">
+                                        <div class="row mb-2">
+                                            <div class="profile-title">
+                                                <div class="d-flex">                        <img class="img-70 rounded-circle" alt="" th:src="'http://localhost:8088/'+${user.simage}">
+                                                    <div class="flex-grow-1"><a href="user-profile.html">
+                                                        <h3 class="mb-1 f-20 txt-primary">[[${user.sname}]]</h3></a>
+                                                        <p class="f-12"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!--<div class="mb-3">
+                                          <h4 class="form-label">Bio</h4>
+                                          <textarea class="form-control" rows="5">On the other hand, we denounce with righteous indignation</textarea>
+                                        </div>-->
+                                        <input type="hidden" th:value="${user.id}" name="id"/>
+                                        <div class="mb-3">
+                                            <label class="form-label">头像</label>
+                                            <input class="form-control" type="file" name="file" placeholder="">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">用户名</label>
+                                            <input class="form-control" th:value="${user.sname}" name="sname" placeholder="">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">密码</label>
+                                            <input class="form-control" th:value="${user.password}" name="password" type="password" value="password">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">性别</label>
+                                            <input class="form-control" th:value="${user.sex}" name="sex" placeholder="">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">年龄</label>
+                                            <input class="form-control" th:value="${user.age}" name="age" placeholder="">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">学院</label>
+                                            <input class="form-control" th:value="${user.college}" name="college" placeholder="">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">专业</label>
+                                            <input class="form-control" th:value="${user.major}" name="major" placeholder="">
+                                        </div>
+                                        <div class="form-footer">
+                                            <button type="submit" class="btn btn-primary btn-block">保存</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <!-- Container-fluid Ends-->
+        </div>
+
+    </div>
+</div>
+<!-- latest jquery-->
+<script th:src="@{/js/jquery-3.6.0.min.js}"></script>
+<script th:src="@{/js/bootstrap/popper.min.js}"></script>
+<script th:src="@{/js/bootstrap/bootstrap.bundle.min.js}"></script>
+<!-- feather icon js-->
+<script th:src="@{/js/icons/feather-icon/feather.min.js}"></script>
+<script th:src="@{/js/icons/feather-icon/feather-icon.js}"></script>
+<script th:src="@{/js/scrollbar/simplebar.js}"></script>
+<script th:src="@{/js/scrollbar/custom.js}"></script>
+<!-- Sidebar jquery-->
+<script th:src="@{/js/config.js}"></script>
+<script th:src="@{/js/sidebar-menu.js}"></script>
+<script th:src="@{/js/tooltip-init.js}"></script>
+<!-- Theme js-->
+<script th:src="@{/js/script.js}"></script>
+<script th:src="@{/js/theme-customizer/customizer.js}"></script>
+</body>
+</html>

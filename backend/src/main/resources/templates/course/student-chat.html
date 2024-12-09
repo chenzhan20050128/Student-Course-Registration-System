@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Koho admin is super flexible, powerful, clean &amp; modern responsive bootstrap 5 admin template with unlimited possibilities.">
+    <meta name="keywords" content="admin template, Koho admin template, dashboard template, flat admin template, responsive admin template, web app">
+    <meta name="author" content="pixelstrap">
+    <link rel="icon" href="../assets/images/favicon/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../assets/images/favicon/favicon.png" type="image/x-icon">
+    <title>学生选课系统</title>
+    <!-- Google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/font-awesome.css}">
+    <!-- ico-font-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/icofont.css}">
+    <!-- Themify icon-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/themify.css}">
+    <!-- Flag icon-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/flag-icon.css}">
+    <!-- Feather icon-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/feather-icon.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/scrollbar.css}">
+    <!-- Bootstrap css-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/vendors/bootstrap.css}">
+    <!-- App css-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+    <link id="color" rel="stylesheet" th:href="@{/css/color-1.css}" media="screen">
+    <!-- Responsive css-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/responsive.css}">
+    <script th:src="@{/js/vue.js}"></script>
+    <script th:src="@{/js/axios-0.18.0.js}"></script>
+</head>
+<body>
+<!-- tap on top starts-->
+<div class="tap-top"><i data-feather="chevrons-up"></i></div>
+<!-- tap on tap ends-->
+<!-- Loader starts-->
+<div class="loader-wrapper">
+    <div class="loader"></div>
+</div>
+<!-- Loader ends-->
+<!-- page-wrapper Start-->
+<div class="page-wrapper compact-wrapper" id="pageWrapper">
+    <!-- Page Header Start-->
+    <div class="page-header">
+        <div class="header-wrapper row m-0">
+            <form class="form-inline search-full col" action="#" method="get">
+                <div class="form-group w-100">
+                    <div class="Typeahead Typeahead--twitterUsers">
+                        <div class="u-posRelative">
+                            <input class="demo-input Typeahead-input form-control-plaintext w-100" type="text" placeholder="Search Koho .." name="q" title="" autofocus>
+                            <div class="spinner-border Typeahead-spinner" role="status"><span class="sr-only">Loading...</span></div><i class="close-search" data-feather="x"></i>
+                        </div>
+                        <div class="Typeahead-menu"></div>
+                    </div>
+                </div>
+            </form>
+            <div class="header-logo-wrapper col-auto p-0">
+                <div class="logo-wrapper" ><a href="index.html"><img class="img-fluid for-light" th:src="@{/images/logo/logo.png}" alt=""><img class="img-fluid for-dark" src="../assets/images/logo/logo-dark.png" alt=""></a></div>
+                <div class="toggle-sidebar"><i class="status_toggle middle sidebar-toggle" data-feather="align-center"></i></div>
+            </div>
+            <div class="left-header col horizontal-wrapper ps-0">
+                <div class="input-group">
+                    <input class="form-control" type="text" placeholder="Search Here........"><span class="input-group-text mobile-search"><i data-feather="search"></i></span>
+                </div>
+            </div>
+            <div class="nav-right col-6 pull-right right-header p-0">
+                <ul class="nav-menus">
+                    <li class="language-nav">
+                        <div class="translate_wrapper">
+                            <div class="current_lang">
+                                <div class="lang"><i class="flag-icon flag-icon-cn"></i><span class="lang-txt">CN                               </span></div>
+                            </div>
+                            <div class="more_lang">
+                                <div class="lang selected" data-value="cn"><i class="flag-icon flag-icon-cn"></i><span class="lang-txt">简体中文</span></div>
+                                <div class="lang " data-value="en"><i class="flag-icon flag-icon-us"></i><span class="lang-txt">English<span> (US)</span></span></div>
+                                <div class="lang" data-value="de"><i class="flag-icon flag-icon-de"></i><span class="lang-txt">Deutsch</span></div>
+                                <div class="lang" data-value="es"><i class="flag-icon flag-icon-es"></i><span class="lang-txt">Español</span></div>
+                                <div class="lang" data-value="fr"><i class="flag-icon flag-icon-fr"></i><span class="lang-txt">Français</span></div>
+                                <div class="lang" data-value="pt"><i class="flag-icon flag-icon-pt"></i><span class="lang-txt">Português<span> (BR)</span></span></div>
+
+                                <div class="lang" data-value="ae"><i class="flag-icon flag-icon-ae"></i><span class="lang-txt">لعربية <span> (ae)</span></span></div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="mode"><i data-feather="moon"></i></div>
+                    </li>
+                    <li class="onhover-dropdown">
+                        <div class="notification-box"><i data-feather="star"></i></div>
+                        <div class="onhover-show-div bookmark-flip">
+                            <div class="flip-card">
+                                <div class="flip-card-inner">
+                                    <div class="front">
+                                        <ul class="droplet-dropdown bookmark-dropdown">
+                                            <li class="gradient-primary"><i data-feather="star"></i>
+                                                <h3 class="mb-0">Bookmark</h3>
+                                            </li>
+                                            <li>
+                                                <div class="row">
+                                                    <div class="col-4 text-center"><a href="file-manager.html"><i data-feather="file-text"></i></a></div>
+                                                    <div class="col-4 text-center"><a href="general-widget.html"><i data-feather="activity"></i></a></div>
+                                                    <div class="col-4 text-center"><a href="user-profile.html"><i data-feather="users"></i></a></div>
+                                                    <div class="col-4 text-center"><a href="clipboard.html"><i data-feather="clipboard"></i></a></div>
+                                                    <div class="col-4 text-center"><a href="to-do.html"><i data-feather="anchor"></i></a></div>
+                                                    <div class="col-4 text-center"><a href="internationalization.html"><i data-feather="settings"></i></a></div>
+                                                </div>
+                                            </li>
+                                            <li class="text-center">
+                                                <button class="flip-btn" id="flip-btn">Add New Bookmark</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="back">
+                                        <ul>
+                                            <li>
+                                                <div class="droplet-dropdown bookmark-dropdown flip-back-content">
+                                                    <input type="text" placeholder="search...">
+                                                </div>
+                                            </li>
+                                            <li class="pb-0">
+                                                <button class="d-block flip-back" id="flip-back">Back          </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="onhover-dropdown">
+                        <div class="notification-box"><i data-feather="bell"></i><span class="badge rounded-pill badge-primary">4                                </span></div>
+                        <ul class="notification-dropdown onhover-show-div">
+                            <li><i data-feather="bell">            </i>
+                                <h3 class="mb-0">Notifications</h3>
+                            </li>
+                            <li><a href="email_read.html">
+                                <p><i class="fa fa-circle-o me-3 font-primary"> </i>Delivery processing <span class="pull-right">10 min.</span></p></a></li>
+                            <li><a href="email_read.html">
+                                <p><i class="fa fa-circle-o me-3 font-success"></i>Order Complete<span class="pull-right">1 hr</span></p></a></li>
+                            <li><a href="email_read.html">
+                                <p><i class="fa fa-circle-o me-3 font-info"></i>Tickets Generated<span class="pull-right">3 hr</span></p></a></li>
+                            <li><a href="email_read.html">
+                                <p><i class="fa fa-circle-o me-3 font-danger"></i>Delivery Complete<span class="pull-right">6 hr</span></p></a></li>
+                            <li><a class="btn btn-primary" href="email_read.html">Check all notification</a></li>
+                        </ul>
+                    </li>
+                    <li class="onhover-dropdown"><i data-feather="message-square"></i>
+                        <ul class="chat-dropdown onhover-show-div">
+                            <li><i data-feather="message-square"></i>
+                                <h3 class="mb-0">Message Box</h3>
+                            </li>
+                            <li>
+                                <div class="d-flex"><img class="img-fluid rounded-circle me-3" src="../images/dashboard/profile.png" alt="">
+                                    <div class="status-circle online"></div>
+                                    <div class="flex-grow-1"><a href="user-profile.html"><span>Ain Chavez</span>
+                                        <p>Do you want to go see movie?</p></a></div>
+                                    <p class="f-12 font-success">2 mins ago</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="d-flex"><img class="img-fluid rounded-circle me-3" src="../images/user/1.jpg" alt="">
+                                    <div class="status-circle online"></div>
+                                    <div class="flex-grow-1"><a href="user-profile.html"><span>Erica Hughes</span>
+                                        <p>Thank you for rating us.</p></a></div>
+                                    <p class="f-12 font-success">5 mins ago</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="d-flex"><img class="img-fluid rounded-circle me-3" src="../images/user/7.jpg" alt="">
+                                    <div class="status-circle offline"></div>
+                                    <div class="flex-grow-1"><a href="user-profile.html"><span>Kori Thomas</span>
+                                        <p>What`s the project report update?</p></a></div>
+                                    <p class="f-12 font-danger">9 mins ago</p>
+                                </div>
+                            </li>
+                            <li class="text-center"> <a class="btn btn-primary" href="chat.html">View All     </a></li>
+                        </ul>
+                    </li>
+                    <li class="maximize"><a class="text-dark" href="#!" onclick="javascript:toggleFullScreen()"><i data-feather="maximize"></i></a></li>
+                    <li class="profile-nav onhover-dropdown p-0 me-0">
+                        <div class="d-flex profile-media"><img class="b-r-50" style="border-radius: 50%" th:src="'http://localhost:8088/'+${session.image}" alt="">
+                            <div class="flex-grow-1"><span>[[${session.currentUser}]]</span>
+                                <p class="mb-0 font-roboto"> <i class="middle fa fa-angle-down"></i></p>
+                            </div>
+                        </div>
+                        <ul class="profile-dropdown onhover-show-div">
+                            <li><a th:href="@{/profile}"><i data-feather="user"></i><span>个人中心 </span></a></li>
+
+                            <li><a th:href="@{/logout}"><i data-feather="log-in"> </i><span>退出系统</span></a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <script class="result-template" type="text/x-handlebars-template">
+                <div class="ProfileCard u-cf">
+                    <div class="ProfileCard-avatar"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-airplay m-0"><path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"></path><polygon points="12 15 17 21 7 21 12 15"></polygon></svg></div>
+                    <div class="ProfileCard-details">
+                        <div class="ProfileCard-realName">{{name}}</div>
+                    </div>
+                </div>
+            </script>
+            <script class="empty-template" type="text/x-handlebars-template"><div class="EmptyMessage">Your search turned up 0 results. This most likely means the backend is down, yikes!</div></script>
+        </div>
+    </div>
+    <!-- Page Header Ends                              -->
+    <!-- Page Body Start-->
+    <div class="page-body-wrapper">
+        <!-- Page Sidebar Start-->
+        <div class="sidebar-wrapper" th:replace="student-home::sidebar">
+
+        </div>
+        <!-- Page Sidebar Ends-->
+        <div class="page-body">
+            <div class="container-fluid">
+                <div class="page-title">
+                    <div class="row">
+                        <div class="col-6">
+                            <h3>聊天室</h3>
+                        </div>
+                        <div class="col-6">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="index.html">                                       <i data-feather="home"></i></a></li>
+                                <li class="breadcrumb-item">聊天室</li>
+                                <li class="breadcrumb-item active"> 聊天室</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Container-fluid starts-->
+            <div class="container-fluid" id="app">
+                <div class="row">
+                    <div class="col call-chat-sidebar">
+                        <div class="card">
+                            <div class="card-body chat-body">
+                                <div class="chat-box">
+                                    <!-- Chat left side Start-->
+                                    <div class="chat-left-aside">
+                                        <div class="d-flex"><img class="rounded-circle user-image" :src="userimage" alt="">
+                                            <div class="flex-grow-1">
+                                                <div class="about"><a class="name f-w-600" href="user-profile.html">{{username}}</a>
+                                                    <div class="status">在线...</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="people-list" id="people-list">
+                                            <div class="search">
+                                                <form class="theme-form">
+                                                    <div class="form-group">
+                                                        <!-- input.form-control(type='text', placeholder='search')-->
+                                                        <!-- i.fa.fa-search-->
+                                                        <div class="input-group">
+                                                            <input class="form-control" type="text" placeholder="Search"><span class="input-group-text"> <i class="fa fa-search"></i></span>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <ul class="list custom-scrollbar">
+
+                                                <li class="clearfix" v-for="friend in friendsList">
+                                                    <div class="d-flex"><img class="rounded-circle user-image" th:src="@{/images/dashboard/profile.png}" alt="">
+                                                        <div class="status-circle online"></div>
+                                                        <div class="flex-grow-1">
+                                                            <div class="about"><a class="name"  @click='showChat(friend)'>{{friend}}</a>
+                                                                <div class="status">在线</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+
+                                            </ul>
+                                        </div>
+
+
+                                        <!--                        <script>-->
+                                        <!--                          let ws;-->
+                                        <!--                          new Vue({-->
+                                        <!--                            el: "#app",-->
+                                        <!--                            data() {-->
+                                        <!--                              return {-->
+                                        <!--                                isShowChat: false,-->
+                                        <!--                                chatMes: false,-->
+                                        <!--                                isOnline: true,-->
+                                        <!--                                username:"",-->
+                                        <!--                                toName: "",-->
+                                        <!--                                sendMessage: {-->
+                                        <!--                                  toName: "",-->
+                                        <!--                                  message: ""-->
+                                        <!--                                },-->
+                                        <!--                                inputMessage: "",-->
+                                        <!--                                historyMessage: [-->
+                                        <!--                                  /*{toName: "李四", message: "你好,张三"},-->
+                                        <!--                                  {toName: "李四", message: "在吗"},-->
+                                        <!--                                  {toName: "李四", message: "怎么不说话"},-->
+                                        <!--                                  {fromName: "张三", message: "你好,李四"}*/-->
+                                        <!--                                ],-->
+                                        <!--                                friendsList: [-->
+                                        <!--                                  /* "李四",-->
+                                        <!--                                   "王五"*/-->
+                                        <!--                                ],-->
+                                        <!--                                systemMessages : [-->
+                                        <!--                                  /*"张三",-->
+                                        <!--                                  "李四"*/-->
+                                        <!--                                ]-->
+                                        <!--                              }-->
+                                        <!--                            },-->
+                                        <!--                            created() {-->
+                                        <!--                              this.init();-->
+                                        <!--                            },-->
+                                        <!--                            methods: {-->
+                                        <!--                              async init() {-->
+                                        <!--                                await axios.get("getUsername").then(res => {-->
+                                        <!--                                  this.username = res.data;-->
+                                        <!--                                });-->
+
+                                        <!--                                //创建webSocket对象-->
+                                        <!--                                ws = new WebSocket("ws://localhost:8088/chat");-->
+
+                                        <!--                                //给ws绑定事件-->
+                                        <!--                                ws.onopen = this.onopen;-->
+                                        <!--                                //接收到服务端推送的消息后触发-->
+                                        <!--                                ws.onmessage = this.onMessage;-->
+
+                                        <!--                                ws.onclose = this.onClose;-->
+                                        <!--                              },-->
+                                        <!--                              showChat(name) {-->
+                                        <!--                                this.toName = name;-->
+                                        <!--                                //清除聊天区的数据-->
+                                        <!--                                let history = sessionStorage.getItem(this.toName);-->
+                                        <!--                                if (!history) {-->
+                                        <!--                                  this.historyMessage = [];-->
+                                        <!--                                } else {-->
+                                        <!--                                  this.historyMessage = JSON.parse(history);-->
+                                        <!--                                }-->
+                                        <!--                                //展示聊天对话框-->
+                                        <!--                                this.isShowChat = true;-->
+                                        <!--                                //显示“正在和谁聊天”-->
+                                        <!--                                this.chatMes = true;-->
+                                        <!--                              },-->
+                                        <!--                              submit() {-->
+                                        <!--                                this.sendMessage.toName = this.toName;-->
+                                        <!--                                this.historyMessage.push(JSON.parse(JSON.stringify(this.sendMessage)));-->
+                                        <!--                                sessionStorage.setItem(this.toName, JSON.stringify(this.historyMessage));-->
+                                        <!--                                ws.send(JSON.stringify(this.sendMessage));-->
+                                        <!--                                this.sendMessage.message = "";-->
+                                        <!--                              },-->
+                                        <!--                              onOpen() {-->
+                                        <!--                                this.isOnline = true;-->
+                                        <!--                                console.log(this.username)-->
+                                        <!--                              },-->
+                                        <!--                              onClose() {-->
+                                        <!--                                this.isOnline = false;-->
+                                        <!--                              },-->
+                                        <!--                              onMessage(evt) {-->
+                                        <!--                                //获取服务端推送过来的消息-->
+                                        <!--                                var dataStr = evt.data;-->
+                                        <!--                                //将dataStr 转换为json对象-->
+                                        <!--                                var res = JSON.parse(dataStr);-->
+
+                                        <!--                                //判断是否是系统消息-->
+                                        <!--                                if(res.system) {-->
+                                        <!--                                  //系统消息  好友列表展示-->
+                                        <!--                                  var names = res.message;-->
+                                        <!--                                  this.friendsList = [];-->
+                                        <!--                                  this.systemMessages = [];-->
+                                        <!--                                  for (let i = 0; i < names.length; i++) {-->
+                                        <!--                                    if(names[i] != this.username) {-->
+                                        <!--                                      this.friendsList.push(names[i]);-->
+                                        <!--                                      this.systemMessages.push(names[i]);-->
+                                        <!--                                    }-->
+                                        <!--                                  }-->
+                                        <!--                                }else {-->
+                                        <!--                                  //非系统消息-->
+                                        <!--                                  var history = sessionStorage.getItem(res.fromName);-->
+                                        <!--                                  if (!history) {-->
+                                        <!--                                    this.historyMessage = [res];-->
+                                        <!--                                  } else {-->
+                                        <!--                                    this.historyMessage.push(res);-->
+                                        <!--                                  }-->
+                                        <!--                                  sessionStorage.setItem(res.fromName, JSON.stringify(this.historyMessage));-->
+                                        <!--                                }-->
+                                        <!--                              }-->
+                                        <!--                            }-->
+                                        <!--                          });-->
+                                        <!--                        </script>-->
+                                    </div>
+                                    <!-- Chat left side Ends-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col call-chat-body">
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <div class="row chat-box">
+                                    <!-- Chat right side start-->
+                                    <div class="col chat-right-aside">
+                                        <!-- chat start-->
+                                        <div class="chat">
+                                            <!-- chat-header start-->
+                                            <div class="d-flex chat-header clearfix"><img class="rounded-circle" src="../assets/images/user/8.jpg" alt="">
+                                                <div class="flex-grow-1">
+                                                    <div class="about"><a class="name" href="user-profile.html"><span class="font-primary f-12">正在和{{toName}}聊天中...</span></a>
+
+                                                    </div>
+                                                </div>
+                                                <ul class="list-inline float-start float-sm-end chat-menu-icons">
+                                                    <li class="list-inline-item"><a href="javascript:void(0)">                                <i data-feather="search"></i></a></li>
+                                                    <li class="list-inline-item"><a href="javascript:void(0)">                                 <i data-feather="paperclip"></i></a></li>
+                                                    <li class="list-inline-item"><a href="javascript:void(0)"><i data-feather="headphones"></i></a></li>
+                                                    <li class="list-inline-item"><a href="javascript:void(0)"><i data-feather="video"></i></a></li>
+                                                    <li class="list-inline-item toogle-bar"><a href="javascript:void(0)"><i data-feather="menu"></i></a></li>
+                                                </ul>
+                                            </div>
+
+
+                                            <div v-show="isShowChat">
+                                                <!-- chat-header end-->
+                                                <!--下边这个div是这个对话框，不能在这里遍历，它只有一个-->
+                                                <div class="chat-history chat-msg-box custom-scrollbar"   >
+                                                    <ul v-for="message in historyMessage">
+
+                                                        <li class="clearfix" v-if="message.toName">
+                                                            <div class="message other-message pull-right" ><img class="rounded-circle float-end chat-user-img img-30" :src="userimage" alt="">
+                                                                <div class="message-data"></div>{{message.message}}
+                                                            </div>
+                                                        </li>
+
+                                                        <li v-else>
+                                                            <div class="message my-message" ><img class="rounded-circle float-start chat-user-img img-30" th:src="@{/images/dashboard/profile.png}" alt="">
+                                                                <div class="message-data text-end"></div>{{message.message}}
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+                                            <!--这个是刚开始跳转到这个页面的时候的空div块-->
+                                            <div v-show="isShowChata">
+                                                <!-- chat-header end-->
+                                                <!--下边这个div是这个对话框，不能在这里遍历，它只有一个-->
+                                                <div class="chat-history chat-msg-box custom-scrollbar"   >
+
+                                                </div>
+                                            </div>
+
+                                            <!-- end chat-history-->
+                                            <div class="chat-message clearfix">
+                                                <div class="row">
+                                                    <div class="col-xl-12 d-flex">
+                                                        <div class="smiley-box bg-primary">
+                                                            <div class="picker"><img th:src="@{/images/smiley.png}" alt=""></div>
+                                                        </div>
+                                                        <div class="input-group text-box">
+                                                            <input class="form-control input-txt-bx" id="message-to-send" type="text" name="message-to-send" v-model="sendMessage.message">
+                                                            <button class="btn btn-primary input-group-text" type="button" @click="submit">SEND</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- end chat-message-->
+                                            <!-- chat end-->
+                                            <!-- Chat right side ends-->
+                                        </div>
+                                    </div>
+                                    <div class="col chat-menu">
+                                        <ul class="nav nav-tabs border-tab nav-primary" id="info-tab" role="tablist">
+                                            <li class="nav-item"><a class="nav-link active" id="info-home-tab" data-bs-toggle="tab" href="#info-home" role="tab" aria-selected="true">CALL</a>
+                                                <div class="material-border"></div>
+                                            </li>
+                                            <li class="nav-item"><a class="nav-link" id="profile-info-tab" data-bs-toggle="tab" href="#info-profile" role="tab" aria-selected="false">STATUS</a>
+                                                <div class="material-border"></div>
+                                            </li>
+                                            <li class="nav-item"><a class="nav-link" id="contact-info-tab" data-bs-toggle="tab" href="#info-contact" role="tab" aria-selected="false">PROFILE</a>
+                                                <div class="material-border"></div>
+                                            </li>
+                                        </ul>
+                                        <div class="tab-content" id="info-tabContent">
+                                            <div class="tab-pane fade show active" id="info-home" role="tabpanel" aria-labelledby="info-home-tab">
+                                                <div class="people-list">
+                                                    <ul class="list digits custom-scrollbar">
+
+
+                                                        <li class="clearfix">
+                                                            <div class="d-flex"><img class="rounded-circle user-image" src="../assets/images/user/4.jpg" alt="">
+                                                                <div class="flex-grow-1">
+                                                                    <div class="about"><a class="name" href="user-profile.html">Erica Hughes</a>
+                                                                        <div class="status"><i class="fa fa-share font-success"></i>  5 May, 4:40 PM</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+
+
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane fade" id="info-profile" role="tabpanel" aria-labelledby="profile-info-tab">
+                                                <div class="people-list">
+                                                    <div class="search">
+                                                        <form class="theme-form">
+                                                            <div class="form-group">
+                                                                <input class="form-control" type="text" placeholder="Write Status..."><i class="fa fa-pencil"></i>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                <div class="status">
+                                                    <p class="font-primary f-w-600">Active</p>
+                                                    <hr>
+                                                    <p>
+                                                        Established fact that a reader will be
+                                                        distracted  <i class="icofont icofont-emo-heart-eyes font-danger f-20"></i><i class="icofont icofont-emo-heart-eyes font-danger f-20 m-l-5"></i>
+                                                    </p>
+                                                    <hr>
+                                                    <p>Dolore magna aliqua  <i class="icofont icofont-emo-rolling-eyes font-success f-20"></i></p>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane fade" id="info-contact" role="tabpanel" aria-labelledby="contact-info-tab">
+                                                <div class="user-profile">
+                                                    <div class="image">
+                                                        <div class="avatar text-center"><img alt="" src="../assets/images/user/2.png"></div>
+                                                        <div class="icon-wrapper"><a href="edit-profile.html"> <i class="icofont icofont-pencil-alt-5"></i></a></div>
+                                                    </div>
+                                                    <div class="user-content text-center"><a href="user-profile.html">
+                                                        <h5 class="text-uppercase">mark jenco</h5></a>
+                                                        <div class="social-list">
+                                                            <ul>
+                                                                <li><a href="https://www.facebook.com" target="_blank"><i class="fa fa-facebook"></i></a></li>
+                                                                <li><a href="https://www.google.com" target="_blank"><i class="fa fa-google-plus"></i></a></li>
+                                                                <li><a href="https://www.twitter.com" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                                                                <li><a href="https://www.instagram.com" target="_blank"><i class="fa fa-instagram"></i></a></li>
+                                                                <li><a href="https://www.rss.com" target="_blank"><i class="fa fa-rss">                                        </i></a></li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="follow text-center">
+                                                            <div class="row">
+                                                                <div class="col border-right"><span>Following</span>
+                                                                    <div class="follow-num">236k</div>
+                                                                </div>
+                                                                <div class="col"><span>Follower</span>
+                                                                    <div class="follow-num">3691k                                         </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-center digits">
+                                                            <p>Mark.jenco23@gmail.com</p>
+                                                            <p>+91 365 - 658 - 1236</p>
+                                                            <p>Fax: 123-4560</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <script src="../js/vue.js"></script>
+                <script src="../js/axios-0.18.0.js"></script>
+                <script>
+                    let ws;
+                    new Vue({
+                        el: "#app",
+                        data() {
+                            return {
+                                isShowChat: false,
+                                isShowChata: true,
+                                chatMes: false,
+                                isOnline: true,
+                                username:"",
+                                userimage:"http://localhost:8088/",
+                                image:"",
+                                toName: "",
+                                sendMessage: {
+                                    toName: "",
+                                    message: ""
+                                },
+                                inputMessage: "",
+                                historyMessage: [
+                                    /*{toName: "李四", message: "你好,张三"},
+                                    {toName: "李四", message: "在吗"},
+                                    {toName: "李四", message: "怎么不说话"},
+                                    {fromName: "张三", message: "你好,李四"}*/
+                                ],
+                                friendsList: [
+                                    /* "李四",
+                                     "王五"*/
+                                ],
+                                systemMessages : [
+                                    /*"张三",
+                                    "李四"*/
+                                ]
+                            }
+                        },
+                        created() {
+                            this.init();
+                        },
+                        methods: {
+                            async init() {
+                                await axios.get("getUsername").then(res => {
+                                    this.username = res.data.username;
+                                    this.userimage=this.userimage+res.data.image
+                                });
+
+                                //创建webSocket对象
+                                ws = new WebSocket("ws://localhost:8088/chat");
+
+                                //给ws绑定事件
+                                ws.onopen = this.onopen;
+                                //接收到服务端推送的消息后触发
+                                ws.onmessage = this.onMessage;
+
+                                ws.onclose = this.onClose;
+                            },
+                            showChat(name) {
+                                this.toName = name;
+                                //清除聊天区的数据
+                                let history = sessionStorage.getItem(this.toName);
+                                if (!history) {
+                                    this.historyMessage = [];
+                                } else {
+                                    this.historyMessage = JSON.parse(history);
+                                }
+                                //展示聊天对话框
+                                this.isShowChat = true;
+                                this.isShowChata = false;
+                                //显示“正在和谁聊天”
+                                this.chatMes = true;
+                            },
+                            submit() {
+                                this.sendMessage.toName = this.toName;
+                                this.historyMessage.push(JSON.parse(JSON.stringify(this.sendMessage)));
+                                sessionStorage.setItem(this.toName, JSON.stringify(this.historyMessage));
+                                ws.send(JSON.stringify(this.sendMessage));
+                                this.sendMessage.message = "";
+                            },
+                            onOpen() {
+                                this.isOnline = true;
+                                console.log(this.username)
+                            },
+                            onClose() {
+                                this.isOnline = false;
+                            },
+                            onMessage(evt) {
+                                //获取服务端推送过来的消息
+                                var dataStr = evt.data;
+                                //将dataStr 转换为json对象
+                                var res = JSON.parse(dataStr);
+
+                                //判断是否是系统消息
+                                if(res.system) {
+                                    //系统消息  好友列表展示
+                                    var names = res.message;
+                                    this.friendsList = [];
+                                    this.systemMessages = [];
+                                    for (let i = 0; i < names.length; i++) {
+                                        if(names[i] != this.username) {
+                                            this.friendsList.push(names[i]);
+                                            this.systemMessages.push(names[i]);
+                                        }
+                                    }
+                                }else {
+                                    //非系统消息
+                                    var history = sessionStorage.getItem(res.fromName);
+                                    if (!history) {
+                                        this.historyMessage = [res];
+                                    } else {
+                                        this.historyMessage.push(res);
+                                    }
+                                    sessionStorage.setItem(res.fromName, JSON.stringify(this.historyMessage));
+                                }
+                            }
+                        }
+                    });
+                </script>
+
+
+
+
+
+            </div>
+            <!-- Container-fluid Ends-->
+        </div>
+
+    </div>
+</div>
+
+<!-- latest jquery-->
+<script th:src="@{/js/jquery-3.6.0.min.js}"></script>
+<script th:src="@{/js/bootstrap/popper.min.js}"></script>
+<script th:src="@{/js/bootstrap/bootstrap.bundle.min.js}"></script>
+<!-- feather icon js-->
+<script th:src="@{/js/icons/feather-icon/feather.min.js}"></script>
+<script th:src="@{/js/icons/feather-icon/feather-icon.js}"></script>
+<script th:src="@{/js/scrollbar/simplebar.js}"></script>
+<script th:src="@{/js/scrollbar/custom.js}"></script>
+<!-- Sidebar jquery-->
+<script th:src="@{/js/config.js}"></script>
+<script th:src="@{/js/sidebar-menu.js}"></script>
+<script th:src="@{/js/tooltip-init.js}"></script>
+<!-- Theme js-->
+<script th:src="@{/js/script.js}"></script>
+<script th:src="@{/js/theme-customizer/customizer.js}"></script>
+</body>
+</html>

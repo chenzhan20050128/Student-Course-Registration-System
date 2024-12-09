@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Koho admin is super flexible, powerful, clean &amp; modern responsive bootstrap 5 admin template with unlimited possibilities.">
+    <meta name="keywords" content="admin template, Koho admin template, dashboard template, flat admin template, responsive admin template, web app">
+    <meta name="author" content="pixelstrap">
+    <link rel="icon" href="../assets/images/favicon/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../assets/images/favicon/favicon.png" type="image/x-icon">
+    <title>医院预约挂号系统</title>
+    <!-- Google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="../css/vendors/font-awesome.css">
+    <!-- ico-font-->
+    <link rel="stylesheet" type="text/css" href="../css/vendors/icofont.css">
+    <!-- Themify icon-->
+    <link rel="stylesheet" type="text/css" href="../css/vendors/themify.css">
+    <!-- Flag icon-->
+    <link rel="stylesheet" type="text/css" href="../css/vendors/flag-icon.css">
+    <!-- Feather icon-->
+    <link rel="stylesheet" type="text/css" href="../css/vendors/feather-icon.css">
+    <!-- Bootstrap css-->
+    <link rel="stylesheet" type="text/css" href="../css/vendors/bootstrap.css">
+    <!-- App css-->
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <link id="color" rel="stylesheet" href="../css/color-1.css" media="screen">
+    <!-- Responsive css-->
+    <link rel="stylesheet" type="text/css" href="../css/responsive.css">
+    <script src="../js/vue.js"></script>
+    <script src="../js/axios-0.18.0.js"></script>
+</head>
+<body>
+<!-- Loader starts-->
+<div class="loader-wrapper">
+    <div class="loader"></div>
+</div>
+<!-- Loader ends-->
+<!-- login page start-->
+<div class="container-fluid" >
+
+    <div class="row">
+        <div class="col-xl-7"><img class="bg-img-cover bg-center" src="../images/login/2.jpg" alt="bg2"></div>
+        <div class="col-xl-5 p-0">
+            <div class="login-card">
+                <div  id="app">
+
+                    <div></div>
+                    <div class="login-main">
+                        <form class="theme-form" th:action="@{/register}">
+                            <h2 class="text-center">学生选课系统</h2>
+                            <p class="text-center">输入你的用户名密码来注册</p>
+                            <div class="form-group">
+                                <label class="col-form-label">用户名</label>
+                                <input  class="form-control" type="text" required="" name="userName" placeholder="用户名">
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label">密码</label>
+                                <div class="form-input position-relative">
+                                    <input class="form-control"  type="password" name="userPwd" required="" placeholder="密码">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label">确认密码</label>
+                                <div class="form-input position-relative">
+                                    <input class="form-control"  type="password" name="confirmPwd" required="" placeholder="确认密码">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label">身份</label>
+                                <div class="form-input position-relative">
+                                    <input type="radio"  name="role" value="1">管理员
+                                    <input type="radio"  name="role" value="2">教师
+                                    <input type="radio"  name="role" value="3">学生
+
+                                </div>
+                            </div>
+                            <div class="form-group mb-0">
+
+                                <div class="text-end mt-3">
+                                    <button class="btn btn-primary btn-block w-100"  type="submit">注册               </button>
+                                </div>
+                            </div>
+
+                            <p class="mt-4 mb-0 text-center">已有账号？<a class="ms-2" th:href="@{/toLogin}">登录</a></p>
+
+                        </form>
+
+                        <p style="color:red"
+                           th:if="${not #strings.isEmpty(msg)}"
+                           th:text="${msg}">
+                            <!--这个msg既可以是model里的，也可以是session里的-->
+                        </p>
+                    </div>
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- latest jquery-->
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script src="../js/bootstrap/popper.min.js"></script>
+    <script src="../js/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- feather icon js-->
+    <script src="../js/icons/feather-icon/feather.min.js"></script>
+    <script src="../js/icons/feather-icon/feather-icon.js"></script>
+    <!-- Sidebar jquery-->
+    <script src="../js/config.js"></script>
+    <!-- Theme js-->
+    <script src="../js/script.js"></script>
+</div>
+</body>
+</html>
