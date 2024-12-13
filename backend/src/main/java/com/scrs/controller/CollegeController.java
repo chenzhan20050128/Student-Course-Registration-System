@@ -2,32 +2,31 @@ package com.scrs.controller;/*
  * @date 12/05 18:42
  */
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.scrs.common.R;
 import com.scrs.pojo.College;
 import com.scrs.service.CollegeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/college")
 public class CollegeController {
     @Autowired
     private CollegeService collegeService;
 
-    @RequestMapping("/listCollege")
-    public String listCollege(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                              @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-                              Model model, College college) {
+    @GetMapping("/listCollege")
+    public R<PageInfo> listCollege(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                           @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+                           @RequestParam(required = false) String collegeName) {
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
@@ -35,51 +34,52 @@ public class CollegeController {
             pageSize = 6;
         }
         PageHelper.startPage(pageNum, pageSize);
-        QueryWrapper<College> queryWrapper = new QueryWrapper<>();
-        if (college.getCname() != null) {
-            queryWrapper.like("cname", college.getCname());
+        LambdaQueryWrapper<College> queryWrapper = new LambdaQueryWrapper<>();
+        if (collegeName != null && !collegeName.isEmpty()) {
+            queryWrapper.like(College::getCname, collegeName);
         }
         List<College> collegeList = collegeService.list(queryWrapper);
         PageInfo<College> pageInfo = new PageInfo(collegeList);
-        model.addAttribute("pageInfo", pageInfo);
-        return "admin-college-list";
+
+        return R.success(pageInfo);
     }
 
-    @RequestMapping("/preSaveCollege")
-    public String preSaveCollege(Model model) {
+    @GetMapping("/preSaveCollege")
+    public R<String> preSaveCollege() {
 
-        return "admin-college-save";
+        return R.success("success");
     }
 
-    @RequestMapping("/saveCollege")
-    public String saveCollege(College college) {
-
+    @PostMapping("/saveCollege")
+    public R<String> saveCollege(@RequestBody College college) {
         collegeService.save(college);
-        return "redirect:/college/listCollege";
+        return R.success("save college successfully");
     }
 
-    @RequestMapping("/preUpdateCollege/{id}")
-    public String preUpdateCollege(@PathVariable("id") Integer id, Model model) {
+    @GetMapping("/preUpdateCollege/{id}")
+    public R<College> preUpdateCollege(@PathVariable("id") Integer id) {
         College college = collegeService.getById(id);
-        model.addAttribute("college", college);
-        return "admin-college-update";
+        return R.success(college);
     }
 
-    @RequestMapping("/updateCollege")
-    public String updateCollege(College college) {
+    @PostMapping("/updateCollege")
+    public R<String> updateCollege(College college) {
         collegeService.updateById(college);
-        return "redirect:/college/listCollege";
+    return R.success("update college successfully");
     }
 
 
-    @RequestMapping("/deleteCollege/{id}")
-    public String deleteCollege(@PathVariable("id") Integer id) {
-        collegeService.removeById(id);
-        return "redirect:/college/listCollege";
+    @GetMapping("/deleteCollege/{id}")
+    public R<String> deleteCollege(@PathVariable("id") Integer id) {
+        boolean b = collegeService.removeById(id);
+        if (!b){
+            return R.error("delete college failed");
+        }
+        return R.success("delete college successfully");
     }
 
-    @RequestMapping("/deleteBatchCollege")
-    public String deleteBatchCollege(@RequestBody String ids,Model model) {
+    @PostMapping("/deleteBatchCollege")
+    public R<String> deleteBatchCollege(@RequestBody String ids) {
         String[] split = ids.split(",");
         List<Integer> idList = new ArrayList<>();
         for (String s : split) {
@@ -89,9 +89,10 @@ public class CollegeController {
         }
         boolean b = collegeService.removeByIds(idList);
         if (!b) {
-            model.addAttribute("error", "批量删除失败");
+            //model.addAttribute("error", "批量删除失败");
+            return R.error("delete batch college failed");
         }
 
-        return "redirect:/college/listCollege";
+        return R.success("delete batch college successfully");
     }
 }

@@ -2,9 +2,11 @@ package com.scrs.controller;/*
  * @date 12/05 14:42
  */
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.scrs.common.R;
 import com.scrs.pojo.*;
 import com.scrs.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,19 +14,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/teacher")
 public class TeacherController {
     @Autowired
@@ -48,11 +48,11 @@ public class TeacherController {
     @Autowired
     private CourseService courseService;
 
-    @RequestMapping("/listTeacher")
-    public String listTeacher(
+    @GetMapping("/listTeacher")
+    public R<PageInfo> listTeacher(
             @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
             @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-            Model model, Teacher teacher)
+            @RequestParam(required = false) String tname)
     {
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
@@ -61,26 +61,26 @@ public class TeacherController {
             pageSize = 6;
         }
         PageHelper.startPage(pageNum, pageSize);
-        QueryWrapper<Teacher> queryWrapper = new QueryWrapper<>();
-        if (teacher.getTname() != null) {
-            queryWrapper.like("tname", teacher.getTname());
+        LambdaQueryWrapper<Teacher> queryWrapper = new LambdaQueryWrapper<>();
+        if (tname != null && !tname.isEmpty()) {
+            queryWrapper.like(Teacher::getTname, tname);
         }
         List<Teacher> teacherList = teacherService.list(queryWrapper);
         PageInfo pageInfo = new PageInfo(teacherList);
-        model.addAttribute("pageInfo", pageInfo);
-        return "admin-teacher-list";
+        //model.addAttribute("pageInfo", pageInfo);
+        return R.success(pageInfo);
     }
 
-    @RequestMapping("/preSaveTeacher")
-    public String preSaveTeacher(Model model) {
+    @GetMapping("/preSaveTeacher")
+    public R<List<Major>> preSaveTeacher(Model model) {
         List<Major> majorList = majorService.list(null);
-        model.addAttribute("majorList", majorList);
+        //model.addAttribute("majorList", majorList);
 
-        return "admin-teacher-save";
+        return R.success(majorList);
     }
 
-    @RequestMapping("/saveTeacher")
-    public String saveTeacher(Teacher teacher, MultipartFile file) {
+    @PostMapping("/saveTeacher")
+    public R<String> saveTeacher(@RequestBody Teacher teacher, MultipartFile file) {
         if (!file.isEmpty()){
             try{
                 transfileTeacher(teacher, file);
@@ -93,7 +93,7 @@ public class TeacherController {
         String passwordAfterMD5 = DigestUtils.md5DigestAsHex(defaultPassword.getBytes());
         teacher.setPassword(passwordAfterMD5);
         teacherService.save(teacher);
-        return "redirect:/teacher/listTeacher";
+        return R.success("新增教师成功");
     }
     private void transfileTeacher(Teacher teacher, MultipartFile file) throws IOException {
         String originalFilename = file.getOriginalFilename();
@@ -124,17 +124,21 @@ public class TeacherController {
         teacher.setTimage(filename);
     }
 
-    @RequestMapping("/preUpdateTeacher/{id}")
-    public String preUpdateTeacher(@PathVariable Integer id, Model model) {
+    @GetMapping("/preUpdateTeacher/{id}")
+    public R<HashMap<String,Object>> preUpdateTeacher(@PathVariable Integer id) {
         List<Major> majorList = majorService.list(null);
-        model.addAttribute("majorList", majorList);
+        //model.addAttribute("majorList", majorList);
         Teacher teacher = teacherService.getById(id);
-        model.addAttribute("teacher", teacher);
-        return "admin-teacher-update";
+        //model.addAttribute("teacher", teacher);
+        HashMap<String,Object> map = new HashMap<>();
+        map.put("majorList",majorList);
+        map.put("teacher",teacher);
+
+        return R.success(map);
     }
 
-    @RequestMapping("/updateTeacher")
-    public String updateTeacher(Teacher teacher, MultipartFile file) {
+    @PostMapping("/updateTeacher")
+    public R<String> updateTeacher(@RequestBody Teacher teacher, MultipartFile file) {
         if (!file.isEmpty()) {
             try {
                 transfileTeacher(teacher, file);
@@ -143,21 +147,22 @@ public class TeacherController {
             }
         }
         teacherService.updateById(teacher);
-        return "redirect:/teacher/listTeacher";
+        return R.success("修改教师成功");
     }
 
-    @RequestMapping("/deleteTeacher/{id}")
-    public String deleteTeacher(@PathVariable Integer id,Model model) {
+    @GetMapping("/deleteTeacher/{id}")
+    public R<String> deleteTeacher(@PathVariable Integer id) {
         boolean b = teacherService.removeById(id);
         if (!b) {
-            model.addAttribute("error", "删除失败");
+            //model.addAttribute("error", "删除失败");
+            return R.error("删除失败");
         }
 
-        return "redirect:/teacher/listTeacher";
+        return R.success("删除成功");
     }
 
-    @RequestMapping("/deleteBatchTeacher")
-    public String deleteBatchTeacher(@RequestBody String ids, Model model) {
+    @PostMapping("/deleteBatchTeacher")
+    public R<String> deleteBatchTeacher(@RequestBody String ids) {
         String[] split = ids.split(",");
         List<Integer> idList = new ArrayList<>();
         for (String s : split){
@@ -168,23 +173,26 @@ public class TeacherController {
         teacherService.removeByIds(idList);
         boolean b = teacherService.removeByIds(idList);
         if (!b){
-            model.addAttribute("error", "批量删除失败");
+            //model.addAttribute("error", "批量删除失败");
+            return R.error("批量删除失败");
         }
-        return "redirect:/teacher/listTeacher";
+        return R.success("批量删除成功");
     }
 
-
-    @RequestMapping("/listMyCourse")
-    public String listMyCourse(String cname, HttpSession session, Model model) {
+    /**
+     * 注意，前端可以不指定cname，只要设置cname等于空字符串就可以了
+     */
+    @GetMapping("/listMyCourse")
+    public R<PageInfo> listMyCourse(String cname, HttpSession session) {
         Integer userId = (Integer) session.getAttribute("userId");
         List<TeacherCourse> teacherCourseList = teacherCourseService.listMyCourse(userId, cname);
         PageInfo<TeacherCourse> pageInfo = new PageInfo<>(teacherCourseList);
-        model.addAttribute("pageInfo", pageInfo);
-        return "teacher-my-course";
+        //model.addAttribute("pageInfo", pageInfo);
+        return R.success(pageInfo);
     }
 
-    @RequestMapping("/check/{id}")
-    public String check(@PathVariable Integer id,Model model){
+    @GetMapping("/check/{id}")
+    public R<List<Student>> check(@PathVariable Integer id){
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("cid", id);
         List<StudentCourse> studentCourseList = studentCourseService.list(queryWrapper);
@@ -194,24 +202,24 @@ public class TeacherController {
             studentList.add(student);
         }
 
-        model.addAttribute("studentList", studentList);
-        return "teacher-my-course-student";
+        //model.addAttribute("studentList", studentList);
+        return R.success(studentList);
     }
 
-    @RequestMapping("/preUpload/{cid}")
-    public String preUpload(@PathVariable Integer cid, Model model) {
+    @GetMapping("/preUpload/{cid}")
+    public R<Course> preUpload(@PathVariable Integer cid) {
         Course course = courseService.getById(cid);
-        model.addAttribute("course", course);
-        return "teacher-upload";
+        //model.addAttribute("course", course);
+        return R.success(course);
     }
 
-    @RequestMapping("/upload")
-    public String upload(Course course,MultipartFile file){
+    @PostMapping("/upload")
+    public R<String> upload(@RequestBody Course course,MultipartFile file){
         if (!file.isEmpty()){
             transfileBook(course, file);
         }
         courseService.updateById(course);
-        return "redirect:/teacher/listMyCourse";
+        return R.success("上传文件成功");
     }
 
     private void transfileBook(Course course, MultipartFile file) {
