@@ -70,24 +70,23 @@ public class CourseController {
         return result;
     }
 
+    /**
+     * 保存课程，先不保存文件
+     */
     @PostMapping("/saveCourse")
-    public R<String> saveCourse(@RequestBody Course course, MultipartFile file, MultipartFile fileBook) throws IOException {
-        // 两个文件，一个是课程的图片，一个是课程介绍和电子书的文档
-//        if (!file.isEmpty()) {
-//            try {
-//                transfile(course, file);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        if (!fileBook.isEmpty()) {
-//            try {
-//                transfileBook(course, fileBook);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
+    public R<String> saveCourse(@RequestBody Course course,
+            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+        System.out.println(course.toString());
+        if (file != null && !file.isEmpty()) {
+            transfile(course, file);
+        }
+        /*
+         * if (fileBook != null && !fileBook.isEmpty()) {
+         * transfileBook(course, fileBook);
+         * }
+         */
         courseService.save(course);
+        System.out.println(course.toString());
         return R.success("save course successfully");
     }
 
@@ -150,13 +149,13 @@ public class CourseController {
     }
 
     @GetMapping("/preUpdateCourse/{id}")
-    public R<HashMap<String,Object>> preUpdateCourse(@PathVariable Integer id) {
+    public R<HashMap<String, Object>> preUpdateCourse(@PathVariable Integer id) {
         Course course = courseService.getById(id);
         List<Major> majorList = majorService.list(null);
-        HashMap<String,Object> map = new HashMap<>();
-        map.put("course",course);
-        map.put("majorList",majorList);
-        R<HashMap<String,Object>> result = R.success(map);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("course", course);
+        map.put("majorList", majorList);
+        R<HashMap<String, Object>> result = R.success(map);
 
         System.out.println(result.toString());
         return result;
@@ -197,10 +196,10 @@ public class CourseController {
 
         boolean b = courseService.removeByIds(idList);
         if (!b) {
-            //model.addAttribute("error", "批量删除课程失败");
+            // model.addAttribute("error", "批量删除课程失败");
             return R.error("delete batch course failed");
         }
-        return  R.success("delete batch course successfully");
+        return R.success("delete batch course successfully");
     }
 
     /**
