@@ -61,6 +61,7 @@
       userPwd: registerData.password,
       confirmPwd: registerData.confirmPassword
     }
+    
   });
           console.log(response);
           // 处理注册成功逻辑

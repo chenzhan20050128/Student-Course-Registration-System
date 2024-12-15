@@ -177,7 +177,7 @@ public class StudentController {
      * @param id    要更新的学生ID。
      * @return 用于渲染学生更新表单的视图名称。
      */
-    @RequestMapping("/preUpdateStudent")
+    @RequestMapping("/preUpdateStudent/{id}")
     public R<HashMap<String,Object>> preUpdateStudent(@PathVariable Integer id) {
         // 需要在前端回显数据
         Student student = studentService.getById(id);
@@ -202,9 +202,10 @@ public class StudentController {
      */
     @PostMapping("/updateStudent")
     public R<String> updateStudent(@RequestBody Student student, MultipartFile file) throws IOException {
-        if (!file.isEmpty()) {
-            transfile(student, file);
-        }
+//        if (!file.isEmpty()) {
+//            System.out.println("11111");
+//            transfile(student, file);
+//        }
         studentService.updateById(student);
         return R.success("Success to update student!");
     }
