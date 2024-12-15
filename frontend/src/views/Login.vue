@@ -46,9 +46,10 @@ export default {
       try {
         // 发送登录请求到后端
         const response = await this.$http.post('/login', loginData);
-        if (response.data.success) {
+
+        if (response.data.code) {
           // 根据角色跳转到不同的首页视图
-          const role = response.data.role;
+          const role = response.data.data.role;
           if (role === 1) {
             this.$router.push('/admin-home');
           } else if (role === 2) {

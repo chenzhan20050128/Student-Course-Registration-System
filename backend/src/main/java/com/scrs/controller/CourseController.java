@@ -73,20 +73,20 @@ public class CourseController {
     @PostMapping("/saveCourse")
     public R<String> saveCourse(@RequestBody Course course, MultipartFile file, MultipartFile fileBook) throws IOException {
         // 两个文件，一个是课程的图片，一个是课程介绍和电子书的文档
-        if (!file.isEmpty()) {
-            try {
-                transfile(course, file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        if (!fileBook.isEmpty()) {
-            try {
-                transfileBook(course, fileBook);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+//        if (!file.isEmpty()) {
+//            try {
+//                transfile(course, file);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        if (!fileBook.isEmpty()) {
+//            try {
+//                transfileBook(course, fileBook);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
         courseService.save(course);
         return R.success("save course successfully");
     }
