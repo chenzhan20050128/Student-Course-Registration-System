@@ -50,7 +50,6 @@ export default {
         if (response.data.code) {
           // 根据角色跳转到不同的首页视图
           const role = response.data.data.role;
-          const role = response.data.data.role;
           if (role === 1) {
             this.$router.push('/admin-home');
           } else if (role === 2) {
