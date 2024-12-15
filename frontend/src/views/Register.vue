@@ -47,13 +47,22 @@
         }
         // 处理注册逻辑
         const registerData = {
+          role: this.role,
           username: this.username,
           password: this.password,
-          role: this.role
+          confirmPassword: this.confirmPassword,
         };
         try {
           // 发送注册请求到后端
-          const response = await this.$http.post('/register', registerData);
+      const response = await this.$http.get('/register', {
+      params: {
+      role: registerData.role,
+      userName: registerData.username,
+      userPwd: registerData.password,
+      confirmPwd: registerData.confirmPassword
+    }
+  });
+          console.log(response);
           // 处理注册成功逻辑
           console.log('注册成功', response.data);
           this.$router.push('/login');
