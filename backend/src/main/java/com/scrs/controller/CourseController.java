@@ -3,9 +3,11 @@ package com.scrs.controller;
                             * @date 12/05 13:48
                             */
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.scrs.common.R;
 import com.scrs.pojo.Course;
 import com.scrs.pojo.Major;
 import com.scrs.service.CourseService;
@@ -13,19 +15,17 @@ import com.scrs.service.MajorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/course")
 public class CourseController {
     @Autowired
@@ -37,12 +37,11 @@ public class CourseController {
     @Value("${file.location}") // 获取配置文件中的文件上传路径
     private String location;
 
-
-    @RequestMapping("/listCourse")
-    public String listCourse(
+    @GetMapping("/listCourse")
+    public R<PageInfo> listCourse(
             @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
             @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-            Model model, Course course) {
+            @RequestParam(required = false) String name) {
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
@@ -50,28 +49,30 @@ public class CourseController {
             pageSize = 6;
         }
         PageHelper.startPage(pageNum, pageSize);
-        QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
-        if (course.getCname() != null) {
-            queryWrapper.like("cname", course.getCname());
+        LambdaQueryWrapper<Course> queryWrapper = new LambdaQueryWrapper<>();
+        if (name != null && !name.isEmpty()) {
+            queryWrapper.like(Course::getCname, name);
         }
         PageInfo pageInfo = new PageInfo(courseService.list(queryWrapper));
-        model.addAttribute("pageInfo", pageInfo);
-        return "admin-course-list";
+        System.out.println(R.success(pageInfo).toString());
+
+        return R.success(pageInfo);
     }
 
     /**
      * 需要preSave的原因是因为saveCourse前需要先获取majorList，然后有个单选框可以选择major
      */
-    @RequestMapping("/preSaveCourse")
-    public String preSaveCourse(Model model){
+    @GetMapping("/preSaveCourse")
+    public R<List<Major>> preSaveCourse() {
         List<Major> majorList = majorService.list(null);
-        model.addAttribute("majorList", majorList);
-        return "admin-course-save";
+        R<List<Major>> result = R.success(majorList);
+        System.out.println(result.toString());
+        return result;
     }
 
-    @RequestMapping("/saveCourse")
-    public String saveCourse(Course course, MultipartFile file,MultipartFile fileBook) throws IOException {
-        //两个文件，一个是课程的图片，一个是课程介绍和电子书的文档
+    @PostMapping("/saveCourse")
+    public R<String> saveCourse(@RequestBody Course course, MultipartFile file, MultipartFile fileBook) throws IOException {
+        // 两个文件，一个是课程的图片，一个是课程介绍和电子书的文档
         if (!file.isEmpty()) {
             try {
                 transfile(course, file);
@@ -87,8 +88,9 @@ public class CourseController {
             }
         }
         courseService.save(course);
-        return "redirect:/course/listCourse";
+        return R.success("save course successfully");
     }
+
     private void transfile(Course course, MultipartFile file) throws IOException {
         String originalFilename = file.getOriginalFilename();
         int i = 0;
@@ -117,6 +119,7 @@ public class CourseController {
         }
         course.setCimage(filename);
     }
+
     private void transfileBook(Course course, MultipartFile fileBook) throws IOException {
         String originalFilename = fileBook.getOriginalFilename();
         int i = 0;
@@ -146,18 +149,22 @@ public class CourseController {
         course.setCbook(filename);
     }
 
-    @RequestMapping("/preUpdateCourse/{id}")
-    public String preUpdateCourse(@PathVariable Integer id,Model model){
+    @GetMapping("/preUpdateCourse/{id}")
+    public R<HashMap<String,Object>> preUpdateCourse(@PathVariable Integer id) {
         Course course = courseService.getById(id);
-        model.addAttribute("course", course);
         List<Major> majorList = majorService.list(null);
-        model.addAttribute("majorList", majorList);
-        return "admin-course-update";
+        HashMap<String,Object> map = new HashMap<>();
+        map.put("course",course);
+        map.put("majorList",majorList);
+        R<HashMap<String,Object>> result = R.success(map);
+
+        System.out.println(result.toString());
+        return result;
     }
 
-    //管理员只能修改课程图像，不能修改课程介绍电子书，只能由老师修改
-    @RequestMapping("/updateCourse")
-    public String updateCourse(Course course, MultipartFile file){
+    // 管理员只能修改课程图像，不能修改课程介绍电子书，只能由老师修改
+    @PostMapping("/updateCourse")
+    public R<String> updateCourse(@RequestBody Course course, MultipartFile file) {
         if (!file.isEmpty()) {
             try {
                 transfile(course, file);
@@ -166,37 +173,39 @@ public class CourseController {
             }
         }
         courseService.updateById(course);
-        return "redirect:/course/listCourse";
+        return R.success("update course successfully");
     }
 
-    @RequestMapping("/deleteCourse/{id}")
-    public String deleteCourse(@PathVariable Integer id,Model model){
+    @GetMapping("/deleteCourse/{id}")
+    public R<String> deleteCourse(@PathVariable Integer id) {
         boolean b = courseService.removeById(id);
-        if (!b){
-            model.addAttribute("error","删除课程失败");
+        if (!b) {
+            return R.error("delete course failed");
         }
-        return "redirect:/course/listCourse";
+        return R.success("delete course successfully");
     }
 
-    @RequestMapping("deleteBatchCourse")
-    public String deleteBatchCourse(@RequestBody String ids, Model model){
+    @PostMapping("/deleteBatchCourse")
+    public R<String> deleteBatchCourse(@RequestBody String ids) {
         String[] split = ids.split(",");
         List<Integer> idList = new ArrayList<>();
-        for (String s: split){
-            if (!s.isEmpty()){
+        for (String s : split) {
+            if (!s.isEmpty()) {
                 idList.add(Integer.parseInt(s));
             }
         }
 
         boolean b = courseService.removeByIds(idList);
-        if (!b){
-            model.addAttribute("error","批量删除课程失败");
+        if (!b) {
+            //model.addAttribute("error", "批量删除课程失败");
+            return R.error("delete batch course failed");
         }
-        return "redirect:/course/listCourse";
+        return  R.success("delete batch course successfully");
     }
 
     /**
      * 新增方法：根据专业查询课程
+     * 
      * @param pageNum
      * @param pageSize
      * @param model
@@ -205,8 +214,8 @@ public class CourseController {
      */
     @RequestMapping("/listCourseByMajor")
     public String listCourseByMajor(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                    @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-                                    Model model, Course course){
+            @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+            Model model, Course course) {
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
@@ -215,8 +224,8 @@ public class CourseController {
         }
         PageHelper.startPage(pageNum, pageSize);
         QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
-        if (course.getMajor() != null){
-            queryWrapper.eq("major",course.getMajor());
+        if (course.getMajor() != null) {
+            queryWrapper.eq("major", course.getMajor());
         }
         PageInfo pageInfo = new PageInfo(courseService.list(queryWrapper));
         model.addAttribute("pageInfo", pageInfo);
@@ -225,6 +234,7 @@ public class CourseController {
 
     /**
      * 新增方法：根据教师查询课程
+     * 
      * @param pageNum
      * @param pageSize
      * @param model
@@ -233,8 +243,8 @@ public class CourseController {
      */
     @RequestMapping("/listCourseByTeacher")
     public String listCourseByTeacher(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                      @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-                                      Model model, Course course){
+            @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+            Model model, Course course) {
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
@@ -243,8 +253,8 @@ public class CourseController {
         }
         PageHelper.startPage(pageNum, pageSize);
         QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
-        if (course.getTeacher() != null){
-            queryWrapper.eq("teacher",course.getTeacher());
+        if (course.getTeacher() != null) {
+            queryWrapper.eq("teacher", course.getTeacher());
         }
         PageInfo pageInfo = new PageInfo(courseService.list(queryWrapper));
         model.addAttribute("pageInfo", pageInfo);
