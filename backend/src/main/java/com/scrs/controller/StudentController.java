@@ -287,11 +287,13 @@ public class StudentController {
         return "student-my-course";
     }
 
-    @GetMapping("/selectCourse/{cid}")
-    public R<String> selectCourse(@PathVariable Integer cid, HttpSession session){
-        Integer userId = (Integer) session.getAttribute("userId");
+    /**
+     * 新增改动（12.16 17:02）去掉了session 直接传参
+     */
+    @GetMapping("/selectCourse")
+    public R<String> selectCourse(@RequestParam Integer cid,@RequestParam Integer sid){
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("sid", userId);
+        queryWrapper.eq("sid", sid);
         queryWrapper.eq("cid", cid);
         StudentCourse one = studentCourseService.getOne(queryWrapper);
         if (one != null) {
@@ -304,7 +306,7 @@ public class StudentController {
         course.setNum(course.getNum() + 1);
         courseService.updateById(course);
         StudentCourse studentCourse = new StudentCourse();
-        studentCourse.setSid(userId);
+        studentCourse.setSid(sid);
         studentCourse.setCid(cid);
         studentCourseService.save(studentCourse);
         return R.success("选课成功");
@@ -313,11 +315,10 @@ public class StudentController {
     /**
      * 学生退选
      */
-    @GetMapping("/deleteMyCourse/{cid}")
-    public R<String> deleteMyCourse(@PathVariable Integer cid, HttpSession session){
-        Integer userId = (Integer) session.getAttribute("userId");
+    @GetMapping("/deleteMyCourse")
+    public R<String> deleteMyCourse(@RequestParam Integer cid, @RequestParam Integer sid){
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("sid", userId);
+        queryWrapper.eq("sid", sid);
         queryWrapper.eq("cid", cid);
         StudentCourse one = studentCourseService.getOne(queryWrapper);
         if (one == null) {
