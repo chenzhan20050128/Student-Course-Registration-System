@@ -1,0 +1,231 @@
+college:
+
+/listCollege
+
+{"code":1,"msg":null,"data":{"total":12,"list":[{"id":1,"cname":"Computer Science College","descr":"The discipline of Computer Science at Nanjing University originates from the long-standing Mathematics Department of Nanjing University"},{"id":2,"cname":"Software College","descr":"The Software College of Nanjing University is a teaching and research-oriented engineering college"},{"id":3,"cname":"Mathematics College","descr":"Focused on mathematics research"},{"id":4,"cname":"Civil Engineering College","descr":"Cultivating talents in civil engineering, architectural engineering, transportation engineering, and fields related to infrastructure and sustainable development"},{"id":5,"cname":"Economics and Management College","descr":"Offers courses in Economics, Business Administration, Financial Management with the aim of cultivating modern managerial talents and economists"},{"id":6,"cname":"Medical College","descr":"Committed to medical education and research, offering comprehensive courses from basic to clinical medicine"}],"pageNum":1,"pageSize":6,"size":6,"startRow":1,"endRow":6,"pages":2,"prePage":0,"nextPage":2,"isFirstPage":true,"isLastPage":false,"hasPreviousPage":false,"hasNextPage":true,"navigatePages":8,"navigatepageNums":[1,2],"navigateFirstPage":1,"navigateLastPage":2},"map":{}}
+
+/preSaveCollege
+{"code":1,"msg":null,"data":"success","map":{}}
+
+/preUpdateCollege/{id}
+
+这里用1来代替id
+
+{
+  "code": 1,
+  "msg": null,
+  "data": {
+    "id": 1,
+    "cname": "Computer Science College",
+    "descr": "The discipline of Computer Science at Nanjing University originates from the long-standing Mathematics Department of Nanjing University"
+  },
+  "map": {
+
+  }
+}
+
+/deleteCollege/{id}
+{"code":1,"msg":null,"data":"delete college successfully","map":{}}
+
+
+courseController
+
+/listCourse
+{
+  "code": 1,
+  "msg": null,
+  "data": {
+    "total": 6,
+    "list": [
+      {
+        "id": 1,
+        "cname": "Data Structure",
+        "major": "Computer Science and Technology",
+        "teacher": "Li Hua",
+        "address": "Classroom A101",
+        "num": 50,
+        "stock": 20,
+        "cimage": "datastructure.jpg",
+        "credit": "4",
+        "cbook": "algorithm_intro"
+      },
+      {
+        "id": 2,
+        "cname": "Advanced Mathematics",
+        "major": "Mathematics and Applied Mathematics",
+        "teacher": "Xiao Yuanming",
+        "address": "Classroom B202",
+        "num": 60,
+        "stock": 15,
+        "cimage": "calculus.jpg",
+        "credit": "5",
+        "cbook": "calculus"
+      },
+      {
+        "id": 3,
+        "cname": "Software Engineering and Computing",
+        "major": "Software Engineering",
+        "teacher": "Liu Qin",
+        "address": "Lab C301",
+        "num": 40,
+        "stock": 10,
+        "cimage": "se.jpg",
+        "credit": "3",
+        "cbook": "se"
+      },
+      {
+        "id": 4,
+        "cname": "Linear Algebra",
+        "major": "Mathematics and Applied Mathematics",
+        "teacher": "Nie Ziwei",
+        "address": "Classroom A102",
+        "num": 65,
+        "stock": 30,
+        "cimage": "linearalgebra.jpg",
+        "credit": "3",
+        "cbook": "linear_algebra"
+      },
+      {
+        "id": 5,
+        "cname": "Operating System",
+        "major": "Computer Science and Technology",
+        "teacher": "Zhang Wei",
+        "address": "Lab C302",
+        "num": 45,
+        "stock": 25,
+        "cimage": "operatingsystem.jpg",
+        "credit": "4",
+        "cbook": "computer_systems"
+      },
+      {
+        "id": 6,
+        "cname": "Demand and Business Model Analysis",
+        "major": "Software Engineering",
+        "teacher": "Liu Tao",
+        "address": "Lab C303",
+        "num": 45,
+        "stock": 25,
+        "cimage": "demand.jpg",
+        "credit": "4",
+        "cbook": "demand"
+      }
+    ],
+    "pageNum": 1,
+    "pageSize": 6,
+    "size": 6,
+    "startRow": 1,
+    "endRow": 6,
+    "pages": 1,
+    "prePage": 0,
+    "nextPage": 0,
+    "isFirstPage": true,
+    "isLastPage": true,
+    "hasPreviousPage": false,
+    "hasNextPage": false,
+    "navigatePages": 8,
+    "navigatepageNums": [1],
+    "navigateFirstPage": 1,
+    "navigateLastPage": 1
+  },
+  "map": {
+
+  }
+}
+
+/preSaveCourse
+
+{
+  "code": 1,
+  "msg": null,
+  "data": [
+    {
+      "id": 1,
+      "mname": "Software Engineering",
+      "college": "Software College",
+      "descr": "The Software Engineering major is one of the most important and popular disciplines in the modern information technology field. With the acceleration of digitalization and informatization, the application of software in various industries has become ubiquitous, and the demand for software engineers is also continuously growing. This major aims to cultivate professional software development and management talents with both solid theoretical foundations and practical abilities."
+    },
+    {
+      "id": 2,
+      "mname": "Computer Science and Technology",
+      "college": "Computer Science College",
+      "descr": "Cultivates design, analysis, and application capabilities of computer systems"
+    },
+    {
+      "id": 3,
+      "mname": "Civil Engineering",
+      "college": "Civil Engineering College",
+      "descr": "Covers specialties in architecture, transportation, and bridge engineering, emphasizing structural design and engineering management"
+    },
+    {
+      "id": 4,
+      "mname": "Finance",
+      "college": "Economics and Management College",
+      "descr": "Provides comprehensive knowledge of financial markets, banking, and investment"
+    },
+    {
+      "id": 5,
+      "mname": "Mathematics and Applied Mathematics",
+      "college": "Mathematics College",
+      "descr": "Trains students in theoretical mathematics, applied mathematics, and related fields, covering branches such as analysis, algebra, and geometry."
+    }
+  ],
+  "map": {
+
+  }
+}
+
+/preUpdateCourse/{id}
+
+{
+  "code": 1,
+  "msg": null,
+  "data": {
+    "course": {
+      "id": 1,
+      "cname": "Data Structure",
+      "major": "Computer Science and Technology",
+      "teacher": "Li Hua",
+      "address": "Classroom A101",
+      "num": 50,
+      "stock": 20,
+      "cimage": "datastructure.jpg",
+      "credit": "4",
+      "cbook": "algorithm_intro"
+    },
+    "majorList": [
+      {
+        "id": 1,
+        "mname": "Software Engineering",
+        "college": "Software College",
+        "descr": "The Software Engineering major is one of the most important and popular disciplines in the modern information technology field. With the acceleration of digitalization and informatization, the application of software in various industries has become ubiquitous, and the demand for software engineers is also continuously growing. This major aims to cultivate professional software development and management talents with both solid theoretical foundations and practical abilities."
+      },
+      {
+        "id": 2,
+        "mname": "Computer Science and Technology",
+        "college": "Computer Science College",
+        "descr": "Cultivates design, analysis, and application capabilities of computer systems"
+      },
+      {
+        "id": 3,
+        "mname": "Civil Engineering",
+        "college": "Civil Engineering College",
+        "descr": "Covers specialties in architecture, transportation, and bridge engineering, emphasizing structural design and engineering management"
+      },
+      {
+        "id": 4,
+        "mname": "Finance",
+        "college": "Economics and Management College",
+        "descr": "Provides comprehensive knowledge of financial markets, banking, and investment"
+      },
+      {
+        "id": 5,
+        "mname": "Mathematics and Applied Mathematics",
+        "college": "Mathematics College",
+        "descr": "Trains students in theoretical mathematics, applied mathematics, and related fields, covering branches such as analysis, algebra, and geometry."
+      }
+    ]
+  },
+  "map": {
+
+  }
+}
