@@ -187,7 +187,8 @@ public class CourseController {
 
     @PostMapping("/deleteBatchCourse")
     public R<String> deleteBatchCourse(@RequestBody String ids) {
-        String[] split = ids.split(",");
+        //TODO：传入的字符串格式是 "{ids: "1,2,3,4,5"}"，需要处理一下
+        String[] split = ids.substring(8,ids.length() - 2).split(",");
         List<Integer> idList = new ArrayList<>();
         for (String s : split) {
             if (!s.isEmpty()) {

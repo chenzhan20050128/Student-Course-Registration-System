@@ -3,6 +3,10 @@
     <h2>课程管理</h2>
     <!-- 添加课程按钮 -->
     <el-button type="primary" @click="toggleForm" class="add-course-button">添加课程</el-button>
+    <!-- 批量删除按钮 -->
+    <el-button type="danger" @click="toggleBatchDelete" class="batch-delete-button">批量删除</el-button>
+    <!-- 确定批量删除按钮 -->
+    <el-button type="danger" @click="confirmBatchDelete" v-if="showBatchDelete" class="confirm-batch-delete-button">确定批量删除</el-button>
     <!-- 添加课程表单 -->
     <el-form v-if="showForm" :model="newCourse" label-width="120px" class="course-form">
       <el-form-item label="课程名">
@@ -44,7 +48,12 @@
 
     <!-- 课程列表表格 -->
     <div class="table-container">
-      <el-table :data="courseList" style="width: 100%">
+      <el-table
+        :data="courseList"
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" v-if="showBatchDelete"></el-table-column>
         <el-table-column prop="cname" label="课程名"></el-table-column>
         <el-table-column prop="major" label="专业"></el-table-column>
         <el-table-column prop="teacher" label="教师"></el-table-column>
@@ -58,7 +67,7 @@
         <el-table-column prop="cbook" label="课程书籍"></el-table-column>
         <el-table-column label="操作">
           <template v-slot="scope">
-            <el-button size="mini" type="primary"@click="handleEdit(scope.row.id)">修改</el-button>
+            <el-button size="mini" type="primary" @click="handleEdit(scope.row.id)">修改</el-button>
             <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
@@ -105,6 +114,8 @@ export default {
       total: 0, // 总条数
       showForm: false, // 控制表单显示和隐藏
       isEditing: false, // 控制是否为编辑状态
+      showBatchDelete: false, // 控制批量删除模式
+      selectedCourses: [], // 选中的课程
     };
   },
   methods: {
@@ -112,6 +123,11 @@ export default {
     toggleForm() {
       this.showForm = !this.showForm;
       this.isEditing = false; // 重置编辑状态
+    },
+    // 切换批量删除模式
+    toggleBatchDelete() {
+      this.showBatchDelete = !this.showBatchDelete;
+      this.selectedCourses = []; // 重置选中的课程
     },
     // 获取课程列表
     fetchCourses() {
@@ -216,6 +232,23 @@ export default {
         }
       });
     },
+    // 处理批量删除操作
+    confirmBatchDelete() {
+      const ids = this.selectedCourses.map(course => course.id).join(',');
+      axios.post('/course/deleteBatchCourse', { ids }).then((response) => {
+        if (response.data.code === 1) {
+          this.$message.success('批量删除课程成功');
+          this.fetchCourses(); // 重新获取课程列表
+          this.showBatchDelete = false; // 退出批量删除模式
+        } else {
+          this.$message.error(response.data.msg || '批量删除课程失败');
+        }
+      });
+    },
+    // 处理选择变化
+    handleSelectionChange(val) {
+      this.selectedCourses = val;
+    },
   },
   mounted() {
     this.fetchCourses();
@@ -228,8 +261,9 @@ export default {
 .course-form {
   margin-bottom: 20px;
 }
-.add-course-button {
+.add-course-button, .batch-delete-button, .confirm-batch-delete-button {
   margin-bottom: 20px;
+  margin-right: 10px;
 }
 .pagination-container {
   display: flex;
