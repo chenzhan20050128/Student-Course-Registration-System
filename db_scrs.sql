@@ -7,6 +7,15 @@ Source Database       : scrs
 
 Target Server Type    : MYSQL
 
+
+User:
+admin:admin123
+Student:
+Zhang San:password123
+Li Si:securePass!45
+Teacher:
+Li Hua:pass1234
+Liu Qin:pass5678
 */
 
 -- source D:\technologySoftware\SCRS\scrs\db_scrs.sql
@@ -70,10 +79,10 @@ CREATE TABLE `course` (
 INSERT INTO `course` (`id`, `cname`, `major`, `teacher`, `address`, `num`, `stock`, `cimage`, `cbook`, `credit`, `descr`) VALUES
 (1, 'Data Structure', 'Computer Science and Technology', 'Li Hua', 'Classroom A101', 20, 50, 'datastructure.jpg', 'algorithm_intro', 4, 'Course on data structures, explaining basic data organization and algorithms'),
 (2, 'Advanced Mathematics', 'Mathematics and Applied Mathematics', 'Xiao Yuanming', 'Classroom B202', 15, 60, 'calculus.jpg', 'calculus', 5, 'Basic mathematics course covering calculus and more'),
-(3, 'Software Engineering and Computing', 'Software Engineering', 'Liu Qin', 'Lab C301', 20, 40, 'se.jpg', 'se', 3, 'Basic theory of software engineering'),
-(4, 'Linear Algebra', 'Mathematics and Applied Mathematics', 'Nie Ziwei', 'Classroom A102', 0, 30, 'linearalgebra.jpg', 'linear_algebra', 3, 'Matrix theory and linear transformations'),
-(5, 'Operating System', 'Computer Science and Technology', 'Zhang Wei', 'Lab C302', 25, 45, 'operatingsystem.jpg', 'computer_systems', 4, 'Principles and applications of operating systems'),
-(6, 'Demand and Business Model Analysis', 'Software Engineering', 'Liu Tao', 'Lab C303',259, 260, 'demand.jpg', 'demand', 4, 'Requirements engineering');
+(3, 'Software Engineering and Computing', 'Software Engineering', 'Liu Qin', 'Lab C301', 10, 40, 'se.jpg', 'se', 3, 'Basic theory of software engineering'),
+(4, 'Linear Algebra', 'Mathematics and Applied Mathematics', 'Nie Ziwei', 'Classroom A102', 30, 60, 'linearalgebra.jpg', 'linear_algebra', 3, 'Matrix theory and linear transformations'),
+(5, 'Operating System', 'Computer Science and Technology', 'Zhang Wei', 'Lab C302', 25, 30, 'operatingsystem.jpg', 'computer_systems', 4, 'Principles and applications of operating systems'),
+(6, 'Demand and Business Model Analysis', 'Software Engineering', 'Liu Tao', 'Lab C303', 25, 45, 'demand.jpg', 'demand', 4, 'Requirements engineering');
 
 -- ----------------------------
 -- Table structure for `major`
@@ -118,11 +127,10 @@ CREATE TABLE `student` (
 -- ----------------------------
 -- Records of `student`
 
-
 -- ----------------------------
 INSERT INTO `student` (`id`, `sname`, `password`, `sex`, `age`, `major`, `college`, `simage`) VALUES
-(1, 'Zhang San', 'password123', 'Male', 20, 'Computer Science and Technology', 'Computer Science College', 'image1.jpg'),
-(2, 'Li Si', 'securePass!45', 'Female', 21, 'Computer Science and Technology', 'Computer Science College', 'image2.jpg'),
+(1, 'Zhang San', '482c811da5d5b4bc6d497ffa98491e38', 'Male', 20, 'Computer Science and Technology', 'Computer Science College', 'image1.jpg'),
+(2, 'Li Si', '15901c034ced2564502166d642eb0c65', 'Female', 21, 'Computer Science and Technology', 'Computer Science College', 'image2.jpg'),
 (3, 'Wang Wu', 'myPass456', 'Male', 22, 'Computer Science and Technology', 'Computer Science College', 'image3.jpg'),
 (4, 'Zhao Liu', 'pass7890', 'Female', 23, 'Computer Science and Technology', 'Computer Science College', 'image4.jpg'),
 (5, 'Sun Qi', 'admin123', 'Male', 24, 'Computer Science and Technology', 'Computer Science College', 'image5.jpg'),
@@ -152,11 +160,10 @@ CREATE TABLE `teacher` (
 
 -- ----------------------------
 -- Records of `teacher`
-
 -- ----------------------------
 INSERT INTO `teacher` (`id`, `tname`, `password`, `email`, `sex`, `phone`, `age`, `major`, `timage`) VALUES
-(1, 'Li Hua', 'pass1234', 'wang@mail.com', 'Male', '13800138000', 35, 'Computer Science and Technology', 'teacher1.jpg'),
-(2, 'Liu Qin', 'pass5678', 'zhao@mail.com', 'Male', '13900139000', 40, 'Software Engineering', 'teacher2.jpg'),
+(1, 'Li Hua', 'b4af804009cb036a4ccdc33431ef9ac9', 'wang@mail.com', 'Male', '13800138000', 35, 'Computer Science and Technology', 'teacher1.jpg'),
+(2, 'Liu Qin', 'ee8ef2f5441316e0305ae007372de337', 'zhao@mail.com', 'Male', '13900139000', 40, 'Software Engineering', 'teacher2.jpg'),
 (3, 'Zhang Wei', 'pass1111', 'sun@mail.com', 'Male', '13700137000', 45, 'Computer Science and Technology', 'teacher3.jpg'),
 (4, 'Liu Tao', 'pass2222', 'li@mail.com', 'Female', '13600136000', 38, 'Software Engineering', 'teacher4.jpg'),
 (5, 'Xiao Yuanming', 'pass3333', 'chen@mail.com', 'Male', '13500135000', 42, 'Mathematics and Applied Mathematics', 'teacher5.jpg'),
@@ -216,10 +223,18 @@ String[] passwords = {"admin123", "password123", "securePass!45", "pass1234", "p
             String passwordAfterMD5 = DigestUtils.md5DigestAsHex(password.getBytes());
             System.out.println(passwordAfterMD5);
      }
+    User:
+admin:admin123
+Student:
+Zhang San:password123
+Li Si:securePass!45
+Teacher:
+Li Hua:pass1234
+Liu Qin:pass5678
+
 
 */
 
-DROP TABLE IF EXISTS `student_course`;
 
 CREATE TABLE `student_course` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
