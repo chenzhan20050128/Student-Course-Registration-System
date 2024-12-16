@@ -177,7 +177,7 @@ public class StudentController {
      * @param id    要更新的学生ID。
      * @return 用于渲染学生更新表单的视图名称。
      */
-    @RequestMapping("/preUpdateStudent")
+    @RequestMapping("/preUpdateStudent/{id}")
     public R<HashMap<String,Object>> preUpdateStudent(@PathVariable Integer id) {
         // 需要在前端回显数据
         Student student = studentService.getById(id);
@@ -202,9 +202,10 @@ public class StudentController {
      */
     @PostMapping("/updateStudent")
     public R<String> updateStudent(@RequestBody Student student, MultipartFile file) throws IOException {
-        if (!file.isEmpty()) {
-            transfile(student, file);
-        }
+//        if (!file.isEmpty()) {
+//            System.out.println("11111");
+//            transfile(student, file);
+//        }
         studentService.updateById(student);
         return R.success("Success to update student!");
     }
@@ -252,56 +253,53 @@ public class StudentController {
     现在是学生选课功能，在学生的界面 add by cz at 12.7 15:26
      */
 
-    @RequestMapping("/listCourse")
-    public String listCourse(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                             @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-                             Model model, Course course) {
+    @GetMapping ("/listCourseByMajorName")
+    public R<PageInfo> listCourse(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                  @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+                                  @RequestParam(required = false) String majorName) {
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
         if (pageSize == null || pageSize <= 0) {
             pageSize = 6;
         }
+
         PageHelper.startPage(pageNum, pageSize);
-        QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
-        if (course.getCname() != null) {
-            queryWrapper.like("cname", course.getCname());
+        LambdaQueryWrapper<Course> courseLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if (majorName != null) {
+            courseLambdaQueryWrapper.eq(Course::getMajor, majorName);
         }
-        List<Course> courses = courseService.list(queryWrapper);
+        List<Course> courses = courseService.list(courseLambdaQueryWrapper);
         PageInfo<Course> pageInfo = new PageInfo<>(courses);
-        model.addAttribute("pageInfo", pageInfo);
-        return "student-course-list";
+        return R.success(pageInfo);
     }
 
     /**
      * 选课记录
      */
-    @RequestMapping("/listMyCourse")
-    public String listMyCourse(String cname, HttpSession session,Model model){
+    @GetMapping("/listMyCourse")
+    public String listMyCourse(@RequestParam(required = false) String cname, HttpSession session,Model model){
         Integer userId = (Integer) session.getAttribute("userId");
         List<StudentCourse> studentCourses = studentCourseService.listMyCourse(userId, cname);
         //简化操作，与教师无关
-
         PageInfo<StudentCourse> pageInfo = new PageInfo<>(studentCourses);
         model.addAttribute("pageInfo", pageInfo);
         return "student-my-course";
     }
 
-    @RequestMapping("/selectCourse/{cid}")
-    public String selectCourse(@PathVariable Integer cid, HttpSession session, Model model){
+    @GetMapping("/selectCourse/{cid}")
+    public R<String> selectCourse(@PathVariable Integer cid, HttpSession session){
         Integer userId = (Integer) session.getAttribute("userId");
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("sid", userId);
         queryWrapper.eq("cid", cid);
         StudentCourse one = studentCourseService.getOne(queryWrapper);
         if (one != null) {
-            model.addAttribute("msg", "你已经选过该课程");
-            return "student-course-list";
+            return R.error("该学生已经选过该课程");
         }
         Course course = courseService.getById(cid);
         if (course.getNum() >= course.getStock()){
-            model.addAttribute("msg", "该课程已经选满");
-            return "student-course-list";
+            return R.error("该课程已经选满");
         }
         course.setNum(course.getNum() + 1);
         courseService.updateById(course);
@@ -309,27 +307,27 @@ public class StudentController {
         studentCourse.setSid(userId);
         studentCourse.setCid(cid);
         studentCourseService.save(studentCourse);
-        return "student-my-course";
+        return R.success("选课成功");
     }
 
     /**
      * 学生退选
      */
-    @RequestMapping("/deleteMyCourse/{cid}")
-    public String deleteMyCourse(@PathVariable Integer cid, HttpSession session, Model model){
+    @GetMapping("/deleteMyCourse/{cid}")
+    public R<String> deleteMyCourse(@PathVariable Integer cid, HttpSession session){
         Integer userId = (Integer) session.getAttribute("userId");
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("sid", userId);
         queryWrapper.eq("cid", cid);
         StudentCourse one = studentCourseService.getOne(queryWrapper);
         if (one == null) {
-            model.addAttribute("msg", "该学生没有选过该课程");
-            return "student-my-course";
+            return R.error("该学生没有选过该课程");
         }
         one.setStatus(0);//表示退选
         Course course = courseService.getById(cid);
         course.setNum(course.getNum() - 1);
         courseService.updateById(course);
-        return "student-my-course";
+        studentCourseService.updateById(one);
+        return R.success("退选成功");
     }
 }

@@ -1,225 +1,263 @@
-<template>
-  <div>
-    <h2>课程管理</h2>
-    <!-- 添加课程按钮 -->
-    <el-button type="primary" @click="toggleForm" class="add-course-button">添加课程</el-button>
-    <!-- 添加课程表单 -->
-    <el-form v-if="showForm" :model="newCourse" label-width="120px" class="course-form">
-      <el-form-item label="课程名">
-        <el-input v-model="newCourse.cname"></el-input>
-      </el-form-item>
-      <el-form-item label="专业">
-        <el-select v-model="newCourse.major" placeholder="请选择专业">
-          <el-option
-            v-for="major in majorList"
-            :key="major.id"
-            :label="major.mname"
-            :value="major.mname"
-          ></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="教师">
-        <el-input v-model="newCourse.teacher"></el-input>
-      </el-form-item>
-      <el-form-item label="地址">
-        <el-input v-model="newCourse.address"></el-input>
-      </el-form-item>
-      <el-form-item label="选课容量">
-        <el-input v-model="newCourse.num" type="number"></el-input>
-      </el-form-item>
-      <el-form-item label="学分">
-        <el-input v-model="newCourse.credit" type="number"></el-input>
-      </el-form-item>
-      <el-form-item label="课程图片">
-        <el-input v-model="newCourse.cimage"></el-input>
-      </el-form-item>
-      <el-form-item label="课程书籍">
-        <el-input v-model="newCourse.cbook"></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="saveCourse">提交</el-button>
-      </el-form-item>
-    </el-form>
+package com.scrs.controller;
+/*
+                            * @date 12/05 13:48
+                            */
 
-    <!-- 课程列表表格 -->
-    <div class="table-container">
-      <el-table :data="courseList" style="width: 100%">
-        <el-table-column prop="cname" label="课程名"></el-table-column>
-        <el-table-column prop="major" label="专业"></el-table-column>
-        <el-table-column prop="teacher" label="教师"></el-table-column>
-        <el-table-column prop="address" label="地址"></el-table-column>
-        <el-table-column
-          label="选课人数/选课容量"
-          :formatter="formatCourseCapacity"
-        ></el-table-column>
-        <el-table-column prop="credit" label="学分"></el-table-column>
-        <el-table-column prop="cimage" label="课程图片"></el-table-column>
-        <el-table-column prop="cbook" label="课程书籍"></el-table-column>
-        <el-table-column label="操作">
-          <template slot-scope="scope">
-            <el-button size="mini" @click="handleEdit(scope.row.id)">修改</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-    <!-- 分页组件 -->
-    <div class="pagination-container">
-      <el-pagination
-        @current-change="handlePageChange"
-        :current-page="pageNum"
-        :page-size="pageSize"
-        layout="prev, pager, next"
-        :total="total"
-        class="pagination"
-      >
-      </el-pagination>
-      <span class="total-pages">总页数: {{ Math.ceil(total / pageSize) }}</span>
-    </div>
-  </div>
-</template>
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.scrs.common.R;
+import com.scrs.pojo.Course;
+import com.scrs.pojo.Major;
+import com.scrs.service.CourseService;
+import com.scrs.service.MajorService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.ui.Model;
+import org.springframework.web.multipart.MultipartFile;
 
-<script>
-import axios from '@/http';
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-export default {
-  name: 'CourseManagement',
-  data() {
-    return {
-      courseList: [], // 课程列表
-      majorList: [], // 专业列表
-      newCourse: {
-        cname: '',
-        major: '',
-        teacher: '',
-        address: '',
-        num: 0, // 选课容量
-        stock: 0, // 选课人数
-        credit: '', // 学分
-        cimage: '', // 课程图片
-        cbook: '', // 课程书籍
-      },
-      pageNum: 1, // 当前页码
-      pageSize: 6, // 每页显示条数
-      total: 0, // 总条数
-      showForm: false, // 控制表单显示和隐藏
-    };
-  },
-  methods: {
-    // 切换表单显示和隐藏
-    toggleForm() {
-      this.showForm = !this.showForm;
-    },
-    // 获取课程列表
-    fetchCourses() {
-      axios.get('/course/listCourse', {
-        params: {
-          pageNum: this.pageNum,
-          pageSize: this.pageSize,
-        },
-      }).then((response) => {
-        if (response.data.code === 1) {
-          this.courseList = response.data.data.list;
-          this.total = response.data.data.total;
-        } else {
-          this.$message.error(response.data.msg || '获取课程列表失败');
-        }
-      });
-    },
-    // 获取专业列表
-    fetchMajors() {
-      axios.get('/course/preSaveCourse').then((response) => {
-        if (response.data.code === 1) {
-          this.majorList = response.data.data;
-        } else {
-          this.$message.error(response.data.msg || '获取专业列表失败');
-        }
-      });
-    },
-    // 添加课程
-    saveCourse() {
-      axios.post('/course/saveCourse', this.newCourse).then((response) => {
-        if (response.data.code === 1) {
-          this.fetchCourses(); // 重新获取课程列表
-          this.$message.success('课程添加成功');
-          this.resetForm();
-          this.showForm = false; // 提交后隐藏表单
-        } else {
-          this.$message.error(response.data.msg || '课程添加失败');
-        }
-      });
-    },
-    // 重置表单
-    resetForm() {
-      this.newCourse = {
-        cname: '',
-        major: '',
-        teacher: '',
-        address: '',
-        num: 0, // 选课容量
-        stock: 0, // 选课人数
-        credit: '', // 学分
-        cimage: '', // 课程图片
-        cbook: '', // 课程书籍
-      };
-    },
-    // 格式化课程容量
-    formatCourseCapacity(row) {
-      return `${row.stock} / ${row.num}`;
-    },
-    // 处理分页变化
-    handlePageChange(page) {
-      this.pageNum = page;
-      this.fetchCourses();
-    },
-    // 处理修改操作
-    handleEdit(id) {
-      // 调用 /preUpdateCourse/{id} 接口
-      axios.get(`/course/preUpdateCourse/${id}`).then((response) => {
-        if (response.data.code === 1) {
-          const data = response.data.data;
-          this.newCourse = data.course;
-          this.majorList = data.majorList;
-          this.showForm = true; // 显示表单
-        } else {
-          this.$message.error(response.data.msg || '获取课程信息失败');
-        }
-      });
-    },
-    // 处理删除操作
-    handleDelete(id) {
-      // 调用 /deleteCourse/{id} 接口
-      axios.get(`/course/deleteCourse/${id}`).then((response) => {
-        if (response.data.code === 1) {
-          this.$message.success('课程删除成功');
-          this.fetchCourses(); // 重新获取课程列表
-        } else {
-          this.$message.error(response.data.msg || '课程删除失败');
-        }
-      });
-    },
-  },
-  mounted() {
-    this.fetchCourses();
-    this.fetchMajors();
-  },
-};
-</script>
+@RestController
+@RequestMapping("/course")
+public class CourseController {
+    @Autowired
+    private CourseService courseService;
 
-<style scoped>
-.course-form {
-  margin-bottom: 20px;
+    @Autowired
+    private MajorService majorService;
+
+    @Value("${file.location}") // 获取配置文件中的文件上传路径
+    private String location;
+
+    @GetMapping("/listCourse")
+    public R<PageInfo> listCourse(
+            @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+            @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+            @RequestParam(required = false) String name) {
+        if (pageNum == null || pageNum <= 0) {
+            pageNum = 1;
+        }
+        if (pageSize == null || pageSize <= 0) {
+            pageSize = 6;
+        }
+        PageHelper.startPage(pageNum, pageSize);
+        LambdaQueryWrapper<Course> queryWrapper = new LambdaQueryWrapper<>();
+        if (name != null && !name.isEmpty()) {
+            queryWrapper.like(Course::getCname, name);
+        }
+        PageInfo pageInfo = new PageInfo(courseService.list(queryWrapper));
+        System.out.println(R.success(pageInfo).toString());
+
+        return R.success(pageInfo);
+    }
+
+    /**
+     * 需要preSave的原因是因为saveCourse前需要先获取majorList，然后有个单选框可以选择major
+     */
+    @GetMapping("/preSaveCourse")
+    public R<List<Major>> preSaveCourse() {
+        List<Major> majorList = majorService.list(null);
+        R<List<Major>> result = R.success(majorList);
+        System.out.println(result.toString());
+        return result;
+    }
+
+    /**
+     * 保存课程，先不保存文件
+     */
+    @PostMapping("/saveCourse")
+    public R<String> saveCourse(@RequestBody Course course,
+            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+        System.out.println(course.toString());
+        if (file != null && !file.isEmpty()) {
+            transfile(course, file);
+        }
+        /*
+         * if (fileBook != null && !fileBook.isEmpty()) {
+         * transfileBook(course, fileBook);
+         * }
+         */
+        courseService.save(course);
+        System.out.println(course.toString());
+        return R.success("save course successfully");
+    }
+
+    private void transfile(Course course, MultipartFile file) throws IOException {
+        String originalFilename = file.getOriginalFilename();
+        int i = 0;
+        if (originalFilename != null) {
+            i = originalFilename.lastIndexOf(".");
+        }
+        String suffix = originalFilename.substring(i);
+        String prefix = System.nanoTime() + "";
+        String filename = prefix + suffix;
+
+        // 创建一个File对象，表示文件所在的目录路径
+        File file1 = new File(location);
+        // 检查该目录是否存在
+        if (!file1.exists()) {
+            // 如果目录不存在，则创建该目录（包括必要的父目录）
+            file1.mkdirs();
+        }
+        // 创建一个File对象，表示具体的文件路径，将文件名添加到目录中
+        File file2 = new File(file1, filename);
+        try {
+            // 使用传输文件的方法将内容写入到file2的路径中
+            file.transferTo(file2);
+        } catch (IOException e) {
+            // 如果在文件传输过程中出现IO异常，则打印异常栈跟踪以进行调试
+            e.printStackTrace();
+        }
+        course.setCimage(filename);
+    }
+
+    private void transfileBook(Course course, MultipartFile fileBook) throws IOException {
+        String originalFilename = fileBook.getOriginalFilename();
+        int i = 0;
+        if (originalFilename != null) {
+            i = originalFilename.lastIndexOf(".");
+        }
+        String suffix = originalFilename.substring(i);
+        String prefix = System.nanoTime() + "";
+        String filename = prefix + suffix;
+
+        // 创建一个File对象，表示文件所在的目录路径
+        File file1 = new File(location);
+        // 检查该目录是否存在
+        if (!file1.exists()) {
+            // 如果目录不存在，则创建该目录（包括必要的父目录）
+            file1.mkdirs();
+        }
+        // 创建一个File对象，表示具体的文件路径，将文件名添加到目录中
+        File file2 = new File(file1, filename);
+        try {
+            // 使用传输文件的方法将内容写入到file2的路径中
+            fileBook.transferTo(file2);
+        } catch (IOException e) {
+            // 如果在文件传输过程中出现IO异常，则打印异常栈跟踪以进行调试
+            e.printStackTrace();
+        }
+        course.setCbook(filename);
+    }
+
+    @GetMapping("/preUpdateCourse/{id}")
+    public R<HashMap<String, Object>> preUpdateCourse(@PathVariable Integer id) {
+        Course course = courseService.getById(id);
+        List<Major> majorList = majorService.list(null);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("course", course);
+        map.put("majorList", majorList);
+        R<HashMap<String, Object>> result = R.success(map);
+
+        System.out.println(result.toString());
+        return result;
+    }
+
+    // 管理员只能修改课程图像，不能修改课程介绍电子书，只能由老师修改
+    @PostMapping("/updateCourse")
+    public R<String> updateCourse(@RequestBody Course course, MultipartFile file) {
+        if (!file.isEmpty()) {
+            try {
+                transfile(course, file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        courseService.updateById(course);
+        return R.success("update course successfully");
+    }
+
+    @GetMapping("/deleteCourse/{id}")
+    public R<String> deleteCourse(@PathVariable Integer id) {
+        boolean b = courseService.removeById(id);
+        if (!b) {
+            return R.error("delete course failed");
+        }
+        return R.success("delete course successfully");
+    }
+
+    @PostMapping("/deleteBatchCourse")
+    public R<String> deleteBatchCourse(@RequestBody String ids) {
+        String[] split = ids.split(",");
+        List<Integer> idList = new ArrayList<>();
+        for (String s : split) {
+            if (!s.isEmpty()) {
+                idList.add(Integer.parseInt(s));
+            }
+        }
+
+        boolean b = courseService.removeByIds(idList);
+        if (!b) {
+            // model.addAttribute("error", "批量删除课程失败");
+            return R.error("delete batch course failed");
+        }
+        return R.success("delete batch course successfully");
+    }
+
+    /**
+     * 新增方法：根据专业查询课程
+     * 
+     * @param pageNum
+     * @param pageSize
+     * @param model
+     * @param course
+     * @return
+     */
+    @RequestMapping("/listCourseByMajor")
+    public String listCourseByMajor(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+            @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+            Model model, Course course) {
+        if (pageNum == null || pageNum <= 0) {
+            pageNum = 1;
+        }
+        if (pageSize == null || pageSize <= 0) {
+            pageSize = 6;
+        }
+        PageHelper.startPage(pageNum, pageSize);
+        QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
+        if (course.getMajor() != null) {
+            queryWrapper.eq("major", course.getMajor());
+        }
+        PageInfo pageInfo = new PageInfo(courseService.list(queryWrapper));
+        model.addAttribute("pageInfo", pageInfo);
+        return "admin-course-list";
+    }
+
+    /**
+     * 新增方法：根据教师查询课程
+     * 
+     * @param pageNum
+     * @param pageSize
+     * @param model
+     * @param course
+     * @return
+     */
+    @RequestMapping("/listCourseByTeacher")
+    public String listCourseByTeacher(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+            @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+            Model model, Course course) {
+        if (pageNum == null || pageNum <= 0) {
+            pageNum = 1;
+        }
+        if (pageSize == null || pageSize <= 0) {
+            pageSize = 6;
+        }
+        PageHelper.startPage(pageNum, pageSize);
+        QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
+        if (course.getTeacher() != null) {
+            queryWrapper.eq("teacher", course.getTeacher());
+        }
+        PageInfo pageInfo = new PageInfo(courseService.list(queryWrapper));
+        model.addAttribute("pageInfo", pageInfo);
+        return "admin-course-list";
+    }
+
 }
-.add-course-button {
-  margin-bottom: 20px;
-}
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-}
-.total-pages {
-  margin-left: 20px;
-}
-</style>
