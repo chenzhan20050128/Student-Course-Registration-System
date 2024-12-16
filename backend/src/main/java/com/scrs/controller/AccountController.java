@@ -50,7 +50,7 @@ public class AccountController {
      * @return 返回登录结果和角色信息
      */
     @PostMapping("/login")
-    public R<Map<String, Object>> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
+    public R<Map<String,Object>> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         String username = loginRequest.getUsername();
         String password = loginRequest.getPassword();
@@ -74,6 +74,7 @@ public class AccountController {
                 //session.setAttribute("image", user.getImage());
                 session.setAttribute("role", 1);
                 result.put("role", 1);
+                result.put("id",user.getId());
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
@@ -92,6 +93,7 @@ public class AccountController {
                 //session.setAttribute("image", teacher.getTimage());
                 session.setAttribute("role", 2);
                 result.put("role", 2);
+                result.put("id",teacher.getId());
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
@@ -113,6 +115,7 @@ public class AccountController {
                 //session.setAttribute("image", student.getSimage());
                 session.setAttribute("role", 3);
                 result.put("role", 3);
+                result.put("id",student.getId());
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
@@ -145,7 +148,7 @@ public class AccountController {
      * 前端注意，这里的user不确定他的类型是管理员老师还是学生，需要判断！
      */
     @GetMapping("/profile")
-    public R profile(HttpSession session, Model model) {
+    public R profile(HttpSession session) {
         Integer role = (Integer) session.getAttribute("role");
         String currentUsername = (String) session.getAttribute("currentUsername");
         String password = (String) session.getAttribute("password");
