@@ -40,13 +40,18 @@
   
   <script>
 import axios from '@/http';
-  
+import { useStudentStore } from '@/store/student';
+
   export default {
     name: 'PersonalInfo',
+    setup() {
+    const studentStore = useStudentStore();
+    return { studentStore };
+  },
     data() {
       return {
         student: {
-          id : 1,  
+          id : this.studentStore.student.id,  
           sname: '',
           sex: '',
           age: null,
@@ -61,7 +66,7 @@ import axios from '@/http';
     methods: {
       async fetchStudentInfo() {
         try {
-            const response = await axios.get('/student/preUpdateStudent/1'); // 假设学生ID为1 TODO 修改为真实的学生ID
+            const response = await axios.get(`/student/preUpdateStudent/${this.student.id}`); // 假设学生ID为1 TODO 修改为真实的学生ID
           if (response.data && response.data.data) {
             this.student = response.data.data.student;
           }

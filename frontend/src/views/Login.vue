@@ -26,6 +26,7 @@
 </template>
 
 <script>
+import { useStudentStore } from '@/store/student';
 export default {
   name: 'Login',
   data() {
@@ -46,6 +47,8 @@ export default {
       try {
         // 发送登录请求到后端
         const response = await this.$http.post('/login', loginData);
+        const studentStore = useStudentStore();
+        studentStore.student.id = response.data.data.id;
         console.log('登录成功', response);
         if (response.data.code) {
           // 根据角色跳转到不同的首页视图
