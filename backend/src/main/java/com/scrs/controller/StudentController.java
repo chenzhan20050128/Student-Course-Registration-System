@@ -282,7 +282,6 @@ public class StudentController {
         Integer userId = (Integer) session.getAttribute("userId");
         List<StudentCourse> studentCourses = studentCourseService.listMyCourse(userId, cname);
         //简化操作，与教师无关
-
         PageInfo<StudentCourse> pageInfo = new PageInfo<>(studentCourses);
         model.addAttribute("pageInfo", pageInfo);
         return "student-my-course";

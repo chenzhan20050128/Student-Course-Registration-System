@@ -46,7 +46,7 @@ export default {
       try {
         // 发送登录请求到后端
         const response = await this.$http.post('/login', loginData);
-
+        console.log('登录成功', response);
         if (response.data.code) {
           // 根据角色跳转到不同的首页视图
           const role = response.data.data.role;

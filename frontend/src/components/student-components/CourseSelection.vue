@@ -37,14 +37,16 @@ export default {
   methods: {
     async fetchCourses() {
       try {
-        const response = await axios.get('/course/listCourseByMajor', {
+        const response2 = await axios.get('/student/preUpdateStudent/1'); 
+        this.major = ("111",response2.data.data.listMajor[1].mname)
+
+        const response = await axios.get('/student/listCourseByMajorName', {
           params: {
             pageNum: this.pageNum,
             pageSize: this.pageSize,
-            major: this.major,
+            majorName : this.major,
           },
         });
-        console.log(response);
         if (response.data && response.data.data) {
           this.courses = response.data.data.list;
           this.total = response.data.data.total;
