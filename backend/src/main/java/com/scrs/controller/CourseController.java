@@ -163,14 +163,15 @@ public class CourseController {
 
     // 管理员只能修改课程图像，不能修改课程介绍电子书，只能由老师修改
     @PostMapping("/updateCourse")
-    public R<String> updateCourse(@RequestBody Course course, MultipartFile file) {
-        if (!file.isEmpty()) {
-            try {
-                transfile(course, file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    public R<String> updateCourse(@RequestBody Course course) {
+        //, MultipartFile file
+        // if (!file.isEmpty()) {
+        //     try {
+        //         transfile(course, file);
+        //     } catch (IOException e) {
+        //         e.printStackTrace();
+        //     }
+        // }
         courseService.updateById(course);
         return R.success("update course successfully");
     }

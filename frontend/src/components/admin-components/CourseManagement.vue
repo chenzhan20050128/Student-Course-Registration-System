@@ -1,8 +1,10 @@
 <template>
   <div>
     <h2>课程管理</h2>
+    <!-- 添加课程按钮 -->
+    <el-button type="primary" @click="toggleForm" class="add-course-button">添加课程</el-button>
     <!-- 添加课程表单 -->
-    <el-form :model="newCourse" label-width="120px" class="course-form">
+    <el-form v-if="showForm" :model="newCourse" label-width="120px" class="course-form">
       <el-form-item label="课程名">
         <el-input v-model="newCourse.cname"></el-input>
       </el-form-item>
@@ -35,37 +37,46 @@
         <el-input v-model="newCourse.cbook"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="saveCourse">添加课程</el-button>
+        <el-button type="primary" @click="saveCourse">提交</el-button>
+        <el-button type="primary" @click="updateCourse" v-if="isEditing">修改</el-button>
       </el-form-item>
     </el-form>
 
     <!-- 课程列表表格 -->
-    <el-table :data="courseList" style="width: 100%">
-      <el-table-column prop="cname" label="课程名"></el-table-column>
-      <el-table-column prop="major" label="专业"></el-table-column>
-      <el-table-column prop="teacher" label="教师"></el-table-column>
-      <el-table-column prop="address" label="地址"></el-table-column>
-      <el-table-column
-        label="选课人数/选课容量"
-        :formatter="formatCourseCapacity"
-      ></el-table-column>
-      <el-table-column prop="credit" label="学分"></el-table-column>
-      <el-table-column prop="cimage" label="课程图片"></el-table-column>
-      <el-table-column prop="cbook" label="课程书籍"></el-table-column>
-    </el-table>
+    <div class="table-container">
+      <el-table :data="courseList" style="width: 100%">
+        <el-table-column prop="cname" label="课程名"></el-table-column>
+        <el-table-column prop="major" label="专业"></el-table-column>
+        <el-table-column prop="teacher" label="教师"></el-table-column>
+        <el-table-column prop="address" label="地址"></el-table-column>
+        <el-table-column
+          label="选课人数/选课容量"
+          :formatter="formatCourseCapacity"
+        ></el-table-column>
+        <el-table-column prop="credit" label="学分"></el-table-column>
+        <el-table-column prop="cimage" label="课程图片"></el-table-column>
+        <el-table-column prop="cbook" label="课程书籍"></el-table-column>
+        <el-table-column label="操作">
+          <template v-slot="scope">
+            <el-button size="mini" type="primary"@click="handleEdit(scope.row.id)">修改</el-button>
+            <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
     <!-- 分页组件 -->
-    <el-pagination
-      @current-change="handlePageChange"
-      :current-page="pageNum"
-      :page-size="pageSize"
-      layout="total, prev, pager, next"
-      :total="total"
-      class="pagination"
-    >
-      <template #total="{ total }">
-        总页数: {{ Math.ceil(total / pageSize) }}
-      </template>
-    </el-pagination>
+    <div class="pagination-container">
+      <el-pagination
+        @current-change="handlePageChange"
+        :current-page="pageNum"
+        :page-size="pageSize"
+        layout="prev, pager, next"
+        :total="total"
+        class="pagination"
+      >
+      </el-pagination>
+      <span class="total-pages">总页数: {{ Math.ceil(total / pageSize) }}</span>
+    </div>
   </div>
 </template>
 
@@ -92,9 +103,16 @@ export default {
       pageNum: 1, // 当前页码
       pageSize: 6, // 每页显示条数
       total: 0, // 总条数
+      showForm: false, // 控制表单显示和隐藏
+      isEditing: false, // 控制是否为编辑状态
     };
   },
   methods: {
+    // 切换表单显示和隐藏
+    toggleForm() {
+      this.showForm = !this.showForm;
+      this.isEditing = false; // 重置编辑状态
+    },
     // 获取课程列表
     fetchCourses() {
       axios.get('/course/listCourse', {
@@ -128,8 +146,23 @@ export default {
           this.fetchCourses(); // 重新获取课程列表
           this.$message.success('课程添加成功');
           this.resetForm();
+          this.showForm = false; // 提交后隐藏表单
         } else {
           this.$message.error(response.data.msg || '课程添加失败');
+        }
+      });
+    },
+    // 更新课程
+    updateCourse() {
+      axios.post('/course/updateCourse', this.newCourse).then((response) => {
+        if (response.data.code === 1) {
+          this.fetchCourses(); // 重新获取课程列表
+          this.$message.success('课程更新成功');
+          this.resetForm();
+          this.showForm = false; // 提交后隐藏表单
+          this.isEditing = false; // 重置编辑状态
+        } else {
+          this.$message.error(response.data.msg || '课程更新失败');
         }
       });
     },
@@ -156,6 +189,33 @@ export default {
       this.pageNum = page;
       this.fetchCourses();
     },
+    // 处理修改操作
+    handleEdit(id) {
+      // 调用 /preUpdateCourse/{id} 接口
+      axios.get(`/course/preUpdateCourse/${id}`).then((response) => {
+        if (response.data.code === 1) {
+          const data = response.data.data;
+          this.newCourse = data.course;
+          this.majorList = data.majorList;
+          this.showForm = true; // 显示表单
+          this.isEditing = true; // 设置编辑状态
+        } else {
+          this.$message.error(response.data.msg || '获取课程信息失败');
+        }
+      });
+    },
+    // 处理删除操作
+    handleDelete(id) {
+      // 调用 /deleteCourse/{id} 接口
+      axios.get(`/course/deleteCourse/${id}`).then((response) => {
+        if (response.data.code === 1) {
+          this.$message.success('课程删除成功');
+          this.fetchCourses(); // 重新获取课程列表
+        } else {
+          this.$message.error(response.data.msg || '课程删除失败');
+        }
+      });
+    },
   },
   mounted() {
     this.fetchCourses();
@@ -168,9 +228,16 @@ export default {
 .course-form {
   margin-bottom: 20px;
 }
-.pagination {
+.add-course-button {
+  margin-bottom: 20px;
+}
+.pagination-container {
   display: flex;
   justify-content: center;
+  align-items: center;
   margin-top: 20px;
+}
+.total-pages {
+  margin-left: 20px;
 }
 </style>
