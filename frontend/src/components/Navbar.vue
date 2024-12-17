@@ -25,12 +25,22 @@ export default {
     fetchUserInfo() {
       axios.get('/getRoleMessage', { params: { inDatabase: 0 } }).then((response) => {
         if (response.data.code === 1) {
+          console.log('Session Data:', response.data.data); // 打印会话变量
           this.username = response.data.data.username || response.data.data.tname || response.data.data.sname;
         } else {
           this.$message.error(response.data.msg || '获取用户信息失败');
         }
       });
     },
+    // fetchSessionAttributes() {
+    //   axios.get('/getSessionAttributes').then((response) => {
+    //     if (response.data.code === 1) {
+    //       console.log('Session Attributes:', response.data.data); // 打印会话属性
+    //     } else {
+    //       this.$message.error(response.data.msg || '获取会话属性失败');
+    //     }
+    //   });
+    // },
     logout() {
       axios.get('/logout').then((response) => {
         if (response.data.code === 1) {
@@ -44,6 +54,7 @@ export default {
   },
   mounted() {
     this.fetchUserInfo();
+    //this.fetchSessionAttributes(); // 获取并打印会话属性
   },
 };
 </script>

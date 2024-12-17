@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,6 +85,10 @@ public class AccountController {
                 session.setAttribute("role", 1);
                 result.put("role", 1);
                 result.put("id", user.getId());
+//                System.out.println("!!!!!!!!!!!!!!!!!!login!!!!!!!!!!!!!!!!!!!!");
+//                System.out.println("role:" + session.getAttribute("role"));
+//                System.out.println("id:" + session.getAttribute("userId"));
+
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
@@ -158,10 +163,11 @@ public class AccountController {
      */
     @GetMapping("/getRoleMessage")
     public R<Object> getRoleMessage(HttpSession session,@RequestParam(defaultValue = "0",required = false) Integer inDatabase){
+        //System.out.println("!!!!!!!!!!!!!!!!!!getRoleMessage!!!!!!!!!!!!!!!!!!!!");
         Integer role = (Integer) session.getAttribute("role");
-        System.out.println("NAme " + session.getAttribute("currentUsername"));
-        System.out.println("role:"+role);
-        System.out.println("inDatabase:"+inDatabase);
+//        System.out.println("NAme " + session.getAttribute("currentUsername"));
+//        System.out.println("role:"+role);
+//        System.out.println("inDatabase:"+inDatabase);
         if (role == null){
             return R.error("未登录，不能获取session数据");
         }
