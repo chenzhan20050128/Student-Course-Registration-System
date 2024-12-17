@@ -17,6 +17,7 @@
       <!-- 内容区域 -->
       <el-container>
         <el-header>学生首页</el-header>
+        <navbar></navbar>
         <el-main>
           <!-- 根据选中的菜单项显示对应的组件 -->
           <course-selection v-if="selectedMenu === 'course-selection'"></course-selection>
@@ -33,6 +34,7 @@
 import CourseSelection from '@/components/student-components/CourseSelection.vue';
 import CourseRecord from '@/components/student-components/CourseRecord.vue';
 import PersonalInfo from '@/components/student-components/PersonalInfo.vue';
+import Navbar from '@/components/Navbar.vue';
 
 export default {
   name: 'StudentHome',
@@ -40,6 +42,7 @@ export default {
     CourseSelection,
     CourseRecord,
     PersonalInfo,
+    Navbar,
   },
   data() {
     return {

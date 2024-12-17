@@ -128,18 +128,18 @@ public class AccountController {
 
 
     @GetMapping("/logout")
-    public String logout(HttpSession session) {
+    public R<String> logout(HttpSession session) {
         session.invalidate();
-        return "index";
+        return R.success("退出登录成功");    
     }
 
     @GetMapping("/getUserName")
     public R<User> getUserName(HttpSession session) {
         String username = (String) session.getAttribute("currentUsername");
-        String image = (String) session.getAttribute("image");
+        //String image = (String) session.getAttribute("image");
         User user = new User();
         user.setUsername(username);
-        user.setImage(image);
+        //user.setImage(image);
         return R.success(user);
     }
 

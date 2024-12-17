@@ -21,7 +21,7 @@
 
       <!-- 内容区域 -->
       <el-container>
-        <el-header>管理员首页</el-header>
+        <navbar></navbar>
         <el-main>
           <!-- 根据选中的菜单项显示对应的组件 -->
           <student-management v-if="selectedMenu === 'student-management'"></student-management>
@@ -48,6 +48,7 @@ import CollegeManagement from '@/components/admin-components/CollegeManagement.v
 import CourseAllocation from '@/components/admin-components/CourseAllocation.vue';
 import StudentCourseSelection from '@/components/admin-components/StudentCourseSelection.vue';
 import StatisticsAnalysis from '@/components/admin-components/StatisticsAnalysis.vue';
+import Navbar from '@/components/Navbar.vue';
 
 export default {
   name: 'AdminHome',
@@ -60,6 +61,7 @@ export default {
     CourseAllocation,
     StudentCourseSelection,
     StatisticsAnalysis,
+    Navbar
   },
   data() {
     return {
