@@ -68,7 +68,7 @@ public class AccountController {
             password = loginRequest.getPassword();
             role = loginRequest.getRole();
         }
-
+        //session.setAttribute("role", role);
         if (role == 1) {
             // 管理员登录逻辑
             Boolean b = userService.login(username, password);
@@ -157,8 +157,11 @@ public class AccountController {
      *           1：在数据库中查询完整信息返回
      */
     @GetMapping("/getRoleMessage")
-    public R getRoleMessage(HttpSession session,@RequestParam(defaultValue = "0",required = false) Integer inDatabase){
+    public R<Object> getRoleMessage(HttpSession session,@RequestParam(defaultValue = "0",required = false) Integer inDatabase){
         Integer role = (Integer) session.getAttribute("role");
+        System.out.println("NAme " + session.getAttribute("currentUsername"));
+        System.out.println("role:"+role);
+        System.out.println("inDatabase:"+inDatabase);
         if (role == null){
             return R.error("未登录，不能获取session数据");
         }

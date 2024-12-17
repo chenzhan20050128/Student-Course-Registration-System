@@ -113,11 +113,11 @@ export default {
     },
     // 获取学院列表
     fetchColleges() {
-      axios.get('/college/listCollege').then((response) => {
+      axios.get('/major/preSaveMajor').then((response) => {
         if (response.data.code === 1) {
-          this.collegeList = response.data.data;
+          this.collegeList = response.data.data.collegeList;
         } else {
-          this.$message.error(response.data.msg || '获取学院列表失败');
+          this.$message.error(response.data.msg || '获取专业和学院列表失败');
         }
       });
     },
