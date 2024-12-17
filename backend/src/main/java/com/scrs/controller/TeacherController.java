@@ -34,6 +34,9 @@ public class TeacherController {
     private MajorService majorService;
 
     @Autowired
+    private CollegeService collegeService;
+
+    @Autowired
     private StudentService studentService;
 
     @Autowired
@@ -80,15 +83,16 @@ public class TeacherController {
     }
 
     @PostMapping("/saveTeacher")
-    public R<String> saveTeacher(@RequestBody Teacher teacher, MultipartFile file) {
-        if (!file.isEmpty()){
-            try{
-                transfileTeacher(teacher, file);
-            }
-            catch (IOException e){
-                e.printStackTrace();
-            }
-        }
+    public R<String> saveTeacher(@RequestBody Teacher teacher,
+        @RequestParam(value = "file", required = false) MultipartFile file) {
+//        if (!file.isEmpty()){
+//            try{
+//                transfileTeacher(teacher, file);
+//            }
+//            catch (IOException e){
+//                e.printStackTrace();
+//            }
+//        }
         String defaultPassword = "123456";
         String passwordAfterMD5 = DigestUtils.md5DigestAsHex(defaultPassword.getBytes());
         teacher.setPassword(passwordAfterMD5);
@@ -126,13 +130,15 @@ public class TeacherController {
 
     @GetMapping("/preUpdateTeacher/{id}")
     public R<HashMap<String,Object>> preUpdateTeacher(@PathVariable Integer id) {
-        List<Major> majorList = majorService.list(null);
+        List<Major> listMajor = majorService.list(null);
+        List<College> listCollege = collegeService.list(null);
         //model.addAttribute("majorList", majorList);
         Teacher teacher = teacherService.getById(id);
         //model.addAttribute("teacher", teacher);
         HashMap<String,Object> map = new HashMap<>();
-        map.put("majorList",majorList);
         map.put("teacher",teacher);
+        map.put("listCollege",listCollege);
+        map.put("listMajor",listMajor);
 
         return R.success(map);
     }
@@ -163,7 +169,8 @@ public class TeacherController {
 
     @PostMapping("/deleteBatchTeacher")
     public R<String> deleteBatchTeacher(@RequestBody String ids) {
-        String[] split = ids.split(",");
+        //TODO：传入的字符串格式是 "{ids: "1,2,3,4,5"}"，需要处理一下
+        String[] split = ids.substring(8,ids.length() - 2).split(",");
         List<Integer> idList = new ArrayList<>();
         for (String s : split){
             if (!s.isEmpty()) {
