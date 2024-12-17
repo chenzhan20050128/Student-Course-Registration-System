@@ -44,20 +44,29 @@ public class AccountController {
     /**
      * 处理用户登录请求。根据前端提交的用户名、密码和角色信息对用户进行验证。
      * 验证通过后，会将相关的用户信息存储在会话（session）中。
-     *
+     *{
+     *         "username":"admin",
+     *         "password":"admin123",
+     *         "role":1
+     *     }
      * @param loginRequest 包含用户名、密码和角色的请求对象
-     * @param session      HttpSession对象，用于保存用户会话信息
      * @return 返回登录结果和角色信息
      */
     @PostMapping("/login")
-    public R<Map<String,Object>> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
+    public R<Map<String, Object>> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
-        String username = loginRequest.getUsername();
-        String password = loginRequest.getPassword();
-        Integer role = loginRequest.getRole();
+        // 先从session中获取用户名、密码和角色信息
+        result.put("getFromLoginRequest", "false");
+        String username = (String) session.getAttribute("currentUsername");
+        String password = (String) session.getAttribute("password");
+        Integer role = (Integer) session.getAttribute("role");
 
         if (username == null || password == null || role == null) {
-            return R.error("用户名、密码和角色不能为空");
+            result.put("getFromLoginRequest", "true");
+
+            username = loginRequest.getUsername();
+            password = loginRequest.getPassword();
+            role = loginRequest.getRole();
         }
 
         if (role == 1) {
@@ -70,11 +79,11 @@ public class AccountController {
                 session.setAttribute("currentUsername", username);
                 session.setAttribute("password", password);
                 session.setAttribute("userId", user.getId());
-                //session.setAttribute("email", user.getEmail());
-                //session.setAttribute("image", user.getImage());
+                // session.setAttribute("email", user.getEmail());
+                // session.setAttribute("image", user.getImage());
                 session.setAttribute("role", 1);
                 result.put("role", 1);
-                result.put("id",user.getId());
+                result.put("id", user.getId());
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
@@ -89,11 +98,11 @@ public class AccountController {
                 session.setAttribute("currentUsername", username);
                 session.setAttribute("password", password);
                 session.setAttribute("userId", teacher.getId());
-                //session.setAttribute("email", teacher.getEmail());
-                //session.setAttribute("image", teacher.getTimage());
+                // session.setAttribute("email", teacher.getEmail());
+                // session.setAttribute("image", teacher.getTimage());
                 session.setAttribute("role", 2);
                 result.put("role", 2);
-                result.put("id",teacher.getId());
+                result.put("id", teacher.getId());
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
@@ -112,10 +121,10 @@ public class AccountController {
                 session.setAttribute("age", student.getAge());
                 session.setAttribute("major", student.getMajor());
                 session.setAttribute("college", student.getCollege());
-                //session.setAttribute("image", student.getSimage());
+                // session.setAttribute("image", student.getSimage());
                 session.setAttribute("role", 3);
                 result.put("role", 3);
-                result.put("id",student.getId());
+                result.put("id", student.getId());
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
@@ -126,22 +135,85 @@ public class AccountController {
         }
     }
 
-
     @GetMapping("/logout")
     public R<String> logout(HttpSession session) {
         session.invalidate();
-        return R.success("退出登录成功");    
+        return R.success("退出登录成功");
     }
 
     @GetMapping("/getUserName")
     public R<User> getUserName(HttpSession session) {
         String username = (String) session.getAttribute("currentUsername");
-        //String image = (String) session.getAttribute("image");
+        // String image = (String) session.getAttribute("image");
         User user = new User();
         user.setUsername(username);
-        //user.setImage(image);
+        // user.setImage(image);
         return R.success(user);
     }
+
+    /*
+     * 从session获取角色信息，包括管理员，老师，学生
+     * inDatabase：0：只在session中查询id，name，role等基本信息返回
+     *           1：在数据库中查询完整信息返回
+     */
+    @GetMapping("/getRoleMessage")
+    public R getRoleMessage(HttpSession session,@RequestParam(defaultValue = "0",required = false) Integer inDatabase){
+        Integer role = (Integer) session.getAttribute("role");
+        if (role == null){
+            return R.error("未登录，不能获取session数据");
+        }
+        if (role == 1){
+            if (inDatabase == 0){
+                User user = new User();
+                user.setId((Integer) session.getAttribute("userId"));
+                user.setUsername((String) session.getAttribute("currentUsername"));
+                return R.success(user);
+            }
+            else if (inDatabase == 1){
+                User user = userService.getById((Integer) session.getAttribute("userId"));
+                return R.success(user);
+            }
+            else {
+                return R.error("未给出inDatabase");
+            }
+        }
+        else if (role == 2){
+            if (inDatabase == 0){
+                Teacher teacher = new Teacher();
+                teacher.setId((Integer) session.getAttribute("userId"));
+                teacher.setTname((String) session.getAttribute("currentUsername"));
+                return R.success(teacher);
+            }
+            else if (inDatabase == 1){
+                Teacher teacher = teacherService.getById((Integer) session.getAttribute("userId"));
+                return R.success(teacher);
+            }
+            else {
+                return R.error("未给出inDatabase");
+            }
+        }
+        else if (role == 3){
+            if (inDatabase == 0){
+                Student student = new Student();
+                student.setId((Integer) session.getAttribute("userId"));
+                student.setSname((String) session.getAttribute("currentUsername"));
+                return R.success(student);
+            }
+            else if (inDatabase == 1){
+                Student student = studentService.getById((Integer) session.getAttribute("userId"));
+                return R.success(student);
+            }
+            else {
+                return R.error("未给出inDatabase");
+            }
+        }
+        else {
+            return R.error("未知角色");
+        }
+    }
+
+
+    
 
     /**
      * 个人中心和注册
@@ -174,7 +246,7 @@ public class AccountController {
     @PostMapping("/updateAdminProfile")
     public R<String> updateAdminProfile(@RequestBody User user, MultipartFile file) {
         if (!file.isEmpty()) {
-            transfileAdmin(user,file);
+            transfileAdmin(user, file);
         }
         String passwordAfterMD5 = DigestUtils.md5DigestAsHex(user.getPassword().getBytes());
         user.setPassword(passwordAfterMD5);
@@ -196,7 +268,7 @@ public class AccountController {
         if (!file1.exists()) {
             file1.mkdirs();
         }
-        File file2 = new File(file1,path);
+        File file2 = new File(file1, path);
         try {
             file.transferTo(file2);
         } catch (Exception e) {
@@ -283,7 +355,7 @@ public class AccountController {
      * 这个方法不需要了，前端直接跳转到注册页面
      */
     @GetMapping("/toRegister")
-    public String toRegister(){
+    public String toRegister() {
 
         return "register";
     }
@@ -297,68 +369,65 @@ public class AccountController {
         return "index";
     }
 
-
     /*
      * 注册
      */
     @GetMapping("/register")
-    public R<String> register(@RequestParam Integer role,@RequestParam String userName,@RequestParam String userPwd,@RequestParam String confirmPwd){
+    public R<String> register(@RequestParam Integer role, @RequestParam String userName, @RequestParam String userPwd,
+            @RequestParam String confirmPwd) {
         if (role == null) {
             return R.error("请选择注册角色");
         }
-        if (!userPwd.equals(confirmPwd)){
+        if (!userPwd.equals(confirmPwd)) {
             return R.error("两次密码不一致");
         }
 
-        if (role == 1){
+        if (role == 1) {
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("username",userName);
+            queryWrapper.eq("username", userName);
             User one = userService.getOne(queryWrapper);
-            if (one != null){
+            if (one != null) {
                 return R.error("用户名已存在");
             }
             User user = new User();
             user.setUsername(userName);
             user.setPassword(DigestUtils.md5DigestAsHex(userPwd.getBytes()));
             boolean save = userService.save(user);
-            if (!save){
+            if (!save) {
                 return R.error("注册失败");
             }
             return R.success("注册成功");
-        }
-        else if (role == 2){
+        } else if (role == 2) {
             QueryWrapper<Teacher> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("tname",userName);
+            queryWrapper.eq("tname", userName);
             Teacher one = teacherService.getOne(queryWrapper);
-            if (one != null){
+            if (one != null) {
                 return R.error("用户名已存在");
             }
             Teacher teacher = new Teacher();
             teacher.setTname(userName);
             teacher.setPassword(DigestUtils.md5DigestAsHex(userPwd.getBytes()));
             boolean save = teacherService.save(teacher);
-            if (!save){
+            if (!save) {
                 return R.error("注册失败");
             }
             return R.success("注册成功");
-        }
-        else if (role == 3){
+        } else if (role == 3) {
             QueryWrapper<Student> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("sname",userName);
+            queryWrapper.eq("sname", userName);
             Student one = studentService.getOne(queryWrapper);
-            if (one != null){
+            if (one != null) {
                 return R.error("用户名已存在");
             }
             Student student = new Student();
             student.setSname(userName);
             student.setPassword(DigestUtils.md5DigestAsHex(userPwd.getBytes()));
             boolean save = studentService.save(student);
-            if (!save){
+            if (!save) {
                 return R.error("注册失败");
             }
             return R.success("注册成功");
-        }
-        else {
+        } else {
             return R.error("请选择正确的注册角色");
         }
 
