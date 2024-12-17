@@ -122,10 +122,12 @@ public class StudentController {
      * @return 成功保存后重定向到学生列表。
      */
     @PostMapping("/saveStudent")
-    public R<String> saveStudent(Student student, MultipartFile file) throws IOException {
-        if (file != null && !file.isEmpty()) {
-            transfile(student, file);
-        }
+    public R<String> saveStudent(@RequestBody Student student,
+    @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+        //TODO: 保存学生的图像文件
+        // if (file != null && !file.isEmpty()) {
+        //     transfile(student, file);
+        // }
         String defaultPassword = "123456";
         String passwordAfterMD5 = DigestUtils.md5DigestAsHex(defaultPassword.getBytes());
         student.setPassword(passwordAfterMD5);
@@ -228,20 +230,22 @@ public class StudentController {
     /**
      * 在单次请求中删除多个学生。
      *
-     * @param idList 要删除的学生ID的JSON数组
+     * @param ids 要删除的学生ID的JSON数组
      * @return 重定向到学生列表。
      */
     @PostMapping("/deleteBatchStudent")
-    public R<String> deleteBatchStudent(@RequestBody String idList) {
-        String[] split = idList.split(",");
-        List<Integer> list = new ArrayList<>();
+    public R<String> deleteBatchStudent(@RequestBody String ids) {
+        //TODO：传入的字符串格式是 "{ids: "1,2,3,4,5"}"，需要处理一下
+        String[] split = ids.substring(8,ids.length() - 2).split(",");
+        List<Integer> idList = new ArrayList<>();
         for (String s : split) {
             if (!s.isEmpty()) {
-                list.add(Integer.parseInt(s));
+                idList.add(Integer.parseInt(s));
             }
         }
-        boolean isRemoved = studentService.removeById(idList);
-        if (!isRemoved) {
+
+        boolean b = studentService.removeByIds(idList);
+        if (!b) {
             //model.addAttribute("error", "Error deleting student.");
             return R.error("Error deleting student.");
         }
