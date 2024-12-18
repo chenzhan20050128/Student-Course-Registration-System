@@ -203,15 +203,31 @@ public class StudentController {
      * @return 成功更新后重定向到学生列表。
      */
     @PostMapping("/updateStudent")
-    public R<String> updateStudent(@RequestBody Student student, MultipartFile file) throws IOException {
-//        if (!file.isEmpty()) {
-//            System.out.println("11111");
-//            transfile(student, file);
-//        }
+    public R<String> updateStudent(@RequestBody Student student, MultipartFile simage) throws IOException {
+        if (simage != null) {
+            System.out.println("11111");
+            transfile(student, simage);
+        }
         studentService.updateById(student);
         return R.success("Success to update student!");
     }
 
+    @PostMapping("/uploadStudentImage")
+    public R<String> uploadStudentImage(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return R.error("文件为空");
+        }
+        String fileName = file.getOriginalFilename();
+        String filePath = System.getProperty("user.dir") + "\\public\\"; // 获取项目根目录并拼接上传目录
+        File dest = new File(filePath + fileName);
+        try {
+            file.transferTo(dest);
+            return R.success(fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return R.error("上传失败");
+        }
+    }
     /**
      * 根据学生ID删除学生信息。
      *

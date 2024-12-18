@@ -44,6 +44,14 @@ export default {
   methods: {
     async fetchStudentCourses() {
       try {
+        const response3 = await axios.get('/getRoleMessage')
+        this.id = response3.data.data.id
+        const response2 = await axios.get('/studentCourse/listStudentCourse', {
+          params: {
+            sid: this.id,
+          },
+        });
+        console.log("response2",response2)
         const response = await axios.get('/student/listMyCourse', {
           params: {
             pageNum: this.pageNum,
