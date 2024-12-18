@@ -11,13 +11,18 @@ import com.scrs.service.TeacherService;
 import com.scrs.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.ui.Model;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*; // 注意修改导入，使用 RestController
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +31,7 @@ import java.util.Map;
  * 该控制器负责处理账户相关的请求，特别是用户登录操作。
  * 根据用户角色的不同，分别处理管理员、老师和学生的登录，并将相应信息存入会话中。
  */
+
 @RestController // 将 @Controller 改为 @RestController
 @CrossOrigin(origins = "http://localhost:5173") // 允许的前端地址
 public class AccountController {
@@ -45,16 +51,19 @@ public class AccountController {
     /**
      * 处理用户登录请求。根据前端提交的用户名、密码和角色信息对用户进行验证。
      * 验证通过后，会将相关的用户信息存储在会话（session）中。
-     *{
-     *         "username":"admin",
-     *         "password":"admin123",
-     *         "role":1
-     *     }
+     * {
+     * "username":"admin",
+     * "password":"admin123",
+     * "role":1
+     * }
+     * 
      * @param loginRequest 包含用户名、密码和角色的请求对象
      * @return 返回登录结果和角色信息
      */
     @PostMapping("/login")
     public R<Map<String, Object>> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
+        //printSessionInfo();//仅用于调试
+
         Map<String, Object> result = new HashMap<>();
         // 先从session中获取用户名、密码和角色信息
         result.put("getFromLoginRequest", "false");
@@ -69,7 +78,7 @@ public class AccountController {
             password = loginRequest.getPassword();
             role = loginRequest.getRole();
         }
-        //session.setAttribute("role", role);
+
         if (role == 1) {
             // 管理员登录逻辑
             Boolean b = userService.login(username, password);
@@ -85,10 +94,6 @@ public class AccountController {
                 session.setAttribute("role", 1);
                 result.put("role", 1);
                 result.put("id", user.getId());
-//                System.out.println("!!!!!!!!!!!!!!!!!!login!!!!!!!!!!!!!!!!!!!!");
-//                System.out.println("role:" + session.getAttribute("role"));
-//                System.out.println("id:" + session.getAttribute("userId"));
-
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
@@ -159,70 +164,56 @@ public class AccountController {
     /*
      * 从session获取角色信息，包括管理员，老师，学生
      * inDatabase：0：只在session中查询id，name，role等基本信息返回
-     *           1：在数据库中查询完整信息返回
+     * 1：在数据库中查询完整信息返回
      */
     @GetMapping("/getRoleMessage")
-    public R<Object> getRoleMessage(HttpSession session,@RequestParam(defaultValue = "0",required = false) Integer inDatabase){
-        //System.out.println("!!!!!!!!!!!!!!!!!!getRoleMessage!!!!!!!!!!!!!!!!!!!!");
+    public R getRoleMessage(HttpSession session,
+            @RequestParam(defaultValue = "0", required = false) Integer inDatabase) {
+        //printSessionInfo();
         Integer role = (Integer) session.getAttribute("role");
-//        System.out.println("NAme " + session.getAttribute("currentUsername"));
-//        System.out.println("role:"+role);
-//        System.out.println("inDatabase:"+inDatabase);
-        if (role == null){
+        if (role == null) {
             return R.error("未登录，不能获取session数据");
         }
-        if (role == 1){
-            if (inDatabase == 0){
+        if (role == 1) {
+            if (inDatabase == 0) {
                 User user = new User();
                 user.setId((Integer) session.getAttribute("userId"));
                 user.setUsername((String) session.getAttribute("currentUsername"));
                 return R.success(user);
-            }
-            else if (inDatabase == 1){
+            } else if (inDatabase == 1) {
                 User user = userService.getById((Integer) session.getAttribute("userId"));
                 return R.success(user);
-            }
-            else {
+            } else {
                 return R.error("未给出inDatabase");
             }
-        }
-        else if (role == 2){
-            if (inDatabase == 0){
+        } else if (role == 2) {
+            if (inDatabase == 0) {
                 Teacher teacher = new Teacher();
                 teacher.setId((Integer) session.getAttribute("userId"));
                 teacher.setTname((String) session.getAttribute("currentUsername"));
                 return R.success(teacher);
-            }
-            else if (inDatabase == 1){
+            } else if (inDatabase == 1) {
                 Teacher teacher = teacherService.getById((Integer) session.getAttribute("userId"));
                 return R.success(teacher);
-            }
-            else {
+            } else {
                 return R.error("未给出inDatabase");
             }
-        }
-        else if (role == 3){
-            if (inDatabase == 0){
+        } else if (role == 3) {
+            if (inDatabase == 0) {
                 Student student = new Student();
                 student.setId((Integer) session.getAttribute("userId"));
                 student.setSname((String) session.getAttribute("currentUsername"));
                 return R.success(student);
-            }
-            else if (inDatabase == 1){
+            } else if (inDatabase == 1) {
                 Student student = studentService.getById((Integer) session.getAttribute("userId"));
                 return R.success(student);
-            }
-            else {
+            } else {
                 return R.error("未给出inDatabase");
             }
-        }
-        else {
+        } else {
             return R.error("未知角色");
         }
     }
-
-
-    
 
     /**
      * 个人中心和注册
@@ -440,5 +431,26 @@ public class AccountController {
             return R.error("请选择正确的注册角色");
         }
 
+    }
+
+    /*
+        仅用于调试
+     */
+    public void printSessionInfo() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpSession session = attributes.getRequest().getSession();
+            System.out.println("====== Session Info " + new Date() + " ======");
+            Enumeration<String> attributeNames = session.getAttributeNames();
+            while (attributeNames.hasMoreElements()) {
+                String attributeName = attributeNames.nextElement();
+                System.out.println(attributeName + " : " + session.getAttribute(attributeName));
+            }
+            System.out.println("Session ID: " + session.getId());
+            System.out.println("Creation Time: " + new Date(session.getCreationTime()));
+            System.out.println("Last Accessed Time: " + new Date(session.getLastAccessedTime()));
+            System.out.println("Max Inactive Interval: " + session.getMaxInactiveInterval() + " seconds");
+            System.out.println("=======================================");
+        }
     }
 }

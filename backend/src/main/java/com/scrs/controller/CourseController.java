@@ -12,6 +12,9 @@ import com.scrs.pojo.Course;
 import com.scrs.pojo.Major;
 import com.scrs.service.CourseService;
 import com.scrs.service.MajorService;
+import com.scrs.utils.CacheClient;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -25,9 +28,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+
+@Slf4j
 @RestController
 @RequestMapping("/course")
 public class CourseController {
+
+    @Autowired
+    private CacheClient cacheClient;
+
     @Autowired
     private CourseService courseService;
 
@@ -39,24 +48,50 @@ public class CourseController {
 
     @GetMapping("/listCourse")
     public R<PageInfo> listCourse(
-            @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-            @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+            @RequestParam(value = "pageNum", defaultValue = "1",required = false) Integer pageNum,
+            @RequestParam(value = "pageSize", defaultValue = "6",required = false) Integer pageSize,
             @RequestParam(required = false) String name) {
+        log.info("pageNum: {}, pageSize: {}, name: {}", pageNum, pageSize, name);
+
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
         if (pageSize == null || pageSize <= 0) {
             pageSize = 6;
         }
-        PageHelper.startPage(pageNum, pageSize);
-        LambdaQueryWrapper<Course> queryWrapper = new LambdaQueryWrapper<>();
         if (name != null && !name.isEmpty()) {
-            queryWrapper.like(Course::getCname, name);
-        }
-        PageInfo pageInfo = new PageInfo(courseService.list(queryWrapper));
-        System.out.println(R.success(pageInfo).toString());
 
-        return R.success(pageInfo);
+            PageHelper.startPage(pageNum, pageSize);
+            LambdaQueryWrapper<Course> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.like(Course::getCname, name);
+            PageInfo pageInfo = new PageInfo<>(courseService.list(queryWrapper));
+            return R.success(pageInfo);
+        }
+
+        try {
+            String key = "courseList";
+            Integer finalPageSize = pageSize;
+            Integer finalPageNum = pageNum;
+            PageInfo pageInfo = cacheClient.queryWithLogicalExpire(
+                    key,
+                    PageInfo.class,
+                    key1 -> {
+                        log.info("Redis查询失败，直接从数据库中返回数据");
+                        PageHelper.startPage(finalPageNum, finalPageSize);
+                        LambdaQueryWrapper<Course> queryWrapper = new LambdaQueryWrapper<>();
+                        List<Course> courseList = courseService.list(queryWrapper);
+                        return new PageInfo(courseList);
+                    },
+                    60L // 缓存过期时间，单位：秒
+            );
+            return R.success(pageInfo);
+        } catch (Exception e) {
+            log.info("Redis查询失败，直接从数据库中返回数据");
+            PageHelper.startPage(pageNum, pageSize);
+            LambdaQueryWrapper<Course> queryWrapper = new LambdaQueryWrapper<>();
+            List<Course> courseList = courseService.list(queryWrapper);
+            return R.success(new PageInfo(courseList));
+        }
     }
 
     /**
@@ -64,7 +99,16 @@ public class CourseController {
      */
     @GetMapping("/preSaveCourse")
     public R<List<Major>> preSaveCourse() {
-        List<Major> majorList = majorService.list(null);
+        String key = "majorList";
+
+        // 使用CacheClient查询缓存
+        List<Major> majorList = cacheClient.queryWithLogicalExpire(
+                key,
+                List.class,
+                id -> majorService.list(null),
+                60L // 缓存过期时间，单位：秒
+        );
+
         R<List<Major>> result = R.success(majorList);
         System.out.println(result.toString());
         return result;
@@ -76,7 +120,7 @@ public class CourseController {
     @PostMapping("/saveCourse")
     public R<String> saveCourse(@RequestBody Course course,
             @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
-        System.out.println(course.toString());
+        // System.out.println(course.toString());
         if (file != null && !file.isEmpty()) {
             transfile(course, file);
         }
@@ -86,7 +130,11 @@ public class CourseController {
          * }
          */
         courseService.save(course);
-        System.out.println(course.toString());
+
+        String key = "courseList";
+        PageInfo<Course> pageInfo = new PageInfo<>(courseService.list(null));
+        cacheClient.setWithLogicalExpire(key, pageInfo, 6000L); // 缓存过期时间，单位：秒
+
         return R.success("save course successfully");
     }
 
@@ -164,13 +212,13 @@ public class CourseController {
     // 管理员只能修改课程图像，不能修改课程介绍电子书，只能由老师修改
     @PostMapping("/updateCourse")
     public R<String> updateCourse(@RequestBody Course course) {
-        //, MultipartFile file
+        // , MultipartFile file
         // if (!file.isEmpty()) {
-        //     try {
-        //         transfile(course, file);
-        //     } catch (IOException e) {
-        //         e.printStackTrace();
-        //     }
+        // try {
+        // transfile(course, file);
+        // } catch (IOException e) {
+        // e.printStackTrace();
+        // }
         // }
         courseService.updateById(course);
         return R.success("update course successfully");
@@ -187,8 +235,8 @@ public class CourseController {
 
     @PostMapping("/deleteBatchCourse")
     public R<String> deleteBatchCourse(@RequestBody String ids) {
-        //TODO：传入的字符串格式是 "{ids: "1,2,3,4,5"}"，需要处理一下
-        String[] split = ids.substring(8,ids.length() - 2).split(",");
+        // TODO：传入的字符串格式是 "{ids: "1,2,3,4,5"}"，需要处理一下
+        String[] split = ids.substring(8, ids.length() - 2).split(",");
         List<Integer> idList = new ArrayList<>();
         for (String s : split) {
             if (!s.isEmpty()) {

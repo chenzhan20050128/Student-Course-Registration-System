@@ -7,10 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Slf4j
 @SpringBootApplication
-@MapperScan("com.scrs.mapper")
 public class ScrsApplication {
     public static void main(String[] args) {
-
         SpringApplication.run(ScrsApplication.class, args);
         log.info("ScrsApplication started successfully!!!");
     }
