@@ -282,13 +282,13 @@ public class StudentController {
      * 选课记录
      */
     @GetMapping("/listMyCourse")
-    public String listMyCourse(@RequestParam(required = false) String cname, HttpSession session,Model model){
+    public R<PageInfo<StudentCourse>> listMyCourse(@RequestParam(required = false) String cname, HttpSession session, Model model){
         Integer userId = (Integer) session.getAttribute("userId");
         List<StudentCourse> studentCourses = studentCourseService.listMyCourse(userId, cname);
         //简化操作，与教师无关
         PageInfo<StudentCourse> pageInfo = new PageInfo<>(studentCourses);
         model.addAttribute("pageInfo", pageInfo);
-        return "student-my-course";
+        return R.success(pageInfo);
     }
 
     /**
@@ -300,8 +300,16 @@ public class StudentController {
         queryWrapper.eq("sid", sid);
         queryWrapper.eq("cid", cid);
         StudentCourse one = studentCourseService.getOne(queryWrapper);
-        if (one != null) {
+        if (one != null && one.getStatus() == 1) {
             return R.error("该学生已经选过该课程");
+        }
+        if (one != null && one.getStatus() == 0){
+            one.setStatus(1);
+            Course course = courseService.getById(cid);
+            course.setNum(course.getNum() + 1);
+            courseService.updateById(course);
+            studentCourseService.updateById(one);
+            return R.success("选课成功");
         }
         Course course = courseService.getById(cid);
         if (course.getNum() >= course.getStock()){
@@ -312,6 +320,7 @@ public class StudentController {
         StudentCourse studentCourse = new StudentCourse();
         studentCourse.setSid(sid);
         studentCourse.setCid(cid);
+        studentCourse.setStatus(1);
         studentCourseService.save(studentCourse);
         return R.success("选课成功");
     }
@@ -319,7 +328,7 @@ public class StudentController {
     /**
      * 学生退选
      */
-    @GetMapping("/deleteMyCourse")
+    @PostMapping("/deleteMyCourse")
     public R<String> deleteMyCourse(@RequestParam Integer cid, @RequestParam Integer sid){
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("sid", sid);

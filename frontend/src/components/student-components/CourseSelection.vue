@@ -6,8 +6,8 @@
       <el-table-column prop="major" label="专业" width="100"></el-table-column>
       <el-table-column prop="teacher" label="教师" width="100"></el-table-column>
       <el-table-column prop="address" label="地址" width="150"></el-table-column>
-      <el-table-column prop="num" label="选课容量" width="100"></el-table-column>
-      <el-table-column prop="stock" label="选课人数" width="100"></el-table-column>
+      <el-table-column prop="num" label="选课人数" width="100"></el-table-column>
+      <el-table-column prop="stock" label="选课容量" width="100"></el-table-column>
       <el-table-column prop="credit" label="学分" width="100"></el-table-column>
       <el-table-column label="操作" width="100">
         <template v-slot="scope">
@@ -31,13 +31,9 @@ import axios from '@/http';
 import { useStudentStore } from '@/store/student';
 export default {
   name: 'CourseSelection',
-  setup() {
-    const studentStore = useStudentStore();
-    return { studentStore };
-  },
   data() {
     return {
-      id : this.studentStore.student.id,
+      id : 0,
       courses: [],
       pageNum: 1,
       pageSize: 6,
@@ -48,6 +44,8 @@ export default {
   methods: {
     async fetchCourses() {
       try {
+        const response3 = await axios.get('/getRoleMessage')
+        this.id = response3.data.data.id
         const response2 = await axios.get(`/student/preUpdateStudent/${this.id}`); 
         this.majorName = response2.data.data.student.major;
         const response = await axios.get('/student/listCourseByMajorName', {
@@ -71,7 +69,12 @@ export default {
     },
     async selectCourse(courseId) {
       try {
-        const response = await axios.get(`/student/selectCourse/${courseId}`);
+        const response = await axios.get('/student/selectCourse', {
+          params: {
+            sid: this.id,
+            cid: courseId,
+          },
+        });;
         console.log("111",response)
         if (response.data && response.data.code === 1) {
           this.$message.success('选课成功');

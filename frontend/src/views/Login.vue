@@ -46,10 +46,8 @@ export default {
       };
       try {
         // 发送登录请求到后端
+        console.log("loginData",loginData)
         const response = await this.$http.post('/login', loginData);
-        const studentStore = useStudentStore();
-        studentStore.student.id = response.data.data.id;
-        console.log('登录成功', response);
         if (response.data.code) {
           // 根据角色跳转到不同的首页视图
           const role = response.data.data.role;
@@ -58,6 +56,7 @@ export default {
           } else if (role === 2) {
             this.$router.push('/teacher-home');
           } else if (role === 3) {
+            
             this.$router.push('/student-home');
           }
         } else {
