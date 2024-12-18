@@ -68,30 +68,23 @@ public class CourseController {
             return R.success(pageInfo);
         }
 
-        try {
-            String key = "courseList";
-            Integer finalPageSize = pageSize;
-            Integer finalPageNum = pageNum;
-            PageInfo pageInfo = cacheClient.queryWithLogicalExpire(
-                    key,
-                    PageInfo.class,
-                    key1 -> {
-                        log.info("Redis查询失败，直接从数据库中返回数据");
-                        PageHelper.startPage(finalPageNum, finalPageSize);
-                        LambdaQueryWrapper<Course> queryWrapper = new LambdaQueryWrapper<>();
-                        List<Course> courseList = courseService.list(queryWrapper);
-                        return new PageInfo(courseList);
-                    },
-                    60L // 缓存过期时间，单位：秒
-            );
-            return R.success(pageInfo);
-        } catch (Exception e) {
-            log.info("Redis查询失败，直接从数据库中返回数据");
-            PageHelper.startPage(pageNum, pageSize);
-            LambdaQueryWrapper<Course> queryWrapper = new LambdaQueryWrapper<>();
-            List<Course> courseList = courseService.list(queryWrapper);
-            return R.success(new PageInfo(courseList));
-        }
+        String key = "courseList";
+        Integer finalPageSize = pageSize;
+        Integer finalPageNum = pageNum;
+        //log.info("PageInfo pageInfo = cacheClient.queryWithLogicalExpire");
+        PageInfo pageInfo = cacheClient.queryWithLogicalExpire(
+                key,
+                PageInfo.class,
+                () -> {
+                    log.info("Redis查询失败，直接从数据库中返回数据");
+                    PageHelper.startPage(finalPageNum, finalPageSize);
+                    LambdaQueryWrapper<Course> queryWrapper = new LambdaQueryWrapper<>();
+                    List<Course> courseList = courseService.list(queryWrapper);
+                    return new PageInfo(courseList);
+                },
+                6000L // 缓存过期时间，单位：秒
+        );
+        return R.success(pageInfo);
     }
 
     /**
@@ -105,7 +98,7 @@ public class CourseController {
         List<Major> majorList = cacheClient.queryWithLogicalExpire(
                 key,
                 List.class,
-                id -> majorService.list(null),
+                () -> majorService.list(null),
                 60L // 缓存过期时间，单位：秒
         );
 
@@ -199,7 +192,13 @@ public class CourseController {
     @GetMapping("/preUpdateCourse/{id}")
     public R<HashMap<String, Object>> preUpdateCourse(@PathVariable Integer id) {
         Course course = courseService.getById(id);
-        List<Major> majorList = majorService.list(null);
+        String key = "majorList";
+        List<Major> majorList = cacheClient.queryWithLogicalExpire(
+                key,
+                List.class,
+                () -> majorService.list(null),
+                60L // 缓存过期时间，单位：秒
+        );
         HashMap<String, Object> map = new HashMap<>();
         map.put("course", course);
         map.put("majorList", majorList);
@@ -221,6 +220,11 @@ public class CourseController {
         // }
         // }
         courseService.updateById(course);
+
+        String key = "courseList";
+        PageInfo<Course> pageInfo = new PageInfo<>(courseService.list(null));
+        cacheClient.setWithLogicalExpire(key, pageInfo, 6000L); // 缓存过期时间，单位：秒
+
         return R.success("update course successfully");
     }
 
