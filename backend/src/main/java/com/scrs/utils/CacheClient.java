@@ -17,9 +17,10 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Slf4j
 @Component
@@ -126,34 +127,39 @@ public class CacheClient {
     /**
      * 解决缓存击穿：逻辑过期+互斥锁的方法
      */
-    public <T> T queryWithLogicalExpire(String key, Class<T> type, Function<String, T> dbFallback, Long time) {
+    public <T> T queryWithLogicalExpire(String key, Class<T> type, Supplier<T> dbFallback, Long time) {
         // 从Redis查询缓存
         String json = stringRedisTemplate.opsForValue().get(key);
         // 判断缓存是否存在
         if (StrUtil.isBlank(json)) {
-            // 缓存不存在，从数据库中读到缓存
-            log.info("CacheClient::queryWithLogicalExpire：缓存不存在");
+            // 缓存不存在，从数据库中读取
+            log.info("缓存不存在，从数据库中读取{}",key);
             String lockKey = "lock:" + key;
-            AtomicReference<T> data = null;
             boolean isLock = tryLock(lockKey);
             if (isLock) {
                 // 成功获取锁，开启独立线程进行缓存重建
-                CACHE_REBUILD_EXECUTOR.submit(() -> {
-                    try {
-                        // 查询数据库
-                        data.set(dbFallback.apply(key));
-                        // 写入Redis缓存
-                        this.setWithLogicalExpire(key, data, time);
+                try {
+                    return CACHE_REBUILD_EXECUTOR.submit(() -> {
+                        try {
+                            // 查询数据库
+                            T t = dbFallback.get();
+                            // 写入Redis缓存
+                            this.setWithLogicalExpire(key, t, time);
+                            return t;
 
-                    } catch (Exception e) {
-                        log.error("缓存重建失败", e);
-                    } finally {
-                        // 释放锁
-                        unlock(lockKey);
-                    }
-                });
+                        } catch (Exception e) {
+                            log.error("缓存重建失败", e);
+                            return null;
+                        } finally {
+                            // 释放锁
+                            unlock(lockKey);
+                        }
+                    }).get();
+                } catch (InterruptedException | ExecutionException e) {
+                    log.error("缓存重建线程执行失败", e);
+                    return null;
+                }
             }
-            return data.get();
         }
 
         //log.info("stringRedisTemplate.opsForValue().get(key){}", json);
@@ -177,7 +183,7 @@ public class CacheClient {
             CACHE_REBUILD_EXECUTOR.submit(() -> {
                 try {
                     // 查询数据库
-                    T t = dbFallback.apply(key);
+                    T t = dbFallback.get();
                     // 写入Redis缓存
                     this.setWithLogicalExpire(key, t, time);
 

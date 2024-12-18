@@ -1,23 +1,20 @@
 <template>
     <div>
-      <el-form :model="student" label-width="120px">
+      <el-form :model="teacher" label-width="120px">
         <el-form-item label="姓名">
-          <el-input v-model="student.sname"></el-input>
+          <el-input v-model="teacher.tname"></el-input>
         </el-form-item>
         <el-form-item label="性别">
-          <el-select v-model="student.sex" placeholder="请选择">
+          <el-select v-model="teacher.sex" placeholder="请选择">
             <el-option label="男" value="Male"></el-option>
             <el-option label="女" value="Female"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="年龄">
-          <el-input v-model="student.age" type="number"></el-input>
+          <el-input v-model="teacher.age" type="number"></el-input>
         </el-form-item>
         <el-form-item label="专业">
-          <el-input v-model="student.major"></el-input>
-        </el-form-item>
-        <el-form-item label="学院">
-          <el-input v-model="student.college"></el-input>
+          <el-input v-model="teacher.major"></el-input>
         </el-form-item>
         <el-form-item label="图片">
           <el-upload
@@ -32,74 +29,72 @@
           </el-upload>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="updateStudentInfo">保存</el-button>
+          <el-button type="primary" @click="updateTeacherInfo">保存</el-button>
         </el-form-item>
       </el-form>
     </div>
   </template>
   
   <script>
-import axios from '@/http';
+  import axios from '@/http';
+  
   export default {
-    name: 'PersonalInfo',
+    name: 'TeachingInfo',
     data() {
       return {
-        student: {
-          id : 0,  
-          sname: '',
+        teacher: {
+          id: 0,
+          tname: '',
           sex: '',
           age: null,
           major: '',
           college: '',
-          simage: '',
+          timage: '',
           password: '',
         },
         fileList: [],
       };
     },
     methods: {
-      async fetchStudentInfo() {
+      async fetchTeacherInfo() {
         try {
-            const response2 = await axios.get('/getRoleMessage')
-            this.student.id = response2.data.data.id
-            const response = await axios.get(`/student/preUpdateStudent/${this.student.id}`); // 假设学生ID为1 TODO 修改为真实的学生ID
-            console.log("response2",response2)
+          const response2 = await axios.get('/getRoleMessage')
+          this.teacher.id = response2.data.data.id
+          const response = await axios.get(`/teacher/preUpdateTeacher/${this.teacher.id}`);
           if (response.data && response.data.data) {
-            this.student = response.data.data.student;
+            this.teacher = response.data.data.teacher;
           }
         } catch (error) {
-          console.error('获取学生信息失败', error);
+          console.error('获取教师信息失败', error);
         }
       },
       handleUploadSuccess(response, file, fileList) {
-        this.student.simage = file.name;
+        this.teacher.timage = file.name;
       },
       handleRemove(file, fileList) {
-        this.student.simage = '';
+        this.teacher.timage = '';
       },
       handlePictureCardPreview(file) {
         this.$alert(`<img src="${file.url}" style="width: 100%;">`, '图片预览', {
           dangerouslyUseHTMLString: true,
         });
       },
-      async updateStudentInfo() {
+      async updateTeacherInfo() {
         try {
-          const response = await axios.post('/student/updateStudent', this.student);
-          console.log(111)
-
+          const response = await axios.post('/teacher/updateTeacher', this.teacher);
           if (response.data && response.data.code === 1) {
-            this.$message.success('学生信息更新成功');
+            this.$message.success('教师信息更新成功');
           } else {
-            this.$message.error('学生信息更新失败');
+            this.$message.error('教师信息更新失败');
           }
         } catch (error) {
-          console.error('更新学生信息失败', error);
-          this.$message.error('更新学生信息失败');
+          console.error('更新教师信息失败', error);
+          this.$message.error('更新教师信息失败');
         }
       },
     },
     mounted() {
-      this.fetchStudentInfo();
+      this.fetchTeacherInfo();
     },
   };
   </script>
