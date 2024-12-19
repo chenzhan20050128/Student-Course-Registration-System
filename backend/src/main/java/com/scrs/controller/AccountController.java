@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -431,6 +432,33 @@ public class AccountController {
             return R.error("请选择正确的注册角色");
         }
 
+    }
+
+
+    @PostMapping("/uploadImage")
+    public R<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return R.error("文件为空");
+        }
+        String fileName = file.getOriginalFilename();
+        String filePath = location; // 获取项目根目录并拼接上传目录
+
+        File file1 = new File(location);
+        // 检查该目录是否存在
+        if (!file1.exists()) {
+            // 如果目录不存在，则创建该目录（包括必要的父目录）
+            file1.mkdirs();
+        }
+        // 创建一个File对象，表示具体的文件路径，将文件名添加到目录中
+        File file2 = new File(file1, fileName + filePath);
+        try {
+            // 使用传输文件的方法将内容写入到file2的路径中
+            file.transferTo(file2);
+        } catch (IOException e) {
+            // 如果在文件传输过程中出现IO异常，则打印异常栈跟踪以进行调试
+            e.printStackTrace();
+        }
+        return R.success("Success to upload image!");
     }
 
     /*
