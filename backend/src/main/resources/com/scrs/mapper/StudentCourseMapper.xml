@@ -60,8 +60,8 @@
 <select id="listMyCourse" resultMap="studentCourse">
     select
         sc.id as sc_id,
-        sc.sid,
-        sc.cid,
+        sc.sid as sc_sid,
+        sc.cid as sc_cid,
         sc.status,
         s.id as s_id,
         s.sname,
