@@ -1,11 +1,12 @@
 <template>
     <div>
       <el-table :data="courses" style="width: 100%">
-        <el-table-column prop="id" label="课程ID" width="100"></el-table-column>
-        <el-table-column prop="cname" label="课程名称" width="150"></el-table-column>
-        <el-table-column prop="address" label="上课地点" width="150"></el-table-column>
-        <el-table-column prop="num" label="选课人数" width="100"></el-table-column>
-        <el-table-column prop="major" label="所属专业" width="150"></el-table-column>
+        <el-table-column prop="cid" label="课程ID" width="100"></el-table-column>
+        <el-table-column prop="course.cname" label="课程名称" width="150"></el-table-column>
+        <el-table-column prop="course.address" label="上课地点" width="150"></el-table-column>
+        <el-table-column prop="course.num" label="选课人数" width="100"></el-table-column>
+        <el-table-column prop="course.stock" label="选课容量" width="100"></el-table-column>
+        <el-table-column prop="teacher.major" label="所属专业" width="150"></el-table-column>
       </el-table>
       <el-pagination
         background

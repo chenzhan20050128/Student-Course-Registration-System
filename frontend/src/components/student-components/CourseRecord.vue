@@ -2,12 +2,18 @@
   <div>
     <el-table :data="studentCourses" style="width: 100%">
       <el-table-column prop="cid" label="课程ID" width="100"></el-table-column>
-      <el-table-column prop="cname" label="课程名称" width="150"></el-table-column>
-      <el-table-column prop="teacher" label="教师" width="100"></el-table-column>
-      <el-table-column prop="address" label="上课地点" width="150"></el-table-column>
-      <el-table-column prop="num" label="选课人数" width="100"></el-table-column>
-      <el-table-column prop="stock" label="选课容量" width="100"></el-table-column>
-      <el-table-column prop="status" label="选课状态" width="100"></el-table-column>
+      <el-table-column prop="course.cname" label="课程名称" width="150"></el-table-column>
+      <el-table-column prop="course.teacher" label="教师" width="100"></el-table-column>
+      <el-table-column prop="course.address" label="上课地点" width="150"></el-table-column>
+      <el-table-column prop="course.num" label="选课人数" width="100"></el-table-column>
+      <el-table-column prop="course.stock" label="选课容量" width="100"></el-table-column>
+      <el-table-column label="选课状态" width="100">
+        <template v-slot="scope">
+          <span :style="{ color: scope.row.status === 1 ? 'green' : 'red' }">
+            {{ scope.row.status === 1 ? '已选课' : '已退选' }}
+          </span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="100">
         <template v-slot="scope">
           <el-button @click="deselectCourse(scope.row.cid)" type="danger" size="small">退选</el-button>
@@ -46,17 +52,9 @@ export default {
       try {
         const response3 = await axios.get('/getRoleMessage')
         this.id = response3.data.data.id
-        const response2 = await axios.get('/studentCourse/listStudentCourse', {
-          params: {
-            sid: this.id,
-          },
-        });
-        console.log("response2",response2)
         const response = await axios.get('/student/listMyCourse', {
           params: {
-            pageNum: this.pageNum,
-            pageSize: this.pageSize,
-            cname: this.cname,
+            sid: this.id,
           },
         });
         if (response.data && response.data.data) {
