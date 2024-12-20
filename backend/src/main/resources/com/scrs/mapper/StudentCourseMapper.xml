@@ -54,30 +54,42 @@
         </if>
     </where>
     </select>
-    <select id="listMyCourse" resultType="com.scrs.pojo.StudentCourse">
-        SELECT
-        sc.id,
-        sc.cid,
+
+
+
+<select id="listMyCourse" resultMap="studentCourse">
+    select
+        sc.id as sc_id,
+        sc.sid as sc_sid,
+        sc.cid as sc_cid,
         sc.status,
+        s.id as s_id,
         s.sname,
-        s.simage,
+        s.password,
+        s.sex,
+        s.age,
+        s.major,
         s.college,
-        c.major AS course_major,
+        s.simage,
+        c.id as c_id,
+        c.cname,
+        c.major,
+        c.address,
         c.num,
         c.stock,
-        c.cname,
         c.cimage,
-        c.address,
-        c.cbook
-        FROM
+        c.cbook,
+        c.teacher,
+        c.credit
+    FROM
         student_course sc,
         student s,
         course c
-        <where>
-            s.id=sc.sid and c.id=sc.cid and s.id=#{userId}
-            <if test="cname != null and cname != ''">
-                and c.cname=#{cname}
-            </if>
-        </where>
-    </select>
+    <where>
+        s.id = sc.sid and c.id = sc.cid and s.id = #{userId}
+        <if test="cname != null and cname != ''">
+            and c.cname = #{cname}
+        </if>
+    </where>
+</select>
 </mapper>

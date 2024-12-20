@@ -69,8 +69,8 @@ public class StudentController {
      */
     @GetMapping("/listStudent")
     public R<PageInfo> listStudent(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                   @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-                                   @RequestParam(required = false) String sname) {
+            @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+            @RequestParam(required = false) String sname) {
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
@@ -86,9 +86,9 @@ public class StudentController {
         List<Student> students = studentService.list(queryWrapper);
         PageInfo<Student> pageInfo = new PageInfo<>(students);
 
-        //System.out.println("PageInfo: " + pageInfo.toString());// 测试
+        // System.out.println("PageInfo: " + pageInfo.toString());// 测试
 
-        //model.addAttribute("pageInfo", pageInfo);
+        // model.addAttribute("pageInfo", pageInfo);
         return R.success(pageInfo);
     }
 
@@ -99,14 +99,14 @@ public class StudentController {
      * @return 渲染学生保存表单的视图名称。
      */
     @GetMapping("/preSaveStudent")
-    public R<HashMap<String,Object>> preSaveStudent(Model model) {
+    public R<HashMap<String, Object>> preSaveStudent(Model model) {
         List<College> listCollege = collegeService.list(null);
         List<Major> listMajor = majorService.list(null);
-        //model.addAttribute("listCollege", listCollege);
-        //model.addAttribute("listMajor", listMajor);
-        HashMap<String,Object> map = new HashMap<>();
-        map.put("listCollege",listCollege);
-        map.put("listMajor",listMajor);
+        // model.addAttribute("listCollege", listCollege);
+        // model.addAttribute("listMajor", listMajor);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("listCollege", listCollege);
+        map.put("listMajor", listMajor);
         // System.out.println("--preSaveStudent------------------cz-------------------");
         // System.out.println("listCollege: " + listCollege.toString());
         // System.out.println("listMajor: " + listMajor.toString());
@@ -123,10 +123,10 @@ public class StudentController {
      */
     @PostMapping("/saveStudent")
     public R<String> saveStudent(@RequestBody Student student,
-    @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
-        //TODO: 保存学生的图像文件
+            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+        // TODO: 保存学生的图像文件
         // if (file != null && !file.isEmpty()) {
-        //     transfile(student, file);
+        // transfile(student, file);
         // }
         String defaultPassword = "123456";
         String passwordAfterMD5 = DigestUtils.md5DigestAsHex(defaultPassword.getBytes());
@@ -176,41 +176,42 @@ public class StudentController {
     /**
      * 准备预填充现有数据的学生更新表单。
      *
-     * @param id    要更新的学生ID。
+     * @param id 要更新的学生ID。
      * @return 用于渲染学生更新表单的视图名称。
      */
     @RequestMapping("/preUpdateStudent/{id}")
-    public R<HashMap<String,Object>> preUpdateStudent(@PathVariable Integer id) {
+    public R<HashMap<String, Object>> preUpdateStudent(@PathVariable Integer id) {
         // 需要在前端回显数据
         Student student = studentService.getById(id);
-        //model.addAttribute("student", student);
+        // model.addAttribute("student", student);
         List<College> listCollege = collegeService.list(null);
         List<Major> listMajor = majorService.list(null);
-        //model.addAttribute("listCollege", listCollege);
-        //model.addAttribute("listMajor", listMajor);
-        HashMap<String,Object> map = new HashMap<>();
-        map.put("student",student);
-        map.put("listCollege",listCollege);
-        map.put("listMajor",listMajor);
+        // model.addAttribute("listCollege", listCollege);
+        // model.addAttribute("listMajor", listMajor);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("student", student);
+        map.put("listCollege", listCollege);
+        map.put("listMajor", listMajor);
         return R.success(map);
     }
 
     /**
      * 更新已存在的学生信息。
      *
-     * @param student 要更新的学生信息。
-     * @param file    学生的新图像文件（如有）。
+     * @param student 要更新的学生信
      * @return 成功更新后重定向到学生列表。
      */
     @PostMapping("/updateStudent")
-    public R<String> updateStudent(@RequestBody Student student, MultipartFile file) throws IOException {
-//        if (!file.isEmpty()) {
-//            System.out.println("11111");
-//            transfile(student, file);
-//        }
+    public R<String> updateStudent(@RequestBody Student student, MultipartFile simage) throws IOException {
+        if (simage != null) {
+            System.out.println("11111");
+            transfile(student, simage);
+        }
         studentService.updateById(student);
         return R.success("Success to update student!");
     }
+
+
 
     /**
      * 根据学生ID删除学生信息。
@@ -235,8 +236,8 @@ public class StudentController {
      */
     @PostMapping("/deleteBatchStudent")
     public R<String> deleteBatchStudent(@RequestBody String ids) {
-        //TODO：传入的字符串格式是 "{ids: "1,2,3,4,5"}"，需要处理一下
-        String[] split = ids.substring(8,ids.length() - 2).split(",");
+        // TODO：传入的字符串格式是 "{ids: "1,2,3,4,5"}"，需要处理一下
+        String[] split = ids.substring(8, ids.length() - 2).split(",");
         List<Integer> idList = new ArrayList<>();
         for (String s : split) {
             if (!s.isEmpty()) {
@@ -246,21 +247,20 @@ public class StudentController {
 
         boolean b = studentService.removeByIds(idList);
         if (!b) {
-            //model.addAttribute("error", "Error deleting student.");
+            // model.addAttribute("error", "Error deleting student.");
             return R.error("Error deleting student.");
         }
         return R.success("Success to delete student!");
     }
 
-
     /*
-    现在是学生选课功能，在学生的界面 add by cz at 12.7 15:26
+     * 现在是学生选课功能，在学生的界面 add by cz at 12.7 15:26
      */
 
-    @GetMapping ("/listCourseByMajorName")
+    @GetMapping("/listCourseByMajorName")
     public R<PageInfo> listCourse(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                  @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-                                  @RequestParam(required = false) String majorName) {
+            @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+            @RequestParam(required = false) String majorName) {
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
@@ -282,12 +282,11 @@ public class StudentController {
      * 选课记录
      */
     @GetMapping("/listMyCourse")
-    public R<PageInfo<StudentCourse>> listMyCourse(@RequestParam(required = false) String cname, HttpSession session, Model model){
+    public R<PageInfo<StudentCourse>> listMyCourse(@RequestParam(required = false) String cname, HttpSession session) {
         Integer userId = (Integer) session.getAttribute("userId");
         List<StudentCourse> studentCourses = studentCourseService.listMyCourse(userId, cname);
-        //简化操作，与教师无关
+        // 简化操作，与教师无关
         PageInfo<StudentCourse> pageInfo = new PageInfo<>(studentCourses);
-        model.addAttribute("pageInfo", pageInfo);
         return R.success(pageInfo);
     }
 
@@ -295,7 +294,7 @@ public class StudentController {
      * 新增改动（12.16 17:02）去掉了session 直接传参
      */
     @GetMapping("/selectCourse")
-    public R<String> selectCourse(@RequestParam Integer cid,@RequestParam Integer sid){
+    public R<String> selectCourse(@RequestParam Integer cid, @RequestParam Integer sid) {
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("sid", sid);
         queryWrapper.eq("cid", cid);
@@ -303,7 +302,7 @@ public class StudentController {
         if (one != null && one.getStatus() == 1) {
             return R.error("该学生已经选过该课程");
         }
-        if (one != null && one.getStatus() == 0){
+        if (one != null && one.getStatus() == 0) {
             one.setStatus(1);
             Course course = courseService.getById(cid);
             course.setNum(course.getNum() + 1);
@@ -312,7 +311,7 @@ public class StudentController {
             return R.success("选课成功");
         }
         Course course = courseService.getById(cid);
-        if (course.getNum() >= course.getStock()){
+        if (course.getNum() >= course.getStock()) {
             return R.error("该课程已经选满");
         }
         course.setNum(course.getNum() + 1);
@@ -329,7 +328,7 @@ public class StudentController {
      * 学生退选
      */
     @PostMapping("/deleteMyCourse")
-    public R<String> deleteMyCourse(@RequestParam Integer cid, @RequestParam Integer sid){
+    public R<String> deleteMyCourse(@RequestParam Integer cid, @RequestParam Integer sid) {
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("sid", sid);
         queryWrapper.eq("cid", cid);
@@ -337,7 +336,7 @@ public class StudentController {
         if (one == null) {
             return R.error("该学生没有选过该课程");
         }
-        one.setStatus(0);//表示退选
+        one.setStatus(0);// 表示退选
         Course course = courseService.getById(cid);
         course.setNum(course.getNum() - 1);
         courseService.updateById(course);
