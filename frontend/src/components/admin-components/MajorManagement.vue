@@ -2,31 +2,11 @@
   <div>
     <h2>专业管理</h2>
     <!-- 添加专业按钮 -->
-    <el-button type="primary" @click="toggleForm" class="add-major-button">添加专业</el-button>
+    <el-button type="primary" @click="openDialog('add')" class="add-major-button">添加专业</el-button>
     <!-- 批量删除按钮 -->
     <el-button type="danger" @click="toggleBatchDelete" class="batch-delete-button">批量删除</el-button>
     <!-- 确定批量删除按钮 -->
     <el-button type="danger" @click="confirmBatchDelete" v-if="showBatchDelete" class="confirm-batch-delete-button">确定批量删除</el-button>
-    <!-- 添加专业表单 -->
-    <el-form v-if="showForm" :model="newMajor" label-width="120px" class="major-form">
-      <el-form-item label="专业名" required>
-        <el-input v-model="newMajor.mname"></el-input>
-      </el-form-item>
-      <el-form-item label="学院" required>
-        <el-select v-model="newMajor.college" placeholder="请选择学院">
-          <el-option
-            v-for="college in collegeList"
-            :key="college.id"
-            :label="college.cname"
-            :value="college.cname"
-          ></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="saveMajor">提交</el-button>
-        <el-button type="primary" @click="updateMajor" v-if="isEditing">修改</el-button>
-      </el-form-item>
-    </el-form>
 
     <!-- 专业列表表格 -->
     <div class="table-container">
@@ -40,12 +20,13 @@
         <el-table-column prop="college" label="学院"></el-table-column>
         <el-table-column label="操作">
           <template v-slot="scope">
-            <el-button size="mini" type="primary" @click="handleEdit(scope.row.id)">修改</el-button>
+            <el-button size="mini" type="primary" @click="openDialog('edit', scope.row)">修改</el-button>
             <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
+
     <!-- 分页组件 -->
     <div class="pagination-container">
       <el-pagination
@@ -59,157 +40,152 @@
       </el-pagination>
       <span class="total-pages">总页数: {{ Math.ceil(total / pageSize) }}</span>
     </div>
+
+    <!-- 添加/修改专业表单弹出框 -->
+    <el-dialog v-model="showDialog" :title="dialogTitle" width="500px">
+      <el-form :model="newMajor" label-width="120px" class="major-form">
+        <el-form-item label="专业名" required>
+          <el-input v-model="newMajor.mname"></el-input>
+        </el-form-item>
+        <el-form-item label="学院" required>
+          <el-select v-model="newMajor.college" placeholder="请选择学院">
+            <el-option
+              v-for="college in collegeList"
+              :key="college.id"
+              :label="college.cname"
+              :value="college.cname"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="saveMajor" v-if="!isEditing">提交</el-button>
+          <el-button type="primary" @click="updateMajor" v-if="isEditing">修改</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
-<script>
-import axios from '@/http';
+<script lang="ts" setup>
+import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import axios from '@/http'
 
-export default {
-  name: 'MajorManagement',
-  data() {
-    return {
-      majorList: [], // 专业列表
-      collegeList: [], // 学院列表
-      newMajor: {
-        mname: '',
-        college: '',
-      },
-      pageNum: 1, // 当前页码
-      pageSize: 6, // 每页显示条数
-      total: 0, // 总条数
-      showForm: false, // 控制表单显示和隐藏
-      isEditing: false, // 控制是否为编辑状态
-      showBatchDelete: false, // 控制批量删除模式
-      selectedMajors: [], // 选中的专业
-    };
-  },
-  methods: {
-    // 切换表单显示和隐藏
-    toggleForm() {
-      this.showForm = !this.showForm;
-      this.isEditing = false; // 重置编辑状态
+const majorList = ref([])
+const collegeList = ref([])
+const newMajor = ref({ mname: '', college: '' })
+const pageNum = ref(1)
+const pageSize = ref(6)
+const total = ref(0)
+const showBatchDelete = ref(false)
+const selectedMajors = ref([])
+const isEditing = ref(false)
+const showDialog = ref(false)
+const dialogTitle = ref('')
+
+const fetchMajors = () => {
+  axios.get('/major/listMajor', {
+    params: {
+      pageNum: pageNum.value,
+      pageSize: pageSize.value,
     },
-    // 切换批量删除模式
-    toggleBatchDelete() {
-      this.showBatchDelete = !this.showBatchDelete;
-      this.selectedMajors = []; // 重置选中的专业
-    },
-    // 获取专业列表
-    fetchMajors() {
-      axios.get('/major/listMajor', {
-        params: {
-          pageNum: this.pageNum,
-          pageSize: this.pageSize,
-        },
-      }).then((response) => {
-        if (response.data.code === 1) {
-          this.majorList = response.data.data.list;
-          this.total = response.data.data.total;
-        } else {
-          this.$message.error(response.data.msg || '获取专业列表失败');
-        }
-      });
-    },
-    // 获取学院列表
-    fetchColleges() {
-      axios.get('/major/preSaveMajor').then((response) => {
-        if (response.data.code === 1) {
-          this.collegeList = response.data.data.collegeList;
-        } else {
-          this.$message.error(response.data.msg || '获取专业和学院列表失败');
-        }
-      });
-    },
-    // 添加专业
-    saveMajor() {
-      axios.post('/major/saveMajor', this.newMajor).then((response) => {
-        if (response.data.code === 1) {
-          this.fetchMajors(); // 重新获取专业列表
-          this.$message.success('专业添加成功');
-          this.resetForm();
-          this.showForm = false; // 提交后隐藏表单
-        } else {
-          this.$message.error(response.data.msg || '专业添加失败');
-        }
-      });
-    },
-    // 更新专业
-    updateMajor() {
-      axios.post('/major/updateMajor', this.newMajor).then((response) => {
-        if (response.data.code === 1) {
-          this.fetchMajors(); // 重新获取专业列表
-          this.$message.success('专业更新成功');
-          this.resetForm();
-          this.showForm = false; // 提交后隐藏表单
-          this.isEditing = false; // 重置编辑状态
-        } else {
-          this.$message.error(response.data.msg || '专业更新失败');
-        }
-      });
-    },
-    // 重置表单
-    resetForm() {
-      this.newMajor = {
-        mname: '',
-        college: '',
-      };
-    },
-    // 处理分页变化
-    handlePageChange(page) {
-      this.pageNum = page;
-      this.fetchMajors();
-    },
-    // 处理修改操作
-    handleEdit(id) {
-      // 调用 /preUpdateMajor/{id} 接口
-      axios.get(`/major/preUpdateMajor/${id}`).then((response) => {
-        if (response.data.code === 1) {
-          const data = response.data.data;
-          this.newMajor = data.major;
-          this.collegeList = data.collegeList;
-          this.showForm = true; // 显示表单
-          this.isEditing = true; // 设置编辑状态
-        } else {
-          this.$message.error(response.data.msg || '获取专业信息失败');
-        }
-      });
-    },
-    // 处理删除操作
-    handleDelete(id) {
-      // 调用 /deleteMajor/{id} 接口
-      axios.get(`/major/deleteMajor/${id}`).then((response) => {
-        if (response.data.code === 1) {
-          this.$message.success('专业删除成功');
-          this.fetchMajors(); // 重新获取专业列表
-        } else {
-          this.$message.error(response.data.msg || '专业删除失败');
-        }
-      });
-    },
-    // 处理批量删除操作
-    confirmBatchDelete() {
-      const ids = this.selectedMajors.map(major => major.id).join(',');
-      axios.post('/major/deleteBatchMajor', { ids }).then((response) => {
-        if (response.data.code === 1) {
-          this.$message.success('批量删除专业成功');
-          this.fetchMajors(); // 重新获取专业列表
-          this.showBatchDelete = false; // 退出批量删除模式
-        } else {
-          this.$message.error(response.data.msg || '批量删除专业失败');
-        }
-      });
-    },
-    // 处理选择变化
-    handleSelectionChange(val) {
-      this.selectedMajors = val;
-    },
-  },
-  mounted() {
-    this.fetchMajors();
-    this.fetchColleges();
-  },
-};
+  }).then((response) => {
+    if (response.data.code === 1) {
+      majorList.value = response.data.data.list
+      total.value = response.data.data.total
+    } else {
+      ElMessage.error(response.data.msg || '获取专业列表失败')
+    }
+  })
+}
+
+const fetchColleges = () => {
+  axios.get('/college/listCollege').then((response) => {
+    if (response.data.code === 1) {
+      collegeList.value = response.data.data.list; // 确保提取 list 数据
+    } else {
+      ElMessage.error(response.data.msg || '获取学院列表失败')
+    }
+  })
+}
+
+const openDialog = (action: string, major: any = null) => {
+  if (action === 'add') {
+    dialogTitle.value = '添加专业'
+    newMajor.value = { mname: '', college: '' }
+    isEditing.value = false
+  } else if (action === 'edit') {
+    dialogTitle.value = '修改专业'
+    newMajor.value = { ...major }
+    isEditing.value = true
+  }
+  showDialog.value = true
+}
+
+const saveMajor = () => {
+  axios.post('/major/saveMajor', newMajor.value).then((response) => {
+    if (response.data.code === 1) {
+      fetchMajors()
+      ElMessage.success('专业添加成功')
+      showDialog.value = false
+    } else {
+      ElMessage.error(response.data.msg || '专业添加失败')
+    }
+  })
+}
+
+const updateMajor = () => {
+  axios.post('/major/updateMajor', newMajor.value).then((response) => {
+    if (response.data.code === 1) {
+      fetchMajors()
+      ElMessage.success('专业更新成功')
+      showDialog.value = false
+    } else {
+      ElMessage.error(response.data.msg || '专业更新失败')
+    }
+  })
+}
+
+const handleDelete = (id: number) => {
+  axios.get(`/major/deleteMajor/${id}`).then((response) => {
+    if (response.data.code === 1) {
+      ElMessage.success('专业删除成功')
+      fetchMajors()
+    } else {
+      ElMessage.error(response.data.msg || '专业删除失败')
+    }
+  })
+}
+
+const confirmBatchDelete = () => {
+  const ids = selectedMajors.value.map(major => major.id).join(',')
+  axios.post('/major/deleteBatchMajor', { ids }).then((response) => {
+    if (response.data.code === 1) {
+      ElMessage.success('批量删除专业成功')
+      fetchMajors()
+      showBatchDelete.value = false
+    } else {
+      ElMessage.error(response.data.msg || '批量删除专业失败')
+    }
+  })
+}
+
+const handleSelectionChange = (val: any) => {
+  selectedMajors.value = val
+}
+
+const handlePageChange = (page: number) => {
+  pageNum.value = page
+  fetchMajors()
+}
+
+const toggleBatchDelete = () => {
+  showBatchDelete.value = !showBatchDelete.value
+  selectedMajors.value = []
+}
+
+fetchMajors()
+fetchColleges()
 </script>
 
 <style scoped>
