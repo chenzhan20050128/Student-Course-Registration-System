@@ -69,18 +69,24 @@ public class StudentCourseController {
         return R.success(map);
     }
 
-    @GetMapping("/saveStudentCourse")
-    public R<String> saveStudentCourse(@RequestParam Integer sid,@RequestParam Integer cid, HttpSession session) {
-        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("sid", sid);
-        queryWrapper.eq("cid", cid);
-        StudentCourse one = studentCourseService.getOne(queryWrapper);
-        if (one != null) {
-            //model.addAttribute("msg", "该学生已经选过该课程");
-            return R.error("该学生已经选过该课程");
-        }
+    @PostMapping("/saveStudentCourse")
+    public R<String> saveStudentCourse(@RequestBody StudentCourse studentCourse, HttpSession session) {
+        Integer sid = studentCourse.getSid();
+        Integer cid = studentCourse.getCid();
+
+//        StudentCourse one = studentCourseService.getOne(studentCourse);
+//        if (one != null) {
+//            //model.addAttribute("msg", "该学生已经选过该课程");
+//            return R.error("该学生已经选过该课程");
+//        }
         Student student = studentService.getById(sid);
         Course course = courseService.getById(cid);
+        if (student.getMajor() != null){
+            if (!student.getMajor().equals(course.getMajor())){
+                //model.addAttribute("msg", "该学生的专业与课程不符");
+                return R.error("该学生的专业与课程不符");
+            }
+        }
 
         if (course.getNum() >= course.getStock()){
             //model.addAttribute("msg", "该课程已经选满");
@@ -89,10 +95,10 @@ public class StudentCourseController {
 
         course.setNum(course.getNum() + 1);
         courseService.updateById(course);
-        StudentCourse studentCourse = new StudentCourse();
-        studentCourse.setSid(sid);
-        studentCourse.setCid(cid);
-        studentCourseService.save(studentCourse);
+        StudentCourse NewStudentCourse = new StudentCourse();
+        NewStudentCourse.setSid(sid);
+        NewStudentCourse.setCid(cid);
+        studentCourseService.save(NewStudentCourse);
 
         return R.success("选课成功");
     }
@@ -113,17 +119,16 @@ public class StudentCourseController {
         return R.success(map);
     }
 
-    @GetMapping("/updateStudentCourse")
-    public R<String> updateStudentCourse(@RequestParam Integer sid,@RequestParam Integer cid, Model model, HttpSession session) {
-        Integer studentCourseId = (Integer) session.getAttribute("studentCourseId");
-        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("sid", sid);
-        queryWrapper.eq("cid", cid);
-        StudentCourse one = studentCourseService.getOne(queryWrapper);
-        if (one != null) {
-            //model.addAttribute("msg", "该学生已经选过该课程");
-            R.error("该学生已经选过该课程");
-        }
+    @PostMapping("/updateStudentCourse")
+    public R<String> updateStudentCourse(@RequestBody StudentCourse studentCourse, Model model, HttpSession session) {
+        Integer studentCourseId = studentCourse.getId();
+        Integer sid = studentCourse.getSid();
+        Integer cid = studentCourse.getCid();
+//        StudentCourse one = studentCourseService.getOne(queryWrapper);
+//        if (one != null) {
+//            //model.addAttribute("msg", "该学生已经选过该课程");
+//            R.error("该学生已经选过该课程");
+//        }
 
         Student student = studentService.getById(sid);
         Course course = courseService.getById(cid);
@@ -134,11 +139,11 @@ public class StudentCourseController {
             }
         }
 
-        StudentCourse studentCourse = new StudentCourse();
-        studentCourse.setId(studentCourseId);
-        studentCourse.setSid(sid);
-        studentCourse.setCid(cid);
-        boolean b = studentCourseService.updateById(studentCourse);
+        StudentCourse NewStudentCourse = new StudentCourse();
+        NewStudentCourse.setId(studentCourseId);
+        NewStudentCourse.setSid(sid);
+        NewStudentCourse.setCid(cid);
+        boolean b = studentCourseService.updateById(NewStudentCourse);
         if (!b){
             //model.addAttribute("msg", "更新失败");
             return R.error("更新失败");
@@ -155,7 +160,7 @@ public class StudentCourseController {
 
     @PostMapping("/deleteBatchStudentCourse")
     public R<String> deleteBatchStudentCourse(@RequestBody String ids) {
-        String[] split = ids.split(",");
+        String[] split = ids.substring(8,ids.length() - 2).split(",");
         List<Integer> idList = new ArrayList<>();
         for (String s : split) {
             idList.add(Integer.parseInt(s));

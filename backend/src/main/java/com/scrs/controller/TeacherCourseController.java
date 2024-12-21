@@ -74,24 +74,19 @@ public class TeacherCourseController {
     }
 
 
-    @GetMapping("/saveTeacherCourse")
-    public R<String> saveTeacherCourse(@RequestParam Integer tid,@RequestParam Integer cid, HttpSession session) {
-        QueryWrapper<TeacherCourse> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("tid", tid);
-        queryWrapper.eq("cid", cid);
-        TeacherCourse one = teacherCourseService.getOne(queryWrapper);
-        if (one != null) {
-            return R.error("该老师已经教授该课程");
-        }
+    @PostMapping("/saveTeacherCourse")
+    public R<String> saveTeacherCourse(@RequestBody TeacherCourse teacherCourse, HttpSession session) {
+        Integer tid = teacherCourse.getTid();
+        Integer cid = teacherCourse.getCid();
         Teacher teacher = teacherService.getById(tid);
         Course course = courseService.getById(cid);
         if (!teacher.getMajor().equals(course.getMajor())) {
             return R.error("该老师不是该课程的专业的老师");
         }
-        TeacherCourse teacherCourse = new TeacherCourse();
-        teacherCourse.setTid(tid);
-        teacherCourse.setCid(cid);
-        teacherCourseService.save(teacherCourse);
+        TeacherCourse newTeacherCourse = new TeacherCourse();
+        newTeacherCourse.setTid(tid);
+        newTeacherCourse.setCid(cid);
+        teacherCourseService.save(newTeacherCourse);
         return R.success("新增教师课程成功");
     }
 
@@ -111,20 +106,21 @@ public class TeacherCourseController {
         return R.success(map);
     }
 
-    @GetMapping("/updateTeacherCourse")
-    public R<String> updateTeacherCourse(@RequestParam Integer tid,@RequestParam Integer cid, HttpSession session) {
-        Integer teacherCourseId = (Integer) session.getAttribute("teacherCourseId");
-
+    @PostMapping("/updateTeacherCourse")
+    public R<String> updateTeacherCourse(@RequestBody TeacherCourse teacherCourse, HttpSession session) {
+        Integer teacherCourseId = teacherCourse.getId();
+        Integer tid = teacherCourse.getTid();
+        Integer cid = teacherCourse.getCid();
         Teacher teacher = teacherService.getById(tid);
         Course course = courseService.getById(cid);
         if (!teacher.getMajor().equals(course.getMajor())) {
             return R.error("该老师不是该课程的专业的老师");
         }
-        TeacherCourse teacherCourse = new TeacherCourse();
-        teacherCourse.setId(teacherCourseId);
-        teacherCourse.setTid(tid);
-        teacherCourse.setCid(cid);
-        teacherCourseService.updateById(teacherCourse);
+        TeacherCourse newTeacherCourse = new TeacherCourse();
+        newTeacherCourse.setId(teacherCourseId);
+        newTeacherCourse.setTid(tid);
+        newTeacherCourse.setCid(cid);
+        teacherCourseService.updateById(newTeacherCourse);
         return R.success("修改教师课程成功");
     }
 
@@ -138,7 +134,7 @@ public class TeacherCourseController {
     }
     @PostMapping("/deleteBatchTeacherCourse")
     public R<String> deleteBatchTeacherCourse(@RequestBody String ids) {
-        String[] split = ids.split(",");
+        String[] split = ids.substring(8,ids.length() - 2).split(",");
         List<Integer> idList = new ArrayList<>();
         for (String s : split) {
             idList.add(Integer.parseInt(s));
