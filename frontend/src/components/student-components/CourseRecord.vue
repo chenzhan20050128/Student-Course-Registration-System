@@ -1,22 +1,35 @@
 <template>
   <div>
-    <el-table :data="studentCourses" style="width: 100%">
-      <el-table-column prop="cid" label="课程ID" width="100"></el-table-column>
-      <el-table-column prop="course.cname" label="课程名称" width="150"></el-table-column>
-      <el-table-column prop="course.teacher" label="教师" width="100"></el-table-column>
-      <el-table-column prop="course.address" label="上课地点" width="150"></el-table-column>
-      <el-table-column prop="course.num" label="选课人数" width="100"></el-table-column>
-      <el-table-column prop="course.stock" label="选课容量" width="100"></el-table-column>
-      <el-table-column label="选课状态" width="100">
+    <el-table
+      :data="studentCourses"
+      class="course-record-table"
+      header-align="left"
+      align="left"
+      style="width: 88%"
+    >
+      <el-table-column prop="cid" label="ID" width="75"></el-table-column>
+      <el-table-column prop="course.cname" label="课程名称" width="225"></el-table-column>
+      <el-table-column prop="course.teacher" label="授课教师" width="175"></el-table-column>
+      <el-table-column prop="course.address" label="教学地点" width="300"></el-table-column>
+      <el-table-column prop="course.num" label="当前选课人数" width="150"></el-table-column>
+      <el-table-column prop="course.stock" label="课程容量" width="120"></el-table-column>
+      <el-table-column label="选课状态" width="150">
         <template v-slot="scope">
           <span :style="{ color: scope.row.status === 1 ? 'green' : 'red' }">
             {{ scope.row.status === 1 ? '已选课' : '已退选' }}
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="100">
+      <el-table-column label="操作">
         <template v-slot="scope">
-          <el-button @click="deselectCourse(scope.row.cid)" type="danger" size="small">退选</el-button>
+          <el-button
+            @click="deselectCourse(scope.row.cid)"
+            type="danger"
+            size="small"
+            class="deselect-course-button"
+          >
+            退选
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -26,6 +39,7 @@
       :total="total"
       :page-size="pageSize"
       @current-change="handlePageChange"
+      class="pagination-component"
       style="text-align: center; margin-top: 20px;"
     ></el-pagination>
   </div>
@@ -33,7 +47,6 @@
 
 <script>
 import axios from '@/http';
-import { useStudentStore } from '@/store/student';
 
 export default {
   name: 'CourseRecord',
@@ -50,11 +63,13 @@ export default {
   methods: {
     async fetchStudentCourses() {
       try {
-        const response3 = await axios.get('/getRoleMessage')
-        this.id = response3.data.data.id
+        const response3 = await axios.get('/getRoleMessage');
+        this.id = response3.data.data.id;
         const response = await axios.get('/student/listMyCourse', {
           params: {
             sid: this.id,
+            pageNum: this.pageNum,
+            pageSize: this.pageSize,
           },
         });
         if (response.data && response.data.data) {
@@ -71,11 +86,16 @@ export default {
     },
     async deselectCourse(courseId) {
       try {
-        const response = await axios.post('/student/deleteMyCourse',null, {params: {
-          sid: this.id,
-          cid: courseId,
-        },
-      });
+        const response = await axios.post(
+          '/student/deleteMyCourse',
+          null,
+          {
+            params: {
+              sid: this.id,
+              cid: courseId,
+            },
+          }
+        );
         if (response.data && response.data.code === 1) {
           this.$message.success('退选成功');
           this.fetchStudentCourses(); // 重新获取课程列表，更新选课记录
@@ -95,5 +115,39 @@ export default {
 </script>
 
 <style scoped>
-/* 样式 */
+/* 表格样式调整 */
+.course-record-table .cell {
+  text-align: left; /* 保证所有单元格文字左对齐 */
+  padding-left: 10px; /* 保证列内容与单元格左边距保持一致 */
+}
+
+.course-record-table th {
+  text-align: left; /* 表头文字左对齐 */
+  padding-left: 10px; /* 保证表头文字与单元格内容一致 */
+}
+
+/* 调整“退选”按钮的样式 */
+.deselect-course-button {
+  margin-left: -10px; /* 微调按钮位置 */
+}
+
+/* 翻页组件样式 */
+.pagination-component {
+  margin-top: 35px; /* 调整翻页组件与表格之间的间距 */
+  text-align: center; /* 保持居中对齐 */
+}
+
+/* 自定义分页组件样式 */
+::v-deep(.pagination-component .el-pager li) {
+  background-color: #8b007a !important; /* 页码背景颜色 */
+  border-color: #8b007a !important; /* 页码边框颜色 */
+  color: white !important; /* 页码文字颜色保持白色 */
+  border-radius: 5px; /* 设置圆角 */
+}
+
+::v-deep(.pagination-component .el-pagination__button) {
+  background-color: #8b007a !important; /* 翻页按钮背景颜色 */
+  border-color: #8b007a !important; /* 翻页按钮边框颜色 */
+  color: white !important; /* 翻页按钮文字颜色 */
+}
 </style>

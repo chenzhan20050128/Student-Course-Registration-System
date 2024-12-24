@@ -1,4 +1,6 @@
 <template>
+  <div class="register-page">
+    <!-- 注册部分 -->
     <div class="register">
       <h2>注册</h2>
       <form @submit.prevent="handleRegister">
@@ -25,10 +27,12 @@
         </div>
         <button type="submit">注册</button>
       </form>
+      <button @click="goToLogin" class="login-button">返回登录</button>
     </div>
-  </template>
-  
-  <script>
+  </div>
+</template>
+
+ <script>
   export default {
     name: 'Register',
     data() {
@@ -54,15 +58,13 @@
         };
         try {
           // 发送注册请求到后端
-      const response = await this.$http.get('/register', {
-      params: {
-      role: registerData.role,
-      userName: registerData.username,
-      userPwd: registerData.password,
-      confirmPwd: registerData.confirmPassword
-    }
-    
-  });
+          const response = await this.$http.get('/register', {
+            params: {
+            role: registerData.role,
+            userName: registerData.username,
+            userPwd: registerData.password,
+            confirmPwd: registerData.confirmPassword }
+          });
           console.log(response);
           // 处理注册成功逻辑
           console.log('注册成功', response.data);
@@ -71,46 +73,87 @@
           // 处理注册失败逻辑
           console.error('注册失败', error);
         }
+      },
+      goToLogin() {
+        this.$router.push('/login');
       }
     }
   };
   </script>
-  
-  <style scoped>
-  /* 添加一些样式 */
-  .register {
-    max-width: 300px;
-    margin: 0 auto;
-    padding: 1em;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  .register h2 {
-    text-align: center;
-  }
-  .register form div {
-    margin-bottom: 1em;
-  }
-  .register form label {
-    display: block;
-    margin-bottom: 0.5em;
-  }
-  .register form input,
-  .register form select {
-    width: 100%;
-    padding: 0.5em;
-    box-sizing: border-box;
-  }
-  .register form button {
-    width: 100%;
-    padding: 0.5em;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .register form button:hover {
-    background-color: #0056b3;
-  }
-  </style>
+
+<style scoped>
+/* 外层容器布局，复制登录页面样式 */
+.register-page {
+  background: url('public/background_2.png') no-repeat center center;
+  background-size: contain; /* 改为 contain，缩小图片大小并展示更多内容 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+  padding: 0px;
+}
+
+/* 注册表单部分，样式与登录页保持一致 */
+.register {
+  width: 300px;
+  margin: 36px;
+  padding: 36px;
+  border: 2px solid #ccc;
+  border-radius: 16px;
+  background-color: aliceblue;
+}
+
+/* 标题样式 */
+.register h2 {
+  text-align: center;
+}
+
+/* 表单样式 */
+.register form div {
+  margin-bottom: 1em;
+}
+
+.register form label {
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+.register form input,
+.register form select {
+  width: 100%;
+  padding: 0.5em;
+  box-sizing: border-box;
+}
+
+.register form button {
+  width: 100%;
+  padding: 0.5em;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.register form button:hover {
+  background-color: #0056b3;
+}
+
+.login-button {
+  width: 100%;
+  padding: 0.5em;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.7em;
+  margin-bottom: 1.5em;
+}
+
+.login-button:hover {
+  background-color: #218838;
+}
+</style>

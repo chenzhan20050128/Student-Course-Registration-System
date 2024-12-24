@@ -1,30 +1,36 @@
 <template>
   <div>
-    <h2>学生选课管理</h2>
-    <!-- 添加选课记录按钮 -->
-    <el-button type="primary" @click="openDialog('add')" class="add-student-course-button">添加选课记录</el-button>
-    <!-- 批量删除按钮 -->
-    <el-button type="danger" @click="toggleBatchDelete" class="batch-delete-button">批量删除</el-button>
-    <!-- 确定批量删除按钮 -->
-    <el-button type="danger" @click="confirmBatchDelete" v-if="showBatchDelete" class="confirm-batch-delete-button">确定批量删除</el-button>
+    <!-- 添加选课记录和批量删除按钮 -->
+    <div class="action-buttons">
+      <el-button type="primary" @click="openDialog('add')" class="add-student-course-button">添加选课记录</el-button>
+      <el-button type="danger" @click="toggleBatchDelete" class="batch-delete-button">批量删除</el-button>
+      <el-button
+        type="danger"
+        @click="confirmBatchDelete"
+        v-if="showBatchDelete"
+        class="confirm-batch-delete-button"
+      >
+        确定批量删除
+      </el-button>
+    </div>
 
     <!-- 学生选课记录表格 -->
     <div class="table-container">
       <el-table
         :data="studentCourseList"
-        style="width: 100%"
+        style="width: 1280px"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" v-if="showBatchDelete"></el-table-column>
-        <el-table-column prop="studentName" label="学生"></el-table-column>
-        <el-table-column prop="college" label="学院"></el-table-column>
-        <el-table-column prop="major" label="专业"></el-table-column>
-        <el-table-column prop="course.cname" label="课程"></el-table-column>
-        <el-table-column prop="course.address" label="上课地点"></el-table-column>
+        <el-table-column type="selection" width="40" v-if="showBatchDelete"></el-table-column>
+        <el-table-column prop="studentName" label="学生姓名" width="120"></el-table-column>
+        <el-table-column prop="college" label="所在学院" width="240"></el-table-column>
+        <el-table-column prop="major" label="专业" width="300"></el-table-column>
+        <el-table-column prop="course.cname" label="课程名称" width="150"></el-table-column>
+        <el-table-column prop="course.address" label="上课地点" width="260"></el-table-column>
         <el-table-column label="操作">
           <template v-slot="scope">
-            <el-button size="mini" type="primary" @click="openDialog('edit', scope.row)">修改</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
+            <el-button size="mini" type="primary" class="edit-button" @click="openDialog('edit', scope.row)">修改</el-button>
+            <el-button size="mini" type="danger" class="delete-button" @click="handleDelete(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -33,6 +39,7 @@
     <!-- 分页组件 -->
     <div class="pagination-container">
       <el-pagination
+        background
         @current-change="handlePageChange"
         :current-page="pageNum"
         :page-size="pageSize"
@@ -41,11 +48,11 @@
         class="pagination"
       >
       </el-pagination>
-      <span class="total-pages">总页数: {{ Math.ceil(total / pageSize) }}</span>
+      <span class="total-pages">总页数：{{ Math.ceil(total / pageSize) }}</span>
     </div>
 
     <!-- 添加/修改选课记录表单弹出框 -->
-    <el-dialog v-model="showDialog" :title="dialogTitle" width="600px">
+    <el-dialog v-model="showDialog" :title="dialogTitle" width="500px">
       <el-form :model="newStudentCourse" label-width="120px" class="student-course-form">
         <el-form-item label="学生" required>
           <el-select v-model="newStudentCourse.sid" placeholder="请选择学生">
@@ -68,8 +75,8 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="saveStudentCourse" v-if="!isEditing">提交</el-button>
-          <el-button type="primary" @click="updateStudentCourse" v-if="isEditing">修改</el-button>
+          <el-button type="primary" class="edit-button" @click="saveStudentCourse" v-if="!isEditing">提交</el-button>
+          <el-button type="primary" class="edit-button" @click="updateStudentCourse" v-if="isEditing">修改</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -78,7 +85,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import axios from '@/http'
 
 const studentCourseList = ref([])
@@ -100,7 +107,7 @@ const fetchStudentCourses = () => {
       pageNum: pageNum.value,
       pageSize: pageSize.value,
     },
-  }).then((response: { data: { code: number, msg: string, data: { list: any[], total: number } } }) => {
+  }).then((response) => {
     if (response.data.code === 1) {
       const studentCourseData = response.data.data.list
       studentCourseList.value = studentCourseData.map((item) => {
@@ -120,11 +127,11 @@ const fetchStudentCourses = () => {
 }
 
 const fetchStudentsAndCourses = () => {
-  axios.get('/studentCourse/preSaveStudentCourse').then((response: { data: { code: number, msg: string, data: { studentList: any[], courseList: any[] } } }) => {
+  axios.get('/studentCourse/preSaveStudentCourse').then((response) => {
     if (response.data.code === 1) {
       studentList.value = response.data.data.studentList
       courseList.value = response.data.data.courseList
-      fetchStudentCourses() // 确保在获取学生和课程列表后再获取选课记录
+      fetchStudentCourses()
     } else {
       ElMessage.error(response.data.msg || '获取学生和课程列表失败')
     }
@@ -149,7 +156,7 @@ const openDialog = (action: string, studentCourse: any = null) => {
 }
 
 const saveStudentCourse = () => {
-  axios.post('/studentCourse/saveStudentCourse', newStudentCourse.value).then((response: { data: { code: number, msg: string } }) => {
+  axios.post('/studentCourse/saveStudentCourse', newStudentCourse.value).then((response) => {
     if (response.data.code === 1) {
       fetchStudentCourses()
       ElMessage.success('选课记录添加成功')
@@ -161,7 +168,7 @@ const saveStudentCourse = () => {
 }
 
 const updateStudentCourse = () => {
-  axios.post('/studentCourse/updateStudentCourse', newStudentCourse.value).then((response: { data: { code: number, msg: string } }) => {
+  axios.post('/studentCourse/updateStudentCourse', newStudentCourse.value).then((response) => {
     if (response.data.code === 1) {
       fetchStudentCourses()
       ElMessage.success('选课记录更新成功')
@@ -172,8 +179,8 @@ const updateStudentCourse = () => {
   })
 }
 
-const handleDelete = (id: number) => {
-  axios.get(`/studentCourse/deleteStudentCourse/${id}`).then((response: { data: { code: number, msg: string } }) => {
+const handleDelete = (id) => {
+  axios.get(`/studentCourse/deleteStudentCourse/${id}`).then((response) => {
     if (response.data.code === 1) {
       ElMessage.success('选课记录删除成功')
       fetchStudentCourses()
@@ -185,7 +192,7 @@ const handleDelete = (id: number) => {
 
 const confirmBatchDelete = () => {
   const ids = selectedStudentCourses.value.map(studentCourse => studentCourse.id).join(',')
-  axios.post('/studentCourse/deleteBatchStudentCourse', { ids }).then((response: { data: { code: number, msg: string } }) => {
+  axios.post('/studentCourse/deleteBatchStudentCourse', { ids }).then((response) => {
     if (response.data.code === 1) {
       ElMessage.success('批量删除选课记录成功')
       fetchStudentCourses()
@@ -196,11 +203,11 @@ const confirmBatchDelete = () => {
   })
 }
 
-const handleSelectionChange = (val: any) => {
+const handleSelectionChange = (val) => {
   selectedStudentCourses.value = val
 }
 
-const handlePageChange = (page: number) => {
+const handlePageChange = (page) => {
   pageNum.value = page
   fetchStudentCourses()
 }
@@ -214,20 +221,64 @@ fetchStudentsAndCourses()
 </script>
 
 <style scoped>
-.student-course-form {
-  margin-bottom: 20px;
+/* 操作按钮容器 */
+.action-buttons {
+  display: flex;
+  margin-bottom: 15px;
+  margin-left: 10px; /* 与表格左端对齐 */
 }
-.add-student-course-button, .batch-delete-button, .confirm-batch-delete-button {
-  margin-bottom: 20px;
-  margin-right: 10px;
+
+/* 按钮样式 */
+.add-student-course-button {
+  background-color: #8b007a !important; /* 添加按钮背景颜色 */
+  border-color: #8b007a !important;
+  color: white !important;
 }
+
+.add-student-course-button:hover {
+  background-color: #a70c94 !important; /* 悬停颜色 */
+  border-color: #a70c94 !important;
+}
+
+.edit-button {
+  background-color: #8b007a !important; /* 修改按钮背景颜色 */
+  border-color: #8b007a !important;
+  color: white !important;
+}
+
+.edit-button:hover {
+  background-color: #a70c94 !important; /* 修改按钮悬停颜色 */
+  border-color: #a70c94 !important;
+}
+
+.delete-button {
+  background-color: #f56c6c !important; /* 删除按钮背景颜色 */
+  border-color: #f56c6c !important;
+  color: white !important;
+}
+
+.delete-button:hover {
+  background-color: #f78989 !important; /* 删除按钮悬停颜色 */
+  border-color: #f78989 !important;
+}
+
+/* 表格容器 */
+.table-container {
+  width: 88%;
+}
+
+/* 分页组件容器样式 */
 .pagination-container {
   display: flex;
-  justify-content: center;
+  justify-content: start; /* 左对齐 */
   align-items: center;
   margin-top: 20px;
 }
+
+/* 总页数文字样式 */
 .total-pages {
+  font-size: 14px;
+  color: #333;
   margin-left: 20px;
 }
 </style>

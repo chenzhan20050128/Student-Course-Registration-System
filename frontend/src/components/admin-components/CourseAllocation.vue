@@ -1,32 +1,38 @@
 <template>
   <div>
-    <h2>课程分配管理</h2>
-    <!-- 添加课程分配记录按钮 -->
-    <el-button type="primary" @click="openDialog('add')" class="add-course-allocation-button">添加课程分配记录</el-button>
-    <!-- 批量删除按钮 -->
-    <el-button type="danger" @click="toggleBatchDelete" class="batch-delete-button">批量删除</el-button>
-    <!-- 确定批量删除按钮 -->
-    <el-button type="danger" @click="confirmBatchDelete" v-if="showBatchDelete" class="confirm-batch-delete-button">确定批量删除</el-button>
+    <!-- 添加课程分配记录和批量删除按钮 -->
+    <div class="action-buttons">
+      <el-button type="primary" @click="openDialog('add')" class="add-course-allocation-button">添加课程分配记录</el-button>
+      <el-button type="danger" @click="toggleBatchDelete" class="batch-delete-button">批量删除</el-button>
+      <el-button
+        type="danger"
+        @click="confirmBatchDelete"
+        v-if="showBatchDelete"
+        class="confirm-batch-delete-button"
+      >
+        确定批量删除
+      </el-button>
+    </div>
 
     <!-- 课程分配记录表格 -->
     <div class="table-container">
       <el-table
         :data="courseAllocationList"
-        style="width: 100%"
+        style="width: 1280px"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" v-if="showBatchDelete"></el-table-column>
-        <el-table-column prop="teacherName" label="教师"></el-table-column>
-        <el-table-column prop="phone" label="手机"></el-table-column>
-        <el-table-column prop="email" label="邮箱"></el-table-column>
-        <el-table-column prop="courseName" label="课程"></el-table-column>
-        <el-table-column prop="address" label="地点"></el-table-column>
-        <el-table-column prop="enrollment" label="选课人数/容量"></el-table-column>
-        <el-table-column prop="major" label="专业"></el-table-column>
-        <el-table-column label="操作">
+        <el-table-column type="selection" width="40" v-if="showBatchDelete"></el-table-column>
+        <el-table-column prop="teacherName" label="教师姓名" width="120"></el-table-column>
+        <el-table-column prop="phone" label="手机" width="120"></el-table-column>
+        <el-table-column prop="email" label="邮箱" width="150"></el-table-column>
+        <el-table-column prop="courseName" label="课程名称" width="150"></el-table-column>
+        <el-table-column prop="address" label="上课地点" width="150"></el-table-column>
+        <el-table-column prop="enrollment" label="选课人数/容量" width="120"></el-table-column>
+        <el-table-column prop="major" label="专业" width="260"></el-table-column>
+        <el-table-column label="操作" width="200">
           <template v-slot="scope">
-            <el-button size="mini" type="primary" @click="openDialog('edit', scope.row)">修改</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
+            <el-button size="mini" type="primary" class="edit-button" @click="openDialog('edit', scope.row)">修改</el-button>
+            <el-button size="mini" type="danger" class="delete-button" @click="handleDelete(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -35,6 +41,7 @@
     <!-- 分页组件 -->
     <div class="pagination-container">
       <el-pagination
+        background
         @current-change="handlePageChange"
         :current-page="pageNum"
         :page-size="pageSize"
@@ -43,11 +50,11 @@
         class="pagination"
       >
       </el-pagination>
-      <span class="total-pages">总页数: {{ Math.ceil(total / pageSize) }}</span>
+      <span class="total-pages">总页数：{{ Math.ceil(total / pageSize) }}</span>
     </div>
 
     <!-- 添加/修改课程分配记录表单弹出框 -->
-    <el-dialog v-model="showDialog" :title="dialogTitle" width="600px">
+    <el-dialog v-model="showDialog" :title="dialogTitle" width="500px">
       <el-form :model="newCourseAllocation" label-width="120px" class="course-allocation-form">
         <el-form-item label="教师" required>
           <el-select v-model="newCourseAllocation.tid" placeholder="请选择教师">
@@ -70,8 +77,8 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="saveCourseAllocation" v-if="!isEditing">提交</el-button>
-          <el-button type="primary" @click="updateCourseAllocation" v-if="isEditing">修改</el-button>
+          <el-button type="primary" class="edit-button" @click="saveCourseAllocation" v-if="!isEditing">提交</el-button>
+          <el-button type="primary" class="edit-button" @click="updateCourseAllocation" v-if="isEditing">修改</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -80,7 +87,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import axios from '@/http'
 
 const courseAllocationList = ref([])
@@ -102,7 +109,7 @@ const fetchCourseAllocations = () => {
       pageNum: pageNum.value,
       pageSize: pageSize.value,
     },
-  }).then((response: { data: { code: number, msg: string, data: { list: any[], total: number } } }) => {
+  }).then((response) => {
     if (response.data.code === 1) {
       const courseAllocationData = response.data.data.list
       courseAllocationList.value = courseAllocationData.map((item) => {
@@ -127,11 +134,11 @@ const fetchCourseAllocations = () => {
 }
 
 const fetchTeachersAndCourses = () => {
-  axios.get('/teacherCourse/preSaveTeacherCourse').then((response: { data: { code: number, msg: string, data: { teacherList: any[], courseList: any[] } } }) => {
+  axios.get('/teacherCourse/preSaveTeacherCourse').then((response) => {
     if (response.data.code === 1) {
       teacherList.value = response.data.data.teacherList
       courseList.value = response.data.data.courseList
-      fetchCourseAllocations() // 确保在获取教师和课程列表后再获取课程分配记录
+      fetchCourseAllocations()
     } else {
       ElMessage.error(response.data.msg || '获取教师和课程列表失败')
     }
@@ -156,7 +163,7 @@ const openDialog = (action: string, courseAllocation: any = null) => {
 }
 
 const saveCourseAllocation = () => {
-  axios.post('/teacherCourse/saveTeacherCourse', newCourseAllocation.value).then((response: { data: { code: number, msg: string } }) => {
+  axios.post('/teacherCourse/saveTeacherCourse', newCourseAllocation.value).then((response) => {
     if (response.data.code === 1) {
       fetchCourseAllocations()
       ElMessage.success('课程分配记录添加成功')
@@ -168,7 +175,7 @@ const saveCourseAllocation = () => {
 }
 
 const updateCourseAllocation = () => {
-  axios.post('/teacherCourse/updateTeacherCourse', newCourseAllocation.value).then((response: { data: { code: number, msg: string } }) => {
+  axios.post('/teacherCourse/updateTeacherCourse', newCourseAllocation.value).then((response) => {
     if (response.data.code === 1) {
       fetchCourseAllocations()
       ElMessage.success('课程分配记录更新成功')
@@ -179,8 +186,8 @@ const updateCourseAllocation = () => {
   })
 }
 
-const handleDelete = (id: number) => {
-  axios.get(`/teacherCourse/deleteTeacherCourse/${id}`).then((response: { data: { code: number, msg: string } }) => {
+const handleDelete = (id) => {
+  axios.get(`/teacherCourse/deleteTeacherCourse/${id}`).then((response) => {
     if (response.data.code === 1) {
       ElMessage.success('课程分配记录删除成功')
       fetchCourseAllocations()
@@ -192,7 +199,7 @@ const handleDelete = (id: number) => {
 
 const confirmBatchDelete = () => {
   const ids = selectedCourseAllocations.value.map(courseAllocation => courseAllocation.id).join(',')
-  axios.post('/teacherCourse/deleteBatchTeacherCourse', { ids }).then((response: { data: { code: number, msg: string } }) => {
+  axios.post('/teacherCourse/deleteBatchTeacherCourse', { ids }).then((response) => {
     if (response.data.code === 1) {
       ElMessage.success('批量删除课程分配记录成功')
       fetchCourseAllocations()
@@ -203,11 +210,11 @@ const confirmBatchDelete = () => {
   })
 }
 
-const handleSelectionChange = (val: any) => {
+const handleSelectionChange = (val) => {
   selectedCourseAllocations.value = val
 }
 
-const handlePageChange = (page: number) => {
+const handlePageChange = (page) => {
   pageNum.value = page
   fetchCourseAllocations()
 }
@@ -221,20 +228,64 @@ fetchTeachersAndCourses()
 </script>
 
 <style scoped>
-.course-allocation-form {
-  margin-bottom: 20px;
+/* 操作按钮容器 */
+.action-buttons {
+  display: flex;
+  margin-bottom: 15px;
+  margin-left: 10px; /* 与表格左端对齐 */
 }
-.add-course-allocation-button, .batch-delete-button, .confirm-batch-delete-button {
-  margin-bottom: 20px;
-  margin-right: 10px;
+
+/* 按钮样式 */
+.add-course-allocation-button {
+  background-color: #8b007a !important; /* 添加按钮背景颜色 */
+  border-color: #8b007a !important;
+  color: white !important;
 }
+
+.add-course-allocation-button:hover {
+  background-color: #a70c94 !important; /* 悬停颜色 */
+  border-color: #a70c94 !important;
+}
+
+.edit-button {
+  background-color: #8b007a !important; /* 修改按钮背景颜色 */
+  border-color: #8b007a !important;
+  color: white !important;
+}
+
+.edit-button:hover {
+  background-color: #a70c94 !important; /* 修改按钮悬停颜色 */
+  border-color: #a70c94 !important;
+}
+
+.delete-button {
+  background-color: #f56c6c !important; /* 删除按钮背景颜色 */
+  border-color: #f56c6c !important;
+  color: white !important;
+}
+
+.delete-button:hover {
+  background-color: #f78989 !important; /* 删除按钮悬停颜色 */
+  border-color: #f78989 !important;
+}
+
+/* 表格容器 */
+.table-container {
+  width: 88%;
+}
+
+/* 分页组件容器样式 */
 .pagination-container {
   display: flex;
-  justify-content: center;
+  justify-content: start; /* 左对齐 */
   align-items: center;
   margin-top: 20px;
 }
+
+/* 总页数文字样式 */
 .total-pages {
+  font-size: 14px;
+  color: #333;
   margin-left: 20px;
 }
 </style>

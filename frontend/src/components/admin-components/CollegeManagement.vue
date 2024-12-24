@@ -1,26 +1,46 @@
 <template>
   <div>
-    <h2>学院管理</h2>
-    <!-- 添加学院按钮 -->
-    <el-button type="primary" @click="openDialog('add')" class="add-college-button">添加学院</el-button>
-    <!-- 批量删除按钮 -->
-    <el-button type="danger" @click="toggleBatchDelete" class="batch-delete-button">批量删除</el-button>
-    <!-- 确定批量删除按钮 -->
-    <el-button type="danger" @click="confirmBatchDelete" v-if="showBatchDelete" class="confirm-batch-delete-button">确定批量删除</el-button>
+    <!-- 添加学院和批量删除按钮 -->
+    <div class="action-buttons">
+      <el-button type="primary" @click="openDialog('add')" class="add-college-button">添加学院</el-button>
+      <el-button type="danger" @click="toggleBatchDelete" class="batch-delete-button">批量删除</el-button>
+      <el-button
+        type="danger"
+        @click="confirmBatchDelete"
+        v-if="showBatchDelete"
+        class="confirm-batch-delete-button"
+      >
+        确定批量删除
+      </el-button>
+    </div>
 
     <!-- 学院列表表格 -->
     <div class="table-container">
       <el-table
         :data="collegeList"
-        style="width: 100%"
+        style="width: 1280px"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" v-if="showBatchDelete"></el-table-column>
-        <el-table-column prop="cname" label="学院名"></el-table-column>
+        <el-table-column type="selection" width="40" v-if="showBatchDelete"></el-table-column>
+        <el-table-column prop="cname" label="学院名称" width="1070"></el-table-column>
         <el-table-column label="操作">
           <template v-slot="scope">
-            <el-button size="mini" type="primary" @click="openDialog('edit', scope.row)">修改</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
+            <el-button
+              size="mini"
+              type="primary"
+              class="edit-college-button"
+              @click="openDialog('edit', scope.row)"
+            >
+              修改
+            </el-button>
+            <el-button
+              size="mini"
+              type="danger"
+              class="delete-college-button"
+              @click="handleDelete(scope.row.id)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -29,12 +49,13 @@
     <!-- 分页组件 -->
     <div class="pagination-container">
       <el-pagination
+        background
         @current-change="handlePageChange"
         :current-page="pageNum"
         :page-size="pageSize"
         layout="prev, pager, next"
         :total="total"
-        class="pagination"
+        class="custom-pagination"
       >
       </el-pagination>
       <span class="total-pages">总页数: {{ Math.ceil(total / pageSize) }}</span>
@@ -166,20 +187,63 @@ fetchColleges()
 </script>
 
 <style scoped>
-.college-form {
-  margin-bottom: 20px;
+/* 操作按钮容器 */
+.action-buttons {
+  display: flex;
+  margin-bottom: 15px;
+  margin-left: 10px; /* 与表格左端对齐 */
 }
-.add-college-button, .batch-delete-button, .confirm-batch-delete-button {
-  margin-bottom: 20px;
-  margin-right: 10px;
+
+/* 按钮样式 */
+.add-college-button {
+  background-color: #8b007a !important; /* 添加学院按钮背景颜色 */
+  border-color: #8b007a !important;
+  color: white !important;
 }
+
+.add-college-button:hover {
+  background-color: #a70c94 !important; /* 悬停颜色 */
+  border-color: #a70c94 !important;
+}
+
+.edit-college-button {
+  background-color: #8b007a !important; /* 修改按钮背景颜色 */
+  border-color: #8b007a !important;
+  color: white !important;
+}
+
+.edit-college-button:hover {
+  background-color: #a70c94 !important; /* 修改按钮悬停颜色 */
+  border-color: #a70c94 !important;
+}
+
+.delete-college-button {
+  background-color: #f56c6c !important; /* 删除按钮背景颜色 */
+  border-color: #f56c6c !important;
+  color: white !important;
+}
+
+.delete-college-button:hover {
+  background-color: #f78989 !important; /* 删除按钮悬停颜色 */
+  border-color: #f78989 !important;
+}
+
+/* 表格容器 */
+.table-container {
+  width: 88%;
+}
+
+/* 分页组件样式 */
 .pagination-container {
   display: flex;
-  justify-content: center;
+  justify-content: start;
   align-items: center;
   margin-top: 20px;
 }
+
 .total-pages {
+  font-size: 14px;
+  color: #333;
   margin-left: 20px;
 }
 </style>

@@ -1,34 +1,40 @@
 <template>
   <div>
-    <h2>课程管理</h2>
-    <!-- 添加课程按钮 -->
-    <el-button type="primary" @click="openDialog('add')" class="add-course-button">添加课程</el-button>
-    <!-- 批量删除按钮 -->
-    <el-button type="danger" @click="toggleBatchDelete" class="batch-delete-button">批量删除</el-button>
-    <!-- 确定批量删除按钮 -->
-    <el-button type="danger" @click="confirmBatchDelete" v-if="showBatchDelete" class="confirm-batch-delete-button">确定批量删除</el-button>
+    <!-- 添加课程和批量删除按钮 -->
+    <div class="action-buttons">
+      <el-button type="primary" @click="openDialog('add')" class="add-course-button">添加课程</el-button>
+      <el-button type="danger" @click="toggleBatchDelete" class="batch-delete-button">批量删除</el-button>
+      <el-button
+        type="danger"
+        @click="confirmBatchDelete"
+        v-if="showBatchDelete"
+        class="confirm-batch-delete-button"
+      >
+        确定批量删除
+      </el-button>
+    </div>
 
     <!-- 课程列表表格 -->
     <div class="table-container">
       <el-table
         :data="courseList"
-        style="width: 100%"
+        style="width: 1280px"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" v-if="showBatchDelete"></el-table-column>
-        <el-table-column prop="cname" label="课程名"></el-table-column>
-        <el-table-column prop="major" label="专业"></el-table-column>
-        <el-table-column prop="teacher" label="教师"></el-table-column>
-        <el-table-column prop="address" label="地址"></el-table-column>
-        <el-table-column prop="num" label="选课人数"></el-table-column>
-        <el-table-column prop="stock" label="选课容量"></el-table-column>
-        <el-table-column prop="credit" label="学分"></el-table-column>
-        <el-table-column prop="cimage" label="课程图片"></el-table-column>
-        <el-table-column prop="cbook" label="课程书籍"></el-table-column>
+        <el-table-column type="selection" width="40" v-if="showBatchDelete"></el-table-column>
+        <el-table-column prop="cname" label="课程名" width="150"></el-table-column>
+        <el-table-column prop="major" label="专业" width="150"></el-table-column>
+        <el-table-column prop="teacher" label="教师" width="120"></el-table-column>
+        <el-table-column prop="address" label="地址" width="150"></el-table-column>
+        <el-table-column prop="num" label="选课人数" width="90"></el-table-column>
+        <el-table-column prop="stock" label="选课容量" width="90"></el-table-column>
+        <el-table-column prop="credit" label="学分" width="90"></el-table-column>
+        <el-table-column prop="cimage" label="课程图片" width="90"></el-table-column>
+        <el-table-column prop="cbook" label="课程书籍" width="140"></el-table-column>
         <el-table-column label="操作">
           <template v-slot="scope">
-            <el-button size="mini" type="primary" @click="openDialog('edit', scope.row)">修改</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
+            <el-button size="mini" type="primary" class="edit-button" @click="openDialog('edit', scope.row)">修改</el-button>
+            <el-button size="mini" type="danger" class="delete-button" @click="handleDelete(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -37,6 +43,7 @@
     <!-- 分页组件 -->
     <div class="pagination-container">
       <el-pagination
+        background
         @current-change="handlePageChange"
         :current-page="pageNum"
         :page-size="pageSize"
@@ -45,11 +52,11 @@
         class="pagination"
       >
       </el-pagination>
-      <span class="total-pages">总页数: {{ Math.ceil(total / pageSize) }}</span>
+      <span class="total-pages">总页数：{{ Math.ceil(total / pageSize) }}</span>
     </div>
 
     <!-- 添加/修改课程表单弹出框 -->
-    <el-dialog v-model="showDialog" :title="dialogTitle" width="700px">
+    <el-dialog v-model="showDialog" :title="dialogTitle" width="500px">
       <el-form :model="newCourse" label-width="120px" class="course-form">
         <el-form-item label="课程名" required>
           <el-input v-model="newCourse.cname"></el-input>
@@ -86,8 +93,8 @@
           <el-input v-model="newCourse.cbook"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="saveCourse" v-if="!isEditing">提交</el-button>
-          <el-button type="primary" @click="updateCourse" v-if="isEditing">修改</el-button>
+          <el-button type="primary" class="edit-button" @click="saveCourse" v-if="!isEditing">提交</el-button>
+          <el-button type="primary" class="edit-button" @click="updateCourse" v-if="isEditing">修改</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -217,20 +224,64 @@ fetchMajors()
 </script>
 
 <style scoped>
-.course-form {
-  margin-bottom: 20px;
+/* 操作按钮容器 */
+.action-buttons {
+  display: flex;
+  margin-bottom: 15px;
+  margin-left: 10px; /* 与表格左端对齐 */
 }
-.add-course-button, .batch-delete-button, .confirm-batch-delete-button {
-  margin-bottom: 20px;
-  margin-right: 10px;
+
+/* 按钮样式 */
+.add-course-button {
+  background-color: #8b007a !important; /* 添加按钮背景颜色 */
+  border-color: #8b007a !important;
+  color: white !important;
 }
+
+.add-course-button:hover {
+  background-color: #a70c94 !important; /* 悬停颜色 */
+  border-color: #a70c94 !important;
+}
+
+.edit-button {
+  background-color: #8b007a !important; /* 修改按钮背景颜色 */
+  border-color: #8b007a !important;
+  color: white !important;
+}
+
+.edit-button:hover {
+  background-color: #a70c94 !important; /* 修改按钮悬停颜色 */
+  border_color: #a70c94 !important;
+}
+
+.delete-button {
+  background-color: #f56c6c !important; /* 删除按钮背景颜色 */
+  border_color: #f56c6c !important;
+  color: white !important;
+}
+
+.delete-button:hover {
+  background-color: #f78989 !important; /* 删除按钮悬停颜色 */
+  border_color: #f78989 !important;
+}
+
+/* 表格容器 */
+.table-container {
+  width: 88%;
+}
+
+/* 分页组件容器样式 */
 .pagination-container {
   display: flex;
-  justify-content: center;
+  justify-content: start; /* 左对齐 */
   align-items: center;
   margin-top: 20px;
 }
+
+/* 总页数文字样式 */
 .total-pages {
+  font-size: 14px;
+  color: #333;
   margin-left: 20px;
 }
 </style>
