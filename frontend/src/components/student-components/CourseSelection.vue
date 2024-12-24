@@ -64,9 +64,11 @@ export default {
             majorName: this.majorName,
           },
         });
+        
         if (response.data && response.data.data) {
           this.courses = response.data.data.list;
           this.total = response.data.data.total;
+
         }
       } catch (error) {
         console.error('获取课程列表失败', error);

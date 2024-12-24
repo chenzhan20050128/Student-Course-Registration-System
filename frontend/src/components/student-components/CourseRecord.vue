@@ -7,7 +7,7 @@
       align="left"
       style="width: 88%"
     >
-      <el-table-column prop="cid" label="ID" width="75"></el-table-column>
+      <el-table-column prop="course.id" label="ID" width="75"></el-table-column>
       <el-table-column prop="course.cname" label="课程名称" width="225"></el-table-column>
       <el-table-column prop="course.teacher" label="授课教师" width="175"></el-table-column>
       <el-table-column prop="course.address" label="教学地点" width="300"></el-table-column>
@@ -54,6 +54,7 @@ export default {
     return {
       id: 0,
       studentCourses: [],
+      studentCoursesAll: [],
       pageNum: 1,
       pageSize: 6,
       total: 0,
@@ -72,10 +73,25 @@ export default {
             pageSize: this.pageSize,
           },
         });
+        const response4 = await axios.get('/student/listCourseByMajorName', {
+          params: {
+            pageNum: this.pageNum,
+            pageSize: this.pageSize,
+            majorName: this.majorName,
+          },
+        }); 
+        this.studentCoursesAll = response4.data.data.list;
         if (response.data && response.data.data) {
           this.studentCourses = response.data.data.list;
           this.total = response.data.data.total;
         }
+      this.studentCourses.forEach(course => {
+      const matchingCourse = this.studentCoursesAll.find(c => c.cname === course.course.cname);
+      if (matchingCourse) {
+        course.course.teacher = matchingCourse.teacher;
+        course.course.id = matchingCourse.id;
+      }
+    });
       } catch (error) {
         console.error('获取学生选课记录失败', error);
       }
