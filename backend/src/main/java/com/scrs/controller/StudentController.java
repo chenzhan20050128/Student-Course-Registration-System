@@ -1,19 +1,23 @@
 package com.scrs.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.scrs.annotation.ApiCount;
 import com.scrs.common.R;
 import com.scrs.pojo.*;
 import com.scrs.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
@@ -21,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 该控制器负责处理关于学生管理的请求，包括：
@@ -59,6 +64,12 @@ public class StudentController {
 
     @Value("${file.location}") // 获取配置文件中的文件上传路径
     private String location;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
 
     /**
      * 列出学生信息，并支持分页。用户可以通过学生姓名过滤列表，并获得分页结果。
@@ -122,6 +133,7 @@ public class StudentController {
      * @return 成功保存后重定向到学生列表。
      */
     @PostMapping("/saveStudent")
+    @ApiCount("保存学生")
     public R<String> saveStudent(@RequestBody Student student,
             @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
         // TODO: 保存学生的图像文件
@@ -202,6 +214,7 @@ public class StudentController {
      * @return 成功更新后重定向到学生列表。
      */
     @PostMapping("/updateStudent")
+    @ApiCount("更新学生")
     public R<String> updateStudent(@RequestBody Student student, MultipartFile simage) throws IOException {
         if (simage != null) {
             System.out.println("11111");
@@ -220,6 +233,7 @@ public class StudentController {
      * @return 成功删除后重定向到学生列表。
      */
     @GetMapping("/deleteStudent/{id}")
+    @ApiCount("删除学生")
     public R<String> deleteStudent(@PathVariable Integer id) {
         boolean b = studentService.removeById(id);
         if (!b) {
@@ -292,36 +306,38 @@ public class StudentController {
 
     /**
      * 新增改动（12.16 17:02）去掉了session 直接传参
+     * 改造为 Kafka 异步处理
      */
     @GetMapping("/selectCourse")
+    @ApiCount("学生选课")
     public R<String> selectCourse(@RequestParam Integer cid, @RequestParam Integer sid) {
-        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("sid", sid);
-        queryWrapper.eq("cid", cid);
-        StudentCourse one = studentCourseService.getOne(queryWrapper);
-        if (one != null && one.getStatus() == 1) {
-            return R.error("该学生已经选过该课程");
-        }
-        if (one != null && one.getStatus() == 0) {
-            one.setStatus(1);
+        // 1. Redis 预扣减库存
+        String stockKey = "course:stock:" + cid;
+        // 假设库存已经预热到 Redis 中，如果没有，需要先加载
+        if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(stockKey))) {
             Course course = courseService.getById(cid);
-            course.setNum(course.getNum() + 1);
-            courseService.updateById(course);
-            studentCourseService.updateById(one);
-            return R.success("选课成功");
+            if (course != null) {
+                stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(course.getStock() - (course.getNum() == null ? 0 : course.getNum())));
+            } else {
+                return R.error("课程不存在");
+            }
         }
-        Course course = courseService.getById(cid);
-        if (course.getNum() >= course.getStock()) {
+
+        Long stock = stringRedisTemplate.opsForValue().decrement(stockKey);
+        if (stock != null && stock < 0) {
+            // 库存不足，回滚
+            stringRedisTemplate.opsForValue().increment(stockKey);
             return R.error("该课程已经选满");
         }
-        course.setNum(course.getNum() + 1);
-        courseService.updateById(course);
-        StudentCourse studentCourse = new StudentCourse();
-        studentCourse.setSid(sid);
-        studentCourse.setCid(cid);
-        studentCourse.setStatus(1);
-        studentCourseService.save(studentCourse);
-        return R.success("选课成功");
+
+        // 2. 发送消息到 Kafka
+        Map<String, Object> message = new HashMap<>();
+        message.put("studentId", sid);
+        message.put("courseId", cid);
+        message.put("timestamp", System.currentTimeMillis());
+        kafkaTemplate.send("course_selection_topic", JSON.toJSONString(message));
+
+        return R.success("选课请求已提交，正在排队处理...");
     }
 
     /**

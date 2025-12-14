@@ -1,6 +1,7 @@
 package com.scrs.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.scrs.annotation.ApiCount;
 import com.scrs.common.R;
 import com.scrs.dto.LoginRequest; // 导入 LoginRequest 类
 import com.scrs.pojo.Student;
@@ -62,6 +63,7 @@ public class AccountController {
      * @return 返回登录结果和角色信息
      */
     @PostMapping("/login")
+    @ApiCount("用户登录")
     public R<Map<String, Object>> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
         //printSessionInfo();//仅用于调试
 

@@ -2,9 +2,11 @@ package com.scrs.controller;/*
  * @date 12/07 12:57
  */
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.scrs.annotation.ApiCount;
 import com.scrs.common.R;
 import com.scrs.pojo.Course;
 import com.scrs.pojo.Student;
@@ -14,6 +16,8 @@ import com.scrs.service.StudentCourseService;
 import com.scrs.service.StudentCourseService;
 import com.scrs.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +26,16 @@ import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/studentCourse")
 public class StudentCourseController {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    private static final String COURSE_RANK_KEY = "course:rank";
 
     @Autowired
     private StudentCourseService studentCourseService;
@@ -33,6 +43,8 @@ public class StudentCourseController {
     private StudentService studentService;
     @Autowired
     private CourseService courseService;
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
 
 
     /*
@@ -70,6 +82,7 @@ public class StudentCourseController {
     }
 
     @PostMapping("/saveStudentCourse")
+    @ApiCount("学生选课")
     public R<String> saveStudentCourse(@RequestBody StudentCourse studentCourse, HttpSession session) {
         Integer sid = studentCourse.getSid();
         Integer cid = studentCourse.getCid();
@@ -99,6 +112,9 @@ public class StudentCourseController {
         NewStudentCourse.setSid(sid);
         NewStudentCourse.setCid(cid);
         studentCourseService.save(NewStudentCourse);
+
+        // 更新 Redis 排行榜分数 +1
+        stringRedisTemplate.opsForZSet().incrementScore(COURSE_RANK_KEY, cid.toString(), 1);
 
         return R.success("选课成功");
     }
@@ -173,4 +189,59 @@ public class StudentCourseController {
         return R.success("批量删除成功");
     }
 
+    @GetMapping("/selectCourse")
+    @ApiCount("学生选课")
+    public R<String> selectCourse(@RequestParam Integer cid, @RequestParam Integer sid) {
+        // 1. Redis 预扣减库存
+        String stockKey = "course:stock:" + cid;
+        // 假设库存已经预热到 Redis 中，如果没有，需要先加载
+        if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(stockKey))) {
+            Course course = courseService.getById(cid);
+            if (course != null) {
+                stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(course.getStock() - (course.getNum() == null ? 0 : course.getNum())));
+            } else {
+                return R.error("课程不存在");
+            }
+        }
+
+        Long stock = stringRedisTemplate.opsForValue().decrement(stockKey);
+        if (stock != null && stock < 0) {
+            // 库存不足，回滚
+            stringRedisTemplate.opsForValue().increment(stockKey);
+            return R.error("该课程已经选满");
+        }
+
+        // 2. 发送消息到 Kafka
+        Map<String, Object> message = new HashMap<>();
+        message.put("studentId", sid);
+        message.put("courseId", cid);
+        message.put("timestamp", System.currentTimeMillis());
+        kafkaTemplate.send("course_selection_topic", JSON.toJSONString(message));
+
+        return R.success("选课请求已提交，正在排队处理...");
+    }
+
+    /**
+     * 学生退选
+     */
+    @PostMapping("/deleteMyCourse")
+    public R<String> deleteMyCourse(@RequestParam Integer cid, @RequestParam Integer sid) {
+        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("sid", sid);
+        queryWrapper.eq("cid", cid);
+        StudentCourse one = studentCourseService.getOne(queryWrapper);
+        if (one == null) {
+            return R.error("该学生没有选过该课程");
+        }
+        one.setStatus(0);// 表示退选
+        Course course = courseService.getById(cid);
+        course.setNum(course.getNum() - 1);
+        courseService.updateById(course);
+        studentCourseService.updateById(one);
+
+        // 更新 Redis 排行榜分数 -1
+        stringRedisTemplate.opsForZSet().incrementScore(COURSE_RANK_KEY, cid.toString(), -1);
+
+        return R.success("退选成功");
+    }
 }

@@ -1,50 +1,83 @@
-截止到12.7 19：46 后端基本完工时所有.java代码非空行数
+中间件要求
 
-| FileName | Lines |
-|----------|-------|
-| R.java | 27 |
-| AccountController.java | 330 |
-| CollegeController.java | 83 |
-| CourseController.java | 235 |
-| MajorController.java | 99 |
-| StudentController.java | 297 |
-| StudentCourseController.java | 161 |
-| TeacherController.java | 217 |
-| TeacherCourseController.java | 144 |
-| CollegeMapper.java | 8 |
-| CourseMapper.java | 8 |
-| MajorMapper.java | 8 |
-| StudentCourseMapper.java | 10 |
-| StudentMapper.java | 8 |
-| TeacherCourseMapper.java | 12 |
-| TeacherMapper.java | 8 |
-| UserMapper.java | 8 |
-| College.java | 12 |
-| Course.java | 19 |
-| Major.java | 13 |
-| Student.java | 17 |
-| StudentCourse.java | 22 |
-| Teacher.java | 18 |
-| TeacherCourse.java | 19 |
-| User.java | 15 |
-| CollegeServiceImpl.java | 11 |
-| CourseServiceImpl.java | 12 |
-| MajorServiceImpl.java | 11 |
-| StudentCourseServiceImpl.java | 23 |
-| StudentServiceImpl.java | 32 |
-| TeacherCourseServiceImpl.java | 24 |
-| TeacherServiceImpl.java | 28 |
-| UserServiceImpl.java | 28 |
-| CollegeService.java | 5 |
-| CourseService.java | 5 |
-| MajorService.java | 5 |
-| StudentCourseService.java | 8 |
-| StudentService.java | 6 |
-| TeacherCourseService.java | 8 |
-| TeacherService.java | 6 |
-| UserService.java | 6 |
-| ScrsApplication.java | 14 |
-| MD5Test.java | 23 |
+至少得使用数据库（数据库不限）、kafka。
 
+前端实现要求（20 分）
 
-共2053行
+1. 前端开发
+
+   1.1 有前端界面 6
+
+   1.2 使用前端模版模式前端 如 thymeleaf 8
+
+   1.3 前后端分离模式	如 vue	10
+
+2. 前端展示
+
+   2.1 单层跳转 6
+
+   2.2 多层界面逻辑跳转 7
+
+   2.3 有图片展示	8
+
+   2.4 有cs样式 10
+
+安全管理（20分）
+
+1. 用户登录
+
+   1.1 基于内存的用户登录 6
+
+   1.2 使用密码加密 7
+
+   1.3 基于数据库的用户登录 8
+
+   1.4 基于redis的用户登录 10
+
+2. 权限控制
+
+   2.1 有权限控制 6
+
+   2.2 基于角色的权限控制 8
+
+   2.3 基于方法的权限控制 9
+
+   2.4 权限持久化存储在数据库或者别的中间件中 10
+
+基本功能要求（30）
+
+1.对重要接口的调用进行统计（10）
+
+1.1实现功能6
+
+1.2使用AOP+内存实现 7
+
+1.3使用AOP+redis实现 8
+
+1.4使用AOP+redis+前端展示10
+
+2.数据持久化（10）
+
+2.1 Spring Data JPA或Spring Data JDBC  8
+
+2.2 知晓如何切换持久层框架（如使用mybatis）10
+
+3.  使用kafka对消息进行生产和消费 10
+
+4.  Redis缓存的使用（10）
+
+4.1 使用redis set zset list等数据类型解决特定场景问题
+
+部署要求（15）
+
+1. 本地部署8
+
+2. Dockerfile 部署 12
+
+3. docker-compose 15
+
+4. K8s部署（附加分+5）
+
+文档要求（15分）
+
+2000字以内，关于springboot学习总结

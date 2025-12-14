@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.scrs.annotation.ApiCount;
 import com.scrs.common.R;
 import com.scrs.pojo.Course;
 import com.scrs.pojo.Major;
@@ -19,6 +20,7 @@ import com.scrs.utils.CacheClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
@@ -29,6 +31,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -44,8 +50,13 @@ public class CourseController {
     @Autowired
     private MajorService majorService;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
     @Value("${file.location}") // 获取配置文件中的文件上传路径
     private String location;
+
+    private static final String COURSE_RANK_KEY = "course:rank";
 
     @GetMapping("/listCourse")
     public R<PageInfo> listCourse(
@@ -104,6 +115,7 @@ public class CourseController {
      * 保存课程，先不保存文件
      */
     @PostMapping("/saveCourse")
+    @ApiCount("保存课程")
     public R<String> saveCourse(@RequestBody Course course,
             @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
         // System.out.println(course.toString());
@@ -203,6 +215,7 @@ public class CourseController {
 
     // 管理员只能修改课程图像，不能修改课程介绍电子书，只能由老师修改
     @PostMapping("/updateCourse")
+    @ApiCount("更新课程")
     public R<String> updateCourse(@RequestBody Course course) {
         // , MultipartFile file
         // if (!file.isEmpty()) {
@@ -222,6 +235,7 @@ public class CourseController {
     }
 
     @GetMapping("/deleteCourse/{id}")
+    @ApiCount("删除课程")
     public R<String> deleteCourse(@PathVariable Integer id) {
         boolean b = courseService.removeById(id);
         if (!b) {
@@ -305,6 +319,48 @@ public class CourseController {
         PageInfo pageInfo = new PageInfo(courseService.list(queryWrapper));
         model.addAttribute("pageInfo", pageInfo);
         return "admin-course-list";
+    }
+
+    /**
+     * 获取热门课程排行榜（前 5 名）
+     */
+    @GetMapping("/listHotCourse")
+    public R<List<Course>> listHotCourse() {
+        // 检查 Redis 中是否存在排行榜数据
+        Boolean hasKey = stringRedisTemplate.hasKey(COURSE_RANK_KEY);
+        if (Boolean.FALSE.equals(hasKey)) {
+            initCourseRank();
+        }
+
+        // 获取分数最高的前 5 个课程 ID
+        Set<String> topCourseIds = stringRedisTemplate.opsForZSet().reverseRange(COURSE_RANK_KEY, 0, 4);
+
+        List<Course> hotCourses = new ArrayList<>();
+        if (topCourseIds != null && !topCourseIds.isEmpty()) {
+            for (String courseIdStr : topCourseIds) {
+                Integer courseId = Integer.parseInt(courseIdStr);
+                Course course = courseService.getById(courseId);
+                if (course != null) {
+                    hotCourses.add(course);
+                }
+            }
+        }
+        return R.success(hotCourses);
+    }
+
+    /**
+     * 初始化课程排行榜数据到 Redis
+     */
+    private void initCourseRank() {
+        List<Course> list = courseService.list(null);
+        for (Course course : list) {
+            // 使用 num (选课人数) 作为分数，Member 为课程 ID
+            // 如果 num 为 null，默认为 0
+            double score = course.getNum() == null ? 0 : course.getNum();
+            stringRedisTemplate.opsForZSet().add(COURSE_RANK_KEY, course.getId().toString(), score);
+        }
+        // 设置过期时间，例如 1 天，避免数据长期不一致
+        stringRedisTemplate.expire(COURSE_RANK_KEY, 1, TimeUnit.DAYS);
     }
 
 }
