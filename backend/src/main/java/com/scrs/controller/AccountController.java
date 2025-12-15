@@ -12,6 +12,7 @@ import com.scrs.service.TeacherService;
 import com.scrs.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.ui.Model;
@@ -28,6 +29,8 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 该控制器负责处理账户相关的请求，特别是用户登录操作。
@@ -49,6 +52,9 @@ public class AccountController {
 
     @Autowired
     private StudentService studentService;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 处理用户登录请求。根据前端提交的用户名、密码和角色信息对用户进行验证。
@@ -84,49 +90,113 @@ public class AccountController {
 
         if (role == 1) {
             // 管理员登录逻辑
-            Boolean b = userService.login(username, password);
+            // 先检查Redis缓存
+            String cacheKey = "user:login:" + username;
+            String cachedPassword = stringRedisTemplate.opsForValue().get(cacheKey);
+            
+            Boolean b = false;
+            if (cachedPassword != null && cachedPassword.equals(password)) {
+                // 缓存命中
+                b = true;
+                System.out.println("管理员登录 - Redis缓存命中: " + username);
+            } else {
+                // 缓存未命中，查询数据库
+                b = userService.login(username, password);
+                if (b != null && b) {
+                    // 登录成功，将密码缓存到Redis，过期时间30分钟
+                    stringRedisTemplate.opsForValue().set(cacheKey, password, 30, TimeUnit.MINUTES);
+                    System.out.println("管理员登录 - 数据库验证成功，已缓存到Redis: " + username);
+                }
+            }
+            
             if (b != null && b) {
                 QueryWrapper<User> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("username", username);
                 User user = userService.getOne(queryWrapper);
+                
+                // 生成唯一token并存储到Redis
+                String token = UUID.randomUUID().toString();
+                String tokenKey = "user:token:" + token;
+                stringRedisTemplate.opsForValue().set(tokenKey, user.getId().toString(), 2, TimeUnit.HOURS);
+                
                 session.setAttribute("currentUsername", username);
                 session.setAttribute("password", password);
                 session.setAttribute("userId", user.getId());
-                // session.setAttribute("email", user.getEmail());
-                // session.setAttribute("image", user.getImage());
                 session.setAttribute("role", 1);
+                session.setAttribute("token", token);
+                
                 result.put("role", 1);
                 result.put("id", user.getId());
+                result.put("token", token);
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
             }
         } else if (role == 2) {
             // 老师登录逻辑
-            Boolean b = teacherService.login(username, password);
+            String cacheKey = "teacher:login:" + username;
+            String cachedPassword = stringRedisTemplate.opsForValue().get(cacheKey);
+            
+            Boolean b = false;
+            if (cachedPassword != null && cachedPassword.equals(password)) {
+                b = true;
+                System.out.println("教师登录 - Redis缓存命中: " + username);
+            } else {
+                b = teacherService.login(username, password);
+                if (b != null && b) {
+                    stringRedisTemplate.opsForValue().set(cacheKey, password, 30, TimeUnit.MINUTES);
+                    System.out.println("教师登录 - 数据库验证成功，已缓存到Redis: " + username);
+                }
+            }
+            
             if (b != null && b) {
                 QueryWrapper<Teacher> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("tname", username); // Teacher 类的字段名称是 tname
+                queryWrapper.eq("tname", username);
                 Teacher teacher = teacherService.getOne(queryWrapper);
+                
+                String token = UUID.randomUUID().toString();
+                String tokenKey = "teacher:token:" + token;
+                stringRedisTemplate.opsForValue().set(tokenKey, teacher.getId().toString(), 2, TimeUnit.HOURS);
+                
                 session.setAttribute("currentUsername", username);
                 session.setAttribute("password", password);
                 session.setAttribute("userId", teacher.getId());
-                // session.setAttribute("email", teacher.getEmail());
-                // session.setAttribute("image", teacher.getTimage());
                 session.setAttribute("role", 2);
+                session.setAttribute("token", token);
+                
                 result.put("role", 2);
                 result.put("id", teacher.getId());
+                result.put("token", token);
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
             }
         } else if (role == 3) {
             // 学生登录逻辑
-            Boolean b = studentService.login(username, password);
+            String cacheKey = "student:login:" + username;
+            String cachedPassword = stringRedisTemplate.opsForValue().get(cacheKey);
+            
+            Boolean b = false;
+            if (cachedPassword != null && cachedPassword.equals(password)) {
+                b = true;
+                System.out.println("学生登录 - Redis缓存命中: " + username);
+            } else {
+                b = studentService.login(username, password);
+                if (b != null && b) {
+                    stringRedisTemplate.opsForValue().set(cacheKey, password, 30, TimeUnit.MINUTES);
+                    System.out.println("学生登录 - 数据库验证成功，已缓存到Redis: " + username);
+                }
+            }
+            
             if (b != null && b) {
                 QueryWrapper<Student> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("sname", username); // Student 类的字段名称是 sname
+                queryWrapper.eq("sname", username);
                 Student student = studentService.getOne(queryWrapper);
+                
+                String token = UUID.randomUUID().toString();
+                String tokenKey = "student:token:" + token;
+                stringRedisTemplate.opsForValue().set(tokenKey, student.getId().toString(), 2, TimeUnit.HOURS);
+                
                 session.setAttribute("currentUsername", username);
                 session.setAttribute("password", password);
                 session.setAttribute("userId", student.getId());
@@ -134,10 +204,12 @@ public class AccountController {
                 session.setAttribute("age", student.getAge());
                 session.setAttribute("major", student.getMajor());
                 session.setAttribute("college", student.getCollege());
-                // session.setAttribute("image", student.getSimage());
                 session.setAttribute("role", 3);
+                session.setAttribute("token", token);
+                
                 result.put("role", 3);
                 result.put("id", student.getId());
+                result.put("token", token);
                 return R.success(result);
             } else {
                 return R.error("用户名或密码错误");
@@ -150,6 +222,23 @@ public class AccountController {
 
     @GetMapping("/logout")
     public R<String> logout(HttpSession session) {
+        // 从session中获取token并删除Redis中的缓存
+        String token = (String) session.getAttribute("token");
+        Integer role = (Integer) session.getAttribute("role");
+        
+        if (token != null && role != null) {
+            String tokenKey = "";
+            if (role == 1) {
+                tokenKey = "user:token:" + token;
+            } else if (role == 2) {
+                tokenKey = "teacher:token:" + token;
+            } else if (role == 3) {
+                tokenKey = "student:token:" + token;
+            }
+            stringRedisTemplate.delete(tokenKey);
+            System.out.println("退出登录 - 已删除Redis token: " + tokenKey);
+        }
+        
         session.invalidate();
         return R.success("退出登录成功");
     }
