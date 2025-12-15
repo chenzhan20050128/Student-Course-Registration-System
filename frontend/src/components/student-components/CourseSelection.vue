@@ -52,11 +52,23 @@ export default {
     async fetchCourses() {
       try {
         const response3 = await axios.get('/getRoleMessage');
+        if (!response3.data || !response3.data.data || !response3.data.data.id) {
+          console.error('获取用户信息失败', response3.data);
+          this.$message.error('获取用户信息失败，请重新登录');
+          return;
+        }
         this.id = response3.data.data.id;
+        
         const response2 = await axios.get(
           `/student/preUpdateStudent/${this.id}`
         );
+        if (!response2.data || !response2.data.data || !response2.data.data.student) {
+          console.error('获取学生信息失败', response2.data);
+          this.$message.error('获取学生信息失败');
+          return;
+        }
         this.majorName = response2.data.data.student.major;
+        
         const response = await axios.get('/student/listCourseByMajorName', {
           params: {
             pageNum: this.pageNum,
@@ -68,10 +80,10 @@ export default {
         if (response.data && response.data.data) {
           this.courses = response.data.data.list;
           this.total = response.data.data.total;
-
         }
       } catch (error) {
         console.error('获取课程列表失败', error);
+        this.$message.error('获取课程列表失败');
       }
     },
     handlePageChange(page) {
@@ -87,10 +99,10 @@ export default {
           },
         });
         if (response.data && response.data.code === 1) {
-          this.$message.success('选课成功');
+          this.$message.success(response.data.msg || '选课成功');
           this.fetchCourses();
         } else {
-          this.$message.error(response.data.message || '选课失败');
+          this.$message.error(response.data.msg || '选课失败');
         }
       } catch (error) {
         console.error('选课失败', error);

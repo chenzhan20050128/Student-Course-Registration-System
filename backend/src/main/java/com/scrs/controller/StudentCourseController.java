@@ -87,34 +87,55 @@ public class StudentCourseController {
         Integer sid = studentCourse.getSid();
         Integer cid = studentCourse.getCid();
 
-//        StudentCourse one = studentCourseService.getOne(studentCourse);
-//        if (one != null) {
-//            //model.addAttribute("msg", "该学生已经选过该课程");
-//            return R.error("该学生已经选过该课程");
-//        }
+        // 检查是否已经选过该课程
+        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("sid", sid);
+        queryWrapper.eq("cid", cid);
+        queryWrapper.eq("status", 1);
+        StudentCourse existingCourse = studentCourseService.getOne(queryWrapper);
+        if (existingCourse != null) {
+            return R.error("该学生已经选过该课程");
+        }
+
         Student student = studentService.getById(sid);
         Course course = courseService.getById(cid);
+        
+        if (student == null) {
+            return R.error("学生不存在");
+        }
+        if (course == null) {
+            return R.error("课程不存在");
+        }
+        
         if (student.getMajor() != null){
             if (!student.getMajor().equals(course.getMajor())){
-                //model.addAttribute("msg", "该学生的专业与课程不符");
                 return R.error("该学生的专业与课程不符");
             }
         }
 
+        if (course.getNum() == null || course.getStock() == null) {
+            return R.error("课程信息不完整");
+        }
+
         if (course.getNum() >= course.getStock()){
-            //model.addAttribute("msg", "该课程已经选满");
             return R.error("该课程已经选满");
         }
 
         course.setNum(course.getNum() + 1);
         courseService.updateById(course);
-        StudentCourse NewStudentCourse = new StudentCourse();
-        NewStudentCourse.setSid(sid);
-        NewStudentCourse.setCid(cid);
-        studentCourseService.save(NewStudentCourse);
+        
+        StudentCourse newStudentCourse = new StudentCourse();
+        newStudentCourse.setSid(sid);
+        newStudentCourse.setCid(cid);
+        newStudentCourse.setStatus(1); // 设置状态为已选
+        studentCourseService.save(newStudentCourse);
 
         // 更新 Redis 排行榜分数 +1
-        stringRedisTemplate.opsForZSet().incrementScore(COURSE_RANK_KEY, cid.toString(), 1);
+        try {
+            stringRedisTemplate.opsForZSet().incrementScore(COURSE_RANK_KEY, cid.toString(), 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return R.success("选课成功");
     }

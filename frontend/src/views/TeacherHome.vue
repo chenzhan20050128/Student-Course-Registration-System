@@ -16,7 +16,7 @@
       <!-- 内容区域 -->
       <el-container class="teacher-container">
         <el-header></el-header>
-        <navbar></navbar>
+        <navbar current-page-name="教师授课"></navbar>
         <el-main class="main-content">
           <!-- 根据选中的菜单项显示对应的组件 -->
           <teaching-info v-if="selectedMenu === 'teaching-info'"></teaching-info>

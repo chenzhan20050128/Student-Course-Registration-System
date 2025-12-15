@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/scrs
     username: root
-    password: NJUSE2023
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   web:
     resources:
@@ -22,6 +22,14 @@ spring:
     host: 127.0.0.1
     port: 6379
     database: 0
+    password: 123456 # 如果Redis设置了密码，在这里填写；如果没有设置密码，保持为空或删除此行
+    timeout: 10000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
 
 server:
   port: 8080

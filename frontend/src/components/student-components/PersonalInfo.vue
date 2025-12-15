@@ -14,7 +14,14 @@
         <el-input v-model="student.age" type="number" class="short-input"></el-input>
       </el-form-item>
       <el-form-item label="专业">
-        <el-input v-model="student.major" class="short-input"></el-input>
+        <el-select v-model="student.major" placeholder="请选择专业" class="short-input">
+          <el-option
+            v-for="major in majorList"
+            :key="major.id"
+            :label="major.mname"
+            :value="major.id.toString()"
+          ></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item label="图片">
         <el-upload
@@ -58,9 +65,20 @@ export default {
         password: '',
       },
       fileList: [],
+      majorList: [], // 专业列表
     };
   },
   methods: {
+    async fetchMajorList() {
+      try {
+        const response = await axios.get('/major/listMajor');
+        if (response.data && response.data.data) {
+          this.majorList = response.data.data.list || response.data.data;
+        }
+      } catch (error) {
+        console.error('获取专业列表失败', error);
+      }
+    },
     async fetchStudentInfo() {
       try {
         const response2 = await axios.get('/getRoleMessage');
@@ -110,6 +128,7 @@ export default {
     },
   },
   mounted() {
+    this.fetchMajorList();
     this.fetchStudentInfo();
   },
 };

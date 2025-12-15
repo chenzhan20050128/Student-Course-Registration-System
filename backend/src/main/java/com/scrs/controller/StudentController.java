@@ -275,6 +275,9 @@ public class StudentController {
     public R<PageInfo> listCourse(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
             @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
             @RequestParam(required = false) String majorName) {
+        System.out.println("=== listCourseByMajorName 被调用 ===");
+        System.out.println("pageNum: " + pageNum + ", pageSize: " + pageSize + ", majorName(原始): " + majorName);
+        
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
@@ -282,12 +285,30 @@ public class StudentController {
             pageSize = 6;
         }
 
+        // 如果 majorName 是数字（专业ID），需要先查询专业名称
+        String actualMajorName = majorName;
+        if (majorName != null && !majorName.isEmpty()) {
+            try {
+                Integer majorId = Integer.parseInt(majorName);
+                Major major = majorService.getById(majorId);
+                if (major != null) {
+                    actualMajorName = major.getMname();
+                    System.out.println("专业ID: " + majorId + " -> 专业名称: " + actualMajorName);
+                }
+            } catch (NumberFormatException e) {
+                // majorName 不是数字，直接使用
+                System.out.println("majorName 不是数字，直接使用: " + majorName);
+            }
+        }
+
         PageHelper.startPage(pageNum, pageSize);
         LambdaQueryWrapper<Course> courseLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        if (majorName != null) {
-            courseLambdaQueryWrapper.eq(Course::getMajor, majorName);
+        if (actualMajorName != null && !actualMajorName.isEmpty()) {
+            courseLambdaQueryWrapper.eq(Course::getMajor, actualMajorName);
         }
         List<Course> courses = courseService.list(courseLambdaQueryWrapper);
+        System.out.println("使用专业名称查询: " + actualMajorName + ", 查询到课程数量: " + courses.size());
+        
         PageInfo<Course> pageInfo = new PageInfo<>(courses);
         return R.success(pageInfo);
     }
@@ -296,10 +317,17 @@ public class StudentController {
      * 选课记录
      */
     @GetMapping("/listMyCourse")
-    public R<PageInfo<StudentCourse>> listMyCourse(@RequestParam(required = false) String cname, HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
+    public R<PageInfo<StudentCourse>> listMyCourse(
+            @RequestParam(required = false) Integer sid,
+            @RequestParam(required = false) String cname, 
+            HttpSession session) {
+        Integer userId = sid != null ? sid : (Integer) session.getAttribute("userId");
+        System.out.println("=== listMyCourse 被调用 ===");
+        System.out.println("sid: " + sid + ", userId: " + userId);
+        
         List<StudentCourse> studentCourses = studentCourseService.listMyCourse(userId, cname);
-        // 简化操作，与教师无关
+        System.out.println("查询到选课记录数量: " + studentCourses.size());
+        
         PageInfo<StudentCourse> pageInfo = new PageInfo<>(studentCourses);
         return R.success(pageInfo);
     }

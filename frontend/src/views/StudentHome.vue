@@ -17,7 +17,7 @@
       <!-- 内容区域 -->
       <el-container class="student-container">
         <el-header></el-header>
-        <navbar></navbar>
+        <navbar current-page-name="学生选课"></navbar>
         <el-main class="main-content">
           <!-- 根据选中的菜单项显示对应的组件 -->
           <course-selection v-if="selectedMenu === 'course-selection'"></course-selection>
