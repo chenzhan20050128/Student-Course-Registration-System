@@ -1,6 +1,6 @@
 package com.scrs.controller;/*
- * @date 12/07 12:57
- */
+                            * @date 12/07 12:57
+                            */
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -46,14 +46,13 @@ public class StudentCourseController {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
-
     /*
      * 前端注意：这个id是studentCourse的id，可以不提供
      */
     @RequestMapping("/listStudentCourse")
     public R<PageInfo> listStudentCourse(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                         @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-                                         @RequestParam(required = false) Integer id) {
+            @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
+            @RequestParam(required = false) Integer id) {
         if (pageNum == null || pageNum < 1) {
             pageNum = 1;
         }
@@ -63,18 +62,18 @@ public class StudentCourseController {
         PageHelper.startPage(pageNum, pageSize);
         List<StudentCourse> studentCourseList = studentCourseService.listStudentCourse(id);
         PageInfo<StudentCourse> pageInfo = new PageInfo<>(studentCourseList);
-        //model.addAttribute("pageInfo", pageInfo);
+        // model.addAttribute("pageInfo", pageInfo);
 
         return R.success(pageInfo);
     }
 
     @GetMapping("/preSaveStudentCourse")
-    public R<HashMap<String,Object>> preSaveStudentCourse() {
+    public R<HashMap<String, Object>> preSaveStudentCourse() {
         List<Student> studentList = studentService.list(null);
         List<Course> courseList = courseService.list(null);
-        //model.addAttribute("studentList", studentList);
-        //model.addAttribute("courseList", courseList);
-        HashMap<String,Object> map = new HashMap<>();
+        // model.addAttribute("studentList", studentList);
+        // model.addAttribute("courseList", courseList);
+        HashMap<String, Object> map = new HashMap<>();
         map.put("studentList", studentList);
         map.put("courseList", courseList);
 
@@ -99,31 +98,25 @@ public class StudentCourseController {
 
         Student student = studentService.getById(sid);
         Course course = courseService.getById(cid);
-        
+
         if (student == null) {
             return R.error("学生不存在");
         }
         if (course == null) {
             return R.error("课程不存在");
         }
-        
-        if (student.getMajor() != null){
-            if (!student.getMajor().equals(course.getMajor())){
-                return R.error("该学生的专业与课程不符");
-            }
-        }
 
         if (course.getNum() == null || course.getStock() == null) {
             return R.error("课程信息不完整");
         }
 
-        if (course.getNum() >= course.getStock()){
+        if (course.getNum() >= course.getStock()) {
             return R.error("该课程已经选满");
         }
 
         course.setNum(course.getNum() + 1);
         courseService.updateById(course);
-        
+
         StudentCourse newStudentCourse = new StudentCourse();
         newStudentCourse.setSid(sid);
         newStudentCourse.setCid(cid);
@@ -140,16 +133,52 @@ public class StudentCourseController {
         return R.success("选课成功");
     }
 
+    @PostMapping("/deleteMyCourse")
+    public R<String> deleteMyCourse(@RequestParam Integer sid, @RequestParam Integer cid) {
+        System.out.println("=== deleteMyCourse 被调用 ===");
+        System.out.println("sid: " + sid + ", cid: " + cid);
+        
+        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("sid", sid);
+        queryWrapper.eq("cid", cid);
+        queryWrapper.eq("status", 1);
+        
+        StudentCourse studentCourse = studentCourseService.getOne(queryWrapper);
+        if (studentCourse == null) {
+            return R.error("未找到该选课记录");
+        }
+        
+        // 更新状态为退选
+        studentCourse.setStatus(0);
+        studentCourseService.updateById(studentCourse);
+        
+        // 减少课程选课人数
+        Course course = courseService.getById(cid);
+        if (course != null && course.getNum() != null && course.getNum() > 0) {
+            course.setNum(course.getNum() - 1);
+            courseService.updateById(course);
+            
+            // 更新 Redis 排行榜
+            try {
+                stringRedisTemplate.opsForZSet().incrementScore(COURSE_RANK_KEY, cid.toString(), -1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+        return R.success("退选成功");
+    }
+
     @GetMapping("/preUpdateStudentCourse/{id}")
-    public R<HashMap<String,Object>> preUpdateStudentCourse(@PathVariable Integer id,HttpSession session) {
+    public R<HashMap<String, Object>> preUpdateStudentCourse(@PathVariable Integer id, HttpSession session) {
         session.setAttribute("studentCourseId", id);
         StudentCourse studentCourse = studentCourseService.getById(id);
         List<Course> courseList = courseService.list(null);
         List<Student> studentList = studentService.list(null);
-        //model.addAttribute("studentList", studentList);
-        //model.addAttribute("courseList", courseList);
-        //model.addAttribute("studentCourse", studentCourse);
-        HashMap<String,Object> map = new HashMap<>();
+        // model.addAttribute("studentList", studentList);
+        // model.addAttribute("courseList", courseList);
+        // model.addAttribute("studentCourse", studentCourse);
+        HashMap<String, Object> map = new HashMap<>();
         map.put("studentList", studentList);
         map.put("courseList", courseList);
         map.put("studentCourse", studentCourse);
@@ -161,17 +190,17 @@ public class StudentCourseController {
         Integer studentCourseId = studentCourse.getId();
         Integer sid = studentCourse.getSid();
         Integer cid = studentCourse.getCid();
-//        StudentCourse one = studentCourseService.getOne(queryWrapper);
-//        if (one != null) {
-//            //model.addAttribute("msg", "该学生已经选过该课程");
-//            R.error("该学生已经选过该课程");
-//        }
+        // StudentCourse one = studentCourseService.getOne(queryWrapper);
+        // if (one != null) {
+        // //model.addAttribute("msg", "该学生已经选过该课程");
+        // R.error("该学生已经选过该课程");
+        // }
 
         Student student = studentService.getById(sid);
         Course course = courseService.getById(cid);
-        if (student.getMajor() != null){
-            if (!student.getMajor().equals(course.getMajor())){
-                //model.addAttribute("msg", "该学生的专业与课程不符");
+        if (student.getMajor() != null) {
+            if (!student.getMajor().equals(course.getMajor())) {
+                // model.addAttribute("msg", "该学生的专业与课程不符");
                 return R.error("该学生的专业与课程不符");
             }
         }
@@ -181,8 +210,8 @@ public class StudentCourseController {
         NewStudentCourse.setSid(sid);
         NewStudentCourse.setCid(cid);
         boolean b = studentCourseService.updateById(NewStudentCourse);
-        if (!b){
-            //model.addAttribute("msg", "更新失败");
+        if (!b) {
+            // model.addAttribute("msg", "更新失败");
             return R.error("更新失败");
         }
         return R.success("更新成功");
@@ -197,14 +226,14 @@ public class StudentCourseController {
 
     @PostMapping("/deleteBatchStudentCourse")
     public R<String> deleteBatchStudentCourse(@RequestBody String ids) {
-        String[] split = ids.substring(8,ids.length() - 2).split(",");
+        String[] split = ids.substring(8, ids.length() - 2).split(",");
         List<Integer> idList = new ArrayList<>();
         for (String s : split) {
             idList.add(Integer.parseInt(s));
         }
         boolean b = studentCourseService.removeByIds(idList);
         if (!b) {
-            //model.addAttribute("error", "批量删除失败");
+            // model.addAttribute("error", "批量删除失败");
             return R.error("批量删除失败");
         }
         return R.success("批量删除成功");
@@ -219,7 +248,8 @@ public class StudentCourseController {
         if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(stockKey))) {
             Course course = courseService.getById(cid);
             if (course != null) {
-                stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(course.getStock() - (course.getNum() == null ? 0 : course.getNum())));
+                stringRedisTemplate.opsForValue().set(stockKey,
+                        String.valueOf(course.getStock() - (course.getNum() == null ? 0 : course.getNum())));
             } else {
                 return R.error("课程不存在");
             }
@@ -240,29 +270,5 @@ public class StudentCourseController {
         kafkaTemplate.send("course_selection_topic", JSON.toJSONString(message));
 
         return R.success("选课请求已提交，正在排队处理...");
-    }
-
-    /**
-     * 学生退选
-     */
-    @PostMapping("/deleteMyCourse")
-    public R<String> deleteMyCourse(@RequestParam Integer cid, @RequestParam Integer sid) {
-        QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("sid", sid);
-        queryWrapper.eq("cid", cid);
-        StudentCourse one = studentCourseService.getOne(queryWrapper);
-        if (one == null) {
-            return R.error("该学生没有选过该课程");
-        }
-        one.setStatus(0);// 表示退选
-        Course course = courseService.getById(cid);
-        course.setNum(course.getNum() - 1);
-        courseService.updateById(course);
-        studentCourseService.updateById(one);
-
-        // 更新 Redis 排行榜分数 -1
-        stringRedisTemplate.opsForZSet().incrementScore(COURSE_RANK_KEY, cid.toString(), -1);
-
-        return R.success("退选成功");
     }
 }

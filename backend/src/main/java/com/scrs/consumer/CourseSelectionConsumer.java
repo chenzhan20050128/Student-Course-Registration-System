@@ -37,7 +37,7 @@ public class CourseSelectionConsumer {
     @KafkaListener(topics = "course_selection_topic", groupId = "course-selection-group")
     public void consumeCourseSelection(String message) {
         log.info("收到选课消息: {}", message);
-        
+
         try {
             // 解析消息
             Map<String, Object> messageMap = JSON.parseObject(message, Map.class);
@@ -70,14 +70,6 @@ public class CourseSelectionConsumer {
                 return;
             }
 
-            // 检查专业匹配
-            if (student.getMajor() != null && course.getMajor() != null) {
-                if (!student.getMajor().equals(course.getMajor())) {
-                    log.warn("学生专业{}与课程专业{}不符", student.getMajor(), course.getMajor());
-                    return;
-                }
-            }
-
             // 检查课程库存
             if (course.getNum() == null || course.getStock() == null) {
                 log.error("课程{}库存信息不完整", cid);
@@ -102,7 +94,7 @@ public class CourseSelectionConsumer {
 
             if (saveResult) {
                 log.info("选课成功: 学生ID={}, 课程ID={}", sid, cid);
-                
+
                 // 更新 Redis 排行榜
                 try {
                     stringRedisTemplate.opsForZSet().incrementScore(COURSE_RANK_KEY, cid.toString(), 1);

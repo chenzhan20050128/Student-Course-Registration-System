@@ -92,15 +92,24 @@ export default {
     },
     async selectCourse(courseId) {
       try {
+        if (!this.id) {
+          this.$message.error('请先登录');
+          return;
+        }
+        
         const response = await axios.get('/student/selectCourse', {
           params: {
             sid: this.id,
             cid: courseId,
           },
         });
+        
         if (response.data && response.data.code === 1) {
-          this.$message.success(response.data.msg || '选课成功');
-          this.fetchCourses();
+          this.$message.success(response.data.msg || '选课请求已提交');
+          // 延迟刷新，等待 Kafka 消费者处理
+          setTimeout(() => {
+            this.fetchCourses();
+          }, 1000);
         } else {
           this.$message.error(response.data.msg || '选课失败');
         }

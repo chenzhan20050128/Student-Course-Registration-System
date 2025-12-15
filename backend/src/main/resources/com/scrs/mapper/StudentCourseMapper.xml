@@ -86,7 +86,7 @@
         student s,
         course c
     <where>
-        s.id = sc.sid and c.id = sc.cid and s.id = #{userId}
+        s.id = sc.sid and c.id = sc.cid and s.id = #{userId} and sc.status = 1
         <if test="cname != null and cname != ''">
             and c.cname = #{cname}
         </if>

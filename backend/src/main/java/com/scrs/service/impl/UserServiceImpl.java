@@ -62,7 +62,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             String imagePath = saveImage(file, "D:/scrs/user/");
             user.setImage(imagePath);
         }
-        
+
         // 只有当密码不为空时才加密
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             String passwordAfterMD5 = DigestUtils.md5DigestAsHex(user.getPassword().getBytes());
@@ -77,12 +77,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         int index = originalFilename != null ? originalFilename.lastIndexOf(".") : -1;
         String suffix = index > 0 ? originalFilename.substring(index) : "";
         String newFileName = System.nanoTime() + suffix;
-        
+
         File dest = new File(location + newFileName);
         if (!dest.getParentFile().exists()) {
             dest.getParentFile().mkdirs();
         }
-        
+
         try {
             file.transferTo(dest);
             return location + newFileName;

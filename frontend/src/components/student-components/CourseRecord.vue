@@ -23,7 +23,7 @@
       <el-table-column label="操作">
         <template v-slot="scope">
           <el-button
-            @click="deselectCourse(scope.row.cid)"
+            @click="deselectCourse(scope.row.course.id)"
             type="danger"
             size="small"
             class="deselect-course-button"
@@ -65,7 +65,13 @@ export default {
     async fetchStudentCourses() {
       try {
         const response3 = await axios.get('/getRoleMessage');
+        if (!response3.data || !response3.data.data || !response3.data.data.id) {
+          console.error('获取用户信息失败', response3.data);
+          this.$message.error('获取用户信息失败，请重新登录');
+          return;
+        }
         this.id = response3.data.data.id;
+        
         const response = await axios.get('/student/listMyCourse', {
           params: {
             sid: this.id,
@@ -102,21 +108,20 @@ export default {
     },
     async deselectCourse(courseId) {
       try {
+        if (!this.id) {
+          this.$message.error('请先登录');
+          return;
+        }
+        
         const response = await axios.post(
-          '/student/deleteMyCourse',
-          null,
-          {
-            params: {
-              sid: this.id,
-              cid: courseId,
-            },
-          }
+          `/studentCourse/deleteMyCourse?sid=${this.id}&cid=${courseId}`
         );
+        
         if (response.data && response.data.code === 1) {
           this.$message.success('退选成功');
-          this.fetchStudentCourses(); // 重新获取课程列表，更新选课记录
+          this.fetchStudentCourses();
         } else {
-          this.$message.error(response.data.message || '退选失败');
+          this.$message.error(response.data.msg || '退选失败');
         }
       } catch (error) {
         console.error('退选失败', error);

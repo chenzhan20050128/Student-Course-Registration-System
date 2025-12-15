@@ -19,7 +19,7 @@
             v-for="major in majorList"
             :key="major.id"
             :label="major.mname"
-            :value="major.id.toString()"
+            :value="major.mname"
           ></el-option>
         </el-select>
       </el-form-item>

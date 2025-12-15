@@ -224,8 +224,6 @@ public class StudentController {
         return R.success("Success to update student!");
     }
 
-
-
     /**
      * 根据学生ID删除学生信息。
      *
@@ -277,7 +275,7 @@ public class StudentController {
             @RequestParam(required = false) String majorName) {
         System.out.println("=== listCourseByMajorName 被调用 ===");
         System.out.println("pageNum: " + pageNum + ", pageSize: " + pageSize + ", majorName(原始): " + majorName);
-        
+
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
         }
@@ -308,7 +306,7 @@ public class StudentController {
         }
         List<Course> courses = courseService.list(courseLambdaQueryWrapper);
         System.out.println("使用专业名称查询: " + actualMajorName + ", 查询到课程数量: " + courses.size());
-        
+
         PageInfo<Course> pageInfo = new PageInfo<>(courses);
         return R.success(pageInfo);
     }
@@ -319,15 +317,15 @@ public class StudentController {
     @GetMapping("/listMyCourse")
     public R<PageInfo<StudentCourse>> listMyCourse(
             @RequestParam(required = false) Integer sid,
-            @RequestParam(required = false) String cname, 
+            @RequestParam(required = false) String cname,
             HttpSession session) {
         Integer userId = sid != null ? sid : (Integer) session.getAttribute("userId");
         System.out.println("=== listMyCourse 被调用 ===");
         System.out.println("sid: " + sid + ", userId: " + userId);
-        
+
         List<StudentCourse> studentCourses = studentCourseService.listMyCourse(userId, cname);
         System.out.println("查询到选课记录数量: " + studentCourses.size());
-        
+
         PageInfo<StudentCourse> pageInfo = new PageInfo<>(studentCourses);
         return R.success(pageInfo);
     }
@@ -345,7 +343,8 @@ public class StudentController {
         if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(stockKey))) {
             Course course = courseService.getById(cid);
             if (course != null) {
-                stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(course.getStock() - (course.getNum() == null ? 0 : course.getNum())));
+                stringRedisTemplate.opsForValue().set(stockKey,
+                        String.valueOf(course.getStock() - (course.getNum() == null ? 0 : course.getNum())));
             } else {
                 return R.error("课程不存在");
             }
@@ -373,6 +372,9 @@ public class StudentController {
      */
     @PostMapping("/deleteMyCourse")
     public R<String> deleteMyCourse(@RequestParam Integer cid, @RequestParam Integer sid) {
+        System.out.println("=== deleteMyCourse 被调用 ===");
+        System.out.println("sid: " + sid + ", cid: " + cid);
+        
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("sid", sid);
         queryWrapper.eq("cid", cid);
