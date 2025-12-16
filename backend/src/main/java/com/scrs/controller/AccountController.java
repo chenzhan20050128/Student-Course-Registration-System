@@ -3,21 +3,19 @@ package com.scrs.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.scrs.annotation.ApiCount;
 import com.scrs.common.R;
-import com.scrs.dto.LoginRequest; // 导入 LoginRequest 类
+import com.scrs.dto.LoginRequest;
 import com.scrs.pojo.Student;
 import com.scrs.pojo.Teacher;
 import com.scrs.pojo.User;
+import com.scrs.service.AccountService;
 import com.scrs.service.StudentService;
 import com.scrs.service.TeacherService;
 import com.scrs.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.ui.Model;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.*; // 注意修改导入，使用 RestController
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,22 +25,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
- * 该控制器负责处理账户相关的请求，特别是用户登录操作。
- * 根据用户角色的不同，分别处理管理员、老师和学生的登录，并将相应信息存入会话中。
+ * 账户控制器
+ * 负责处理账户相关的HTTP请求，包括登录、登出等操作
+ * 只负责接收请求和返回响应，具体业务逻辑由Service层处理
  */
 
-@RestController // 将 @Controller 改为 @RestController
-@CrossOrigin(origins = "http://localhost:5173") // 允许的前端地址
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
 public class AccountController {
 
-    @Value("${file.location}") // 获取配置文件中的文件上传路径
+    @Value("${file.location}")
     private String location;
+
+    @Autowired
+    private AccountService accountService;
 
     @Autowired
     private UserService userService;
@@ -53,194 +52,55 @@ public class AccountController {
     @Autowired
     private StudentService studentService;
 
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
     /**
-     * 处理用户登录请求。根据前端提交的用户名、密码和角色信息对用户进行验证。
-     * 验证通过后，会将相关的用户信息存储在会话（session）中。
-     * {
-     * "username":"admin",
-     * "password":"admin123",
-     * "role":1
-     * }
+     * 用户登录接口
+     * 接收登录请求，调用AccountService进行身份验证
      * 
-     * @param loginRequest 包含用户名、密码和角色的请求对象
-     * @return 返回登录结果和角色信息
+     * @param loginRequest 登录请求对象（包含用户名、密码、角色）
+     * @param session HTTP会话对象
+     * @return 登录结果（包含用户ID、角色、Token等信息）
      */
     @PostMapping("/login")
     @ApiCount("用户登录")
     public R<Map<String, Object>> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
-        //printSessionInfo();//仅用于调试
-
-        Map<String, Object> result = new HashMap<>();
-        // 先从session中获取用户名、密码和角色信息
-        result.put("getFromLoginRequest", "false");
-        String username = (String) session.getAttribute("currentUsername");
-        String password = (String) session.getAttribute("password");
-        Integer role = (Integer) session.getAttribute("role");
-
-        if (username == null || password == null || role == null) {
-            result.put("getFromLoginRequest", "true");
-
-            username = loginRequest.getUsername();
-            password = loginRequest.getPassword();
-            role = loginRequest.getRole();
-        }
-
-        if (role == 1) {
-            // 管理员登录逻辑
-            // 先检查Redis缓存
-            String cacheKey = "user:login:" + username;
-            String cachedPassword = stringRedisTemplate.opsForValue().get(cacheKey);
-            
-            Boolean b = false;
-            if (cachedPassword != null && cachedPassword.equals(password)) {
-                // 缓存命中
-                b = true;
-                System.out.println("管理员登录 - Redis缓存命中: " + username);
-            } else {
-                // 缓存未命中，查询数据库
-                b = userService.login(username, password);
-                if (b != null && b) {
-                    // 登录成功，将密码缓存到Redis，过期时间30分钟
-                    stringRedisTemplate.opsForValue().set(cacheKey, password, 30, TimeUnit.MINUTES);
-                    System.out.println("管理员登录 - 数据库验证成功，已缓存到Redis: " + username);
-                }
-            }
-            
-            if (b != null && b) {
-                QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("username", username);
-                User user = userService.getOne(queryWrapper);
-                
-                // 生成唯一token并存储到Redis
-                String token = UUID.randomUUID().toString();
-                String tokenKey = "user:token:" + token;
-                stringRedisTemplate.opsForValue().set(tokenKey, user.getId().toString(), 2, TimeUnit.HOURS);
-                
-                session.setAttribute("currentUsername", username);
-                session.setAttribute("password", password);
-                session.setAttribute("userId", user.getId());
-                session.setAttribute("role", 1);
-                session.setAttribute("token", token);
-                
-                result.put("role", 1);
-                result.put("id", user.getId());
-                result.put("token", token);
-                return R.success(result);
-            } else {
-                return R.error("用户名或密码错误");
-            }
-        } else if (role == 2) {
-            // 老师登录逻辑
-            String cacheKey = "teacher:login:" + username;
-            String cachedPassword = stringRedisTemplate.opsForValue().get(cacheKey);
-            
-            Boolean b = false;
-            if (cachedPassword != null && cachedPassword.equals(password)) {
-                b = true;
-                System.out.println("教师登录 - Redis缓存命中: " + username);
-            } else {
-                b = teacherService.login(username, password);
-                if (b != null && b) {
-                    stringRedisTemplate.opsForValue().set(cacheKey, password, 30, TimeUnit.MINUTES);
-                    System.out.println("教师登录 - 数据库验证成功，已缓存到Redis: " + username);
-                }
-            }
-            
-            if (b != null && b) {
-                QueryWrapper<Teacher> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("tname", username);
-                Teacher teacher = teacherService.getOne(queryWrapper);
-                
-                String token = UUID.randomUUID().toString();
-                String tokenKey = "teacher:token:" + token;
-                stringRedisTemplate.opsForValue().set(tokenKey, teacher.getId().toString(), 2, TimeUnit.HOURS);
-                
-                session.setAttribute("currentUsername", username);
-                session.setAttribute("password", password);
-                session.setAttribute("userId", teacher.getId());
-                session.setAttribute("role", 2);
-                session.setAttribute("token", token);
-                
-                result.put("role", 2);
-                result.put("id", teacher.getId());
-                result.put("token", token);
-                return R.success(result);
-            } else {
-                return R.error("用户名或密码错误");
-            }
-        } else if (role == 3) {
-            // 学生登录逻辑
-            String cacheKey = "student:login:" + username;
-            String cachedPassword = stringRedisTemplate.opsForValue().get(cacheKey);
-            
-            Boolean b = false;
-            if (cachedPassword != null && cachedPassword.equals(password)) {
-                b = true;
-                System.out.println("学生登录 - Redis缓存命中: " + username);
-            } else {
-                b = studentService.login(username, password);
-                if (b != null && b) {
-                    stringRedisTemplate.opsForValue().set(cacheKey, password, 30, TimeUnit.MINUTES);
-                    System.out.println("学生登录 - 数据库验证成功，已缓存到Redis: " + username);
-                }
-            }
-            
-            if (b != null && b) {
-                QueryWrapper<Student> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("sname", username);
-                Student student = studentService.getOne(queryWrapper);
-                
-                String token = UUID.randomUUID().toString();
-                String tokenKey = "student:token:" + token;
-                stringRedisTemplate.opsForValue().set(tokenKey, student.getId().toString(), 2, TimeUnit.HOURS);
-                
-                session.setAttribute("currentUsername", username);
-                session.setAttribute("password", password);
-                session.setAttribute("userId", student.getId());
-                session.setAttribute("sex", student.getSex());
-                session.setAttribute("age", student.getAge());
-                session.setAttribute("major", student.getMajor());
-                session.setAttribute("college", student.getCollege());
-                session.setAttribute("role", 3);
-                session.setAttribute("token", token);
-                
-                result.put("role", 3);
-                result.put("id", student.getId());
-                result.put("token", token);
-                return R.success(result);
-            } else {
-                return R.error("用户名或密码错误");
-            }
+        System.out.println("登录请求 - 用户名: " + loginRequest.getUsername() + ", 角色: " + loginRequest.getRole());
+        
+        Map<String, Object> result = accountService.login(
+            loginRequest.getUsername(),
+            loginRequest.getPassword(),
+            loginRequest.getRole(),
+            session
+        );
+        
+        if ((Boolean) result.get("success")) {
+            System.out.println("登录成功 - 用户ID: " + result.get("id") + ", Token: " + result.get("token"));
+            return R.success(result);
         } else {
-            // 角色不正确
-            return R.error("角色不正确");
+            System.out.println("登录失败 - " + result.get("message"));
+            return R.error((String) result.get("message"));
         }
     }
 
+    /**
+     * 用户登出接口
+     * 接收登出请求，调用AccountService清理会话和缓存
+     * 
+     * @param session HTTP会话对象
+     * @return 登出结果
+     */
     @GetMapping("/logout")
     public R<String> logout(HttpSession session) {
-        // 从session中获取token并删除Redis中的缓存
-        String token = (String) session.getAttribute("token");
-        Integer role = (Integer) session.getAttribute("role");
+        System.out.println("退出登录请求");
         
-        if (token != null && role != null) {
-            String tokenKey = "";
-            if (role == 1) {
-                tokenKey = "user:token:" + token;
-            } else if (role == 2) {
-                tokenKey = "teacher:token:" + token;
-            } else if (role == 3) {
-                tokenKey = "student:token:" + token;
-            }
-            stringRedisTemplate.delete(tokenKey);
-            System.out.println("退出登录 - 已删除Redis token: " + tokenKey);
+        boolean success = accountService.logout(session);
+        
+        if (success) {
+            System.out.println("退出登录成功");
+            return R.success("退出登录成功");
+        } else {
+            System.out.println("退出登录失败");
+            return R.error("退出登录失败");
         }
-        
-        session.invalidate();
-        return R.success("退出登录成功");
     }
 
     @GetMapping("/getUserName")
@@ -261,7 +121,7 @@ public class AccountController {
     @GetMapping("/getRoleMessage")
     public R getRoleMessage(HttpSession session,
             @RequestParam(defaultValue = "0", required = false) Integer inDatabase) {
-        //printSessionInfo();
+        // printSessionInfo();
         Integer role = (Integer) session.getAttribute("role");
         if (role == null) {
             return R.error("未登录，不能获取session数据");
@@ -525,7 +385,6 @@ public class AccountController {
 
     }
 
-
     @PostMapping("/uploadImage")
     public R<String> uploadImage(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
@@ -553,7 +412,7 @@ public class AccountController {
     }
 
     /*
-        仅用于调试
+     * 仅用于调试
      */
     public void printSessionInfo() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();

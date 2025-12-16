@@ -8,18 +8,26 @@ import com.scrs.mapper.UserMapper;
 import com.scrs.pojo.User;
 import com.scrs.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public Boolean login(String username, String password) {
@@ -32,6 +40,48 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Map<String, Object> loginWithCache(String username, String password) {
+        Map<String, Object> result = new HashMap<>();
+
+        // 先检查Redis缓存
+        String cacheKey = "user:login:" + username;
+        String cachedPassword = stringRedisTemplate.opsForValue().get(cacheKey);
+
+        Boolean loginSuccess = false;
+        if (cachedPassword != null && cachedPassword.equals(password)) {
+            // 缓存命中
+            loginSuccess = true;
+            System.out.println("管理员登录 - Redis缓存命中: " + username);
+        } else {
+            // 缓存未命中，查询数据库
+            loginSuccess = this.login(username, password);
+            if (loginSuccess) {
+                // 登录成功，将密码缓存到Redis，过期时间30分钟
+                stringRedisTemplate.opsForValue().set(cacheKey, password, 30, TimeUnit.MINUTES);
+                System.out.println("管理员登录 - 数据库验证成功，已缓存到Redis: " + username);
+            }
+        }
+
+        if (loginSuccess) {
+            // 获取用户信息
+            User user = getUserByUsername(username);
+
+            // 生成唯一token并存储到Redis
+            String token = UUID.randomUUID().toString();
+            String tokenKey = "user:token:" + token;
+            stringRedisTemplate.opsForValue().set(tokenKey, user.getId().toString(), 2, TimeUnit.HOURS);
+
+            result.put("success", true);
+            result.put("user", user);
+            result.put("token", token);
+        } else {
+            result.put("success", false);
+        }
+
+        return result;
     }
 
     @Override

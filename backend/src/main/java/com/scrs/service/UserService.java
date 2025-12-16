@@ -11,6 +11,11 @@ public interface UserService extends IService<User> {
     Boolean login(String username, String password);
 
     /**
+     * 管理员登录（带Redis缓存）
+     */
+    Map<String, Object> loginWithCache(String username, String password);
+
+    /**
      * 根据用户名获取用户信息
      */
     User getUserByUsername(String username);

@@ -10,17 +10,25 @@ import com.scrs.service.StudentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> implements StudentService {
     @Autowired
     private StudentMapper studentMapper;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Value("${file.location:uploads}")
     private String location;
@@ -38,6 +46,43 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Map<String, Object> loginWithCache(String username, String password) {
+        Map<String, Object> result = new HashMap<>();
+
+        // 先检查Redis缓存
+        String cacheKey = "student:login:" + username;
+        String cachedPassword = stringRedisTemplate.opsForValue().get(cacheKey);
+
+        Boolean loginSuccess = false;
+        if (cachedPassword != null && cachedPassword.equals(password)) {
+            loginSuccess = true;
+            System.out.println("学生登录 - Redis缓存命中: " + username);
+        } else {
+            loginSuccess = this.login(username, password);
+            if (loginSuccess) {
+                stringRedisTemplate.opsForValue().set(cacheKey, password, 30, TimeUnit.MINUTES);
+                System.out.println("学生登录 - 数据库验证成功，已缓存到Redis: " + username);
+            }
+        }
+
+        if (loginSuccess) {
+            Student student = getStudentByUsername(username);
+
+            String token = UUID.randomUUID().toString();
+            String tokenKey = "student:token:" + token;
+            stringRedisTemplate.opsForValue().set(tokenKey, student.getId().toString(), 2, TimeUnit.HOURS);
+
+            result.put("success", true);
+            result.put("student", student);
+            result.put("token", token);
+        } else {
+            result.put("success", false);
+        }
+
+        return result;
     }
 
     @Override

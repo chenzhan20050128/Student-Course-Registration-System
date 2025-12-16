@@ -137,27 +137,27 @@ public class StudentCourseController {
     public R<String> deleteMyCourse(@RequestParam Integer sid, @RequestParam Integer cid) {
         System.out.println("=== deleteMyCourse 被调用 ===");
         System.out.println("sid: " + sid + ", cid: " + cid);
-        
+
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("sid", sid);
         queryWrapper.eq("cid", cid);
         queryWrapper.eq("status", 1);
-        
+
         StudentCourse studentCourse = studentCourseService.getOne(queryWrapper);
         if (studentCourse == null) {
             return R.error("未找到该选课记录");
         }
-        
+
         // 更新状态为退选
         studentCourse.setStatus(0);
         studentCourseService.updateById(studentCourse);
-        
+
         // 减少课程选课人数
         Course course = courseService.getById(cid);
         if (course != null && course.getNum() != null && course.getNum() > 0) {
             course.setNum(course.getNum() - 1);
             courseService.updateById(course);
-            
+
             // 更新 Redis 排行榜
             try {
                 stringRedisTemplate.opsForZSet().incrementScore(COURSE_RANK_KEY, cid.toString(), -1);
@@ -165,7 +165,7 @@ public class StudentCourseController {
                 e.printStackTrace();
             }
         }
-        
+
         return R.success("退选成功");
     }
 

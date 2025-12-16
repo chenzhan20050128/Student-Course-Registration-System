@@ -374,7 +374,7 @@ public class StudentController {
     public R<String> deleteMyCourse(@RequestParam Integer cid, @RequestParam Integer sid) {
         System.out.println("=== deleteMyCourse 被调用 ===");
         System.out.println("sid: " + sid + ", cid: " + cid);
-        
+
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("sid", sid);
         queryWrapper.eq("cid", cid);
