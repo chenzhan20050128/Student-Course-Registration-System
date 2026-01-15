@@ -1,37 +1,33 @@
 <template>
   <div id="teacher-home">
-    <el-container style="width: 100vw; height: 100vh;">
-      <!-- 侧边栏 -->
-      <el-aside width="200px" class="aside">
-        <div class="logo">教师授课系统</div>
-        <el-menu
-          default-active="teaching-info"
-          @select="handleSelect"
-        >
-          <el-menu-item index="teaching-info">授课信息</el-menu-item>
-          <el-menu-item index="personal-info">个人信息</el-menu-item>
-        </el-menu>
-      </el-aside>
-
-      <!-- 内容区域 -->
-      <el-container class="teacher-container">
-        <el-header></el-header>
-        <navbar current-page-name="教师授课"></navbar>
-        <el-main class="main-content">
-          <!-- 根据选中的菜单项显示对应的组件 -->
+    <div class="teacher-wrapper">
+      <!-- 顶部导航栏 -->
+      <navbar current-page-name="教师授课"></navbar>
+      
+      <!-- 主内容区域 -->
+      <div class="main-wrapper">
+        <!-- 选项卡 -->
+        <home-tabs
+          :active-tab="selectedMenu"
+          user-type="teacher"
+          @change="setActiveTab"
+        ></home-tabs>
+        
+        <!-- 内容容器 -->
+        <div class="content-container">
           <teaching-info v-if="selectedMenu === 'teaching-info'"></teaching-info>
           <personal-info v-else-if="selectedMenu === 'personal-info'"></personal-info>
-        </el-main>
-      </el-container>
-    </el-container>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-// 导入各个管理组件
 import TeachingInfo from '@/components/teacher-components/TeachingInfo.vue';
 import PersonalInfo from '@/components/teacher-components/PersonalInfo.vue';
 import Navbar from '@/components/Navbar.vue';
+import HomeTabs from '@/components/HomeTabs.vue';
 
 export default {
   name: 'TeacherHome',
@@ -39,15 +35,16 @@ export default {
     TeachingInfo,
     PersonalInfo,
     Navbar,
+    HomeTabs,
   },
   data() {
     return {
-      selectedMenu: 'teaching-info', // 默认选中的菜单项
+      selectedMenu: 'teaching-info',
     };
   },
   methods: {
-    handleSelect(key) {
-      this.selectedMenu = key;
+    setActiveTab(tab) {
+      this.selectedMenu = tab;
     },
   },
 };
@@ -55,50 +52,27 @@ export default {
 
 <style scoped>
 #teacher-home {
-  height: 100vh; /* 页面高度固定为视窗高度 */
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
 
-/* 侧边栏样式 */
-.aside {
-  background-color: #6a005f; /* 紫色 */
-  color: white; /* 确保文字颜色清晰 */
-  height: 100%; /* 让侧边栏高度占满页面 */
-  min-height: 100vh; /* 确保侧边栏一直延伸到底部 */
+.teacher-wrapper {
+  width: 100%;
+  min-height: 100vh;
   display: flex;
-  flex-direction: column; /* 让菜单垂直排列 */
+  flex-direction: column;
 }
 
-/* 侧边栏 logo 样式 */
-.logo {
-  text-align: center;
-  font-size: 20px;
-  font-weight: bold;
-  padding: 20px 0;
-  color: white; /* 确保 logo 文字可见 */
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
 }
 
-/* 菜单项选中状态 */
-.el-menu-item.is-active {
-  background-color: #a5519c !important; /* 深一点的紫色 */
-  color: white !important;
-}
-
-/* 菜单项悬停效果 */
-.el-menu-item:hover {
-  background-color: #cd8dc6 !important; /* 浅紫色 */
-}
-
-/* 主内容区域微调 */
-.el-main {
-  margin-left: 10px;
-  margin-top: -10px; /* 向上移动20px */
-  padding: 15px;
-  background-color: #F9F9F9; /* 浅灰色内容背景 */
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 轻微的阴影效果 */
-}
-
-.teacher-container {
-  margin-left: 10px;
+.content-container {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
 }
 </style>

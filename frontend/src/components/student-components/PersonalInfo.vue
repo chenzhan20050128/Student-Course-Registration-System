@@ -1,45 +1,76 @@
 <template>
-  <div>
-    <el-form :model="student" label-width="50px" class="personal-info-form">
-      <el-form-item label="姓名">
-        <el-input v-model="student.sname" class="short-input"></el-input>
-      </el-form-item>
-      <el-form-item label="性别">
-        <el-select v-model="student.sex" placeholder="请选择" class="short-input">
-          <el-option label="男" value="Male"></el-option>
-          <el-option label="女" value="Female"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="年龄">
-        <el-input v-model="student.age" type="number" class="short-input"></el-input>
-      </el-form-item>
-      <el-form-item label="专业">
-        <el-select v-model="student.major" placeholder="请选择专业" class="short-input">
-          <el-option
-            v-for="major in majorList"
-            :key="major.id"
-            :label="major.mname"
-            :value="major.mname"
-          ></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="图片">
-        <el-upload
-          action="http://localhost:8080/student/uploadStudentImage"
-          list-type="picture-card"
-          :on-preview="handlePictureCardPreview"
-          :on-remove="handleRemove"
-          :file-list="fileList"
-          :on-success="handleUploadSuccess"
-          class="upload-box"
-        >
-          <i class="el-icon-plus"></i>
-        </el-upload>
-      </el-form-item>
-      <el-form-item class="button-container">
-        <el-button type="primary" @click="updateStudentInfo" class="custom-button">保存</el-button>
-      </el-form-item>
-    </el-form>
+  <div class="personal-info-container">
+    <div class="info-header">
+      <h2>个人信息</h2>
+      <span class="info-tip">管理你的账户信息和头像</span>
+    </div>
+
+    <div class="info-form-wrapper">
+      <div class="form-left">
+        <div class="form-group">
+          <label class="form-label">姓名</label>
+          <input v-model="student.sname" class="form-input" type="text" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">性别</label>
+          <select v-model="student.sex" class="form-input">
+            <option value="">请选择</option>
+            <option value="Male">男</option>
+            <option value="Female">女</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">年龄</label>
+          <input v-model.number="student.age" class="form-input" type="number" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">专业</label>
+          <select v-model="student.major" class="form-input">
+            <option value="">请选择专业</option>
+            <option v-for="major in majorList" :key="major.id" :value="major.mname">
+              {{ major.mname }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button @click="updateStudentInfo" class="save-btn">
+            保存修改
+          </button>
+        </div>
+      </div>
+
+      <div class="form-right">
+        <div class="avatar-section">
+          <h3>头像</h3>
+          <div class="avatar-preview">
+            <img 
+              v-if="student.simage" 
+              :src="`http://localhost:8080/public/${student.simage}`"
+              alt="头像"
+              class="avatar-image"
+            />
+            <div v-else class="avatar-placeholder">
+              <span>暂无头像</span>
+            </div>
+          </div>
+          <el-upload
+            action="http://localhost:8080/student/uploadStudentImage"
+            list-type="picture"
+            :on-preview="handlePictureCardPreview"
+            :on-remove="handleRemove"
+            :file-list="fileList"
+            :on-success="handleUploadSuccess"
+            class="upload-box"
+          >
+            <el-button type="primary" size="small">上传头像</el-button>
+          </el-upload>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -65,7 +96,7 @@ export default {
         password: '',
       },
       fileList: [],
-      majorList: [], // 专业列表
+      majorList: [],
     };
   },
   methods: {
@@ -98,11 +129,12 @@ export default {
       }
     },
     handleUploadSuccess(response, file, fileList) {
-      this.student.simage = response.data; // 假设后端返回的是文件名
+      this.student.simage = response.data;
       this.fileList.push({
         name: file.name,
         url: `/${response.data}`,
       });
+      this.$message.success('头像上传成功');
     },
     handleRemove(file, fileList) {
       this.student.simage = '';
@@ -135,40 +167,153 @@ export default {
 </script>
 
 <style scoped>
-/* 限制输入框和选择框的宽度 */
-.short-input {
-  max-width: 600px; /* 设置最大宽度 */
-  width: 100%; /* 保持自适应 */
-  margin-left: 5px; /* 向右移动5px */
+.personal-info-container {
+  padding: 0;
 }
 
-.personal-info-form {
-  margin-top: 3px;
-  max-width: 900px; /* 表单整体宽度控制 */
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-/* 为图片上传框设置右移样式 */
-.upload-box {
+.info-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.info-tip {
+  font-size: 14px;
+  color: #999;
+}
+
+.info-form-wrapper {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 40px;
+  max-width: 900px;
+}
+
+.form-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-input {
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.form-input:hover {
+  border-color: #667eea;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.form-actions {
   margin-top: 10px;
-  margin-left: 5px; /* 向右移动5px */
 }
 
-/* 为按钮容器设置右移样式 */
-.button-container {
-  margin-left: 5px; /* 按钮向右移动5px */
+.save-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* 自定义按钮样式 */
-.custom-button {
-  background-color: #8b007a !important; /* 按钮正常状态背景颜色 */
-  border-color: #8b007a !important; /* 按钮正常状态边框颜色 */
-  color: white !important; /* 按钮文字颜色保持白色 */
-  border-radius: 5px; /* 添加圆角效果 */
+.save-btn:hover {
+  background-color: #5568d3;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
 }
 
-/* 按钮悬停状态 */
-.custom-button:hover {
-  background-color: #a70c94 !important; /* 悬停状态背景颜色 */
-  border-color: #a70c94 !important; /* 悬停状态边框颜色 */
+.form-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.avatar-section {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.avatar-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.avatar-preview {
+  width: 150px;
+  height: 150px;
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  background-color: #fafafa;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.avatar-placeholder {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+}
+
+.upload-box {
+  margin-top: 12px;
+}
+
+::v-deep(.el-upload--picture .el-upload-list__item) {
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .info-form-wrapper {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 </style>

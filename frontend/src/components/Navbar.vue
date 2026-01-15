@@ -1,20 +1,19 @@
 <template>
-  <el-header>
+  <el-header class="navbar-wrapper">
     <div class="navbar">
-      <div class="navbar-content">
-        <span class="username-label">当前用户：</span>
-        <span>{{ username }}</span>
+      <div class="navbar-left">
+        <span class="welcome-text">欢迎, <strong>{{ username }}</strong></span>
+      </div>
+      <div class="navbar-right">
+        <span class="page-name">{{ currentPageName }}系统</span>
         <el-button 
           type="primary" 
           class="logout-button" 
           @click="logout"
+          size="small"
         >
-          登出
+          退出登录
         </el-button>
-        <!-- 新增动态欢迎信息 -->
-        <span class="welcome-message">
-          欢迎使用{{ currentPageName }}系统
-        </span>
       </div>
     </div>
   </el-header>
@@ -28,19 +27,18 @@ export default {
   props: {
     currentPageName: {
       type: String,
-      required: true, // 父组件传递的当前页面名称
+      required: true,
     },
   },
   data() {
     return {
-      username: '', // 用户名
+      username: '',
     };
   },
   methods: {
     fetchUserInfo() {
       axios.get('/getRoleMessage', { params: { inDatabase: 0 } }).then((response) => {
         if (response.data.code === 1) {
-          console.log('Session Data:', response.data.data); // 打印会话变量
           this.username = response.data.data.username || response.data.data.tname || response.data.data.sname;
         } else {
           this.$message.error(response.data.msg || '获取用户信息失败');
@@ -65,45 +63,59 @@ export default {
 </script>
 
 <style scoped>
+.navbar-wrapper {
+  padding: 0 !important;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e0e0e0;
+  height: auto !important;
+}
+
 .navbar {
   display: flex;
-  justify-content: flex-start; /* 左对齐 */
+  justify-content: space-between;
   align-items: center;
-  padding: 0px 20px;
+  padding: 12px 24px;
+  height: 60px;
 }
 
-.navbar-content {
+.navbar-left {
+  flex: 1;
   display: flex;
   align-items: center;
 }
 
-.username-label {
-  font-weight: bold; /* 加粗字体 */
-  font-size: 16px;
+.welcome-text {
+  font-size: 15px;
+  color: #333;
 }
 
-.navbar-content span {
-  font-size: 16px;
+.welcome-text strong {
+  color: #667eea;
+  font-weight: 600;
 }
 
-/* 新增欢迎信息样式 */
-.welcome-message {
-  margin-left: 20px; /* 欢迎信息与登出按钮之间的间距 */
-  font-weight: bold; /* 加粗文字 */
-  font-size: 16px; /* 与用户名一致的字号 */
-  color: #6a005f; /* 紫色字体，和整体风格一致 */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-/* 自定义登出按钮样式 */
+.page-name {
+  font-size: 14px;
+  color: #666;
+}
+
 .logout-button {
-  margin-left: 15px; /* 控制按钮与文字之间的间距 */
-  background-color: #8b007a !important; /* 按钮背景设置为南大紫 */
-  border-color: #8b007a !important; /* 按钮边框设置为南大紫 */
-  color: white !important; /* 按钮文字颜色设置为白色 */
+  background-color: #667eea !important;
+  border-color: #667eea !important;
+  color: white !important;
+  padding: 6px 16px !important;
+  font-size: 14px !important;
+  border-radius: 4px !important;
 }
 
 .logout-button:hover {
-  background-color: #a70c94 !important; /* 悬停时背景颜色稍微变亮 */
-  border-color: #a70c94 !important; /* 悬停时边框颜色一致 */
+  background-color: #5568d3 !important;
+  border-color: #5568d3 !important;
 }
 </style>

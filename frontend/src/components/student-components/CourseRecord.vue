@@ -1,47 +1,67 @@
 <template>
-  <div>
-    <el-table
-      :data="studentCourses"
-      class="course-record-table"
-      header-align="left"
-      align="left"
-      style="width: 88%"
-    >
-      <el-table-column prop="course.id" label="ID" width="75"></el-table-column>
-      <el-table-column prop="course.cname" label="课程名称" width="225"></el-table-column>
-      <el-table-column prop="course.teacher" label="授课教师" width="175"></el-table-column>
-      <el-table-column prop="course.address" label="教学地点" width="300"></el-table-column>
-      <el-table-column prop="course.num" label="当前选课人数" width="150"></el-table-column>
-      <el-table-column prop="course.stock" label="课程容量" width="120"></el-table-column>
-      <el-table-column label="选课状态" width="150">
-        <template v-slot="scope">
-          <span :style="{ color: scope.row.status === 1 ? 'green' : 'red' }">
-            {{ scope.row.status === 1 ? '已选课' : '已退选' }}
-          </span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作">
-        <template v-slot="scope">
-          <el-button
-            @click="deselectCourse(scope.row.course.id)"
-            type="danger"
-            size="small"
-            class="deselect-course-button"
+  <div class="course-record-container">
+    <div class="record-header">
+      <h2>选课记录</h2>
+      <span class="record-count">共 <strong>{{ total }}</strong> 门课程</span>
+    </div>
+
+    <div v-if="studentCourses.length === 0" class="empty-state">
+      <p>暂无选课记录</p>
+    </div>
+
+    <div v-else class="records-list">
+      <div v-for="record in studentCourses" :key="record.course.id" class="record-card">
+        <div class="record-card-header">
+          <div class="header-left">
+            <h3 class="record-course-name">{{ record.course.cname }}</h3>
+            <span :class="['status-badge', { active: record.status === 1, dropped: record.status === 0 }]">
+              {{ record.status === 1 ? '已选课' : '已退选' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="record-meta">
+          <div class="meta-row">
+            <span class="meta-label">课程编号:</span>
+            <span class="meta-value">{{ record.course.id }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">授课教师:</span>
+            <span class="meta-value">{{ record.course.teacher }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">教学地点:</span>
+            <span class="meta-value">{{ record.course.address }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">选课人数:</span>
+            <span class="meta-value">{{ record.course.num }} / {{ record.course.stock }}</span>
+          </div>
+        </div>
+
+        <div class="record-actions">
+          <button 
+            v-if="record.status === 1"
+            @click="deselectCourse(record.course.id)"
+            class="deselect-btn"
           >
             退选
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <el-pagination
-      background
-      layout="prev, pager, next"
-      :total="total"
-      :page-size="pageSize"
-      @current-change="handlePageChange"
-      class="pagination-component"
-      style="text-align: center; margin-top: 20px;"
-    ></el-pagination>
+          </button>
+          <span v-else class="status-text">已退选</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pagination-wrapper">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="total"
+        :page-size="pageSize"
+        :current-page="pageNum"
+        @current-change="handlePageChange"
+      ></el-pagination>
+    </div>
   </div>
 </template>
 
@@ -58,7 +78,7 @@ export default {
       pageNum: 1,
       pageSize: 6,
       total: 0,
-      cname: '', // 假设你有一个输入框或下拉框来选择课程名称
+      cname: '',
     };
   },
   methods: {
@@ -91,13 +111,13 @@ export default {
           this.studentCourses = response.data.data.list;
           this.total = response.data.data.total;
         }
-      this.studentCourses.forEach(course => {
-      const matchingCourse = this.studentCoursesAll.find(c => c.cname === course.course.cname);
-      if (matchingCourse) {
-        course.course.teacher = matchingCourse.teacher;
-        course.course.id = matchingCourse.id;
-      }
-    });
+        this.studentCourses.forEach(course => {
+          const matchingCourse = this.studentCoursesAll.find(c => c.cname === course.course.cname);
+          if (matchingCourse) {
+            course.course.teacher = matchingCourse.teacher;
+            course.course.id = matchingCourse.id;
+          }
+        });
       } catch (error) {
         console.error('获取学生选课记录失败', error);
       }
@@ -136,39 +156,179 @@ export default {
 </script>
 
 <style scoped>
-/* 表格样式调整 */
-.course-record-table .cell {
-  text-align: left; /* 保证所有单元格文字左对齐 */
-  padding-left: 10px; /* 保证列内容与单元格左边距保持一致 */
+.course-record-container {
+  padding: 0;
 }
 
-.course-record-table th {
-  text-align: left; /* 表头文字左对齐 */
-  padding-left: 10px; /* 保证表头文字与单元格内容一致 */
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-/* 调整“退选”按钮的样式 */
-.deselect-course-button {
-  margin-left: -10px; /* 微调按钮位置 */
+.record-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
 }
 
-/* 翻页组件样式 */
-.pagination-component {
-  margin-top: 35px; /* 调整翻页组件与表格之间的间距 */
-  text-align: center; /* 保持居中对齐 */
+.record-count {
+  font-size: 14px;
+  color: #666;
 }
 
-/* 自定义分页组件样式 */
-::v-deep(.pagination-component .el-pager li) {
-  background-color: #8b007a !important; /* 页码背景颜色 */
-  border-color: #8b007a !important; /* 页码边框颜色 */
-  color: white !important; /* 页码文字颜色保持白色 */
-  border-radius: 5px; /* 设置圆角 */
+.record-count strong {
+  color: #667eea;
+  font-weight: 600;
 }
 
-::v-deep(.pagination-component .el-pagination__button) {
-  background-color: #8b007a !important; /* 翻页按钮背景颜色 */
-  border-color: #8b007a !important; /* 翻页按钮边框颜色 */
-  color: white !important; /* 翻页按钮文字颜色 */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+.records-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.record-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.record-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-color: #667eea;
+  transform: translateY(-2px);
+}
+
+.record-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+}
+
+.record-course-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+  word-break: break-word;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.active {
+  background-color: #52c41a;
+  color: white;
+}
+
+.status-badge.dropped {
+  background-color: #ff4d4f;
+  color: white;
+}
+
+.record-meta {
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.meta-row {
+  display: flex;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.meta-label {
+  color: #999;
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.meta-value {
+  color: #333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-actions {
+  margin-top: auto;
+}
+
+.deselect-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.deselect-btn:hover {
+  background-color: #ff7875;
+  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.4);
+}
+
+.status-text {
+  display: block;
+  text-align: center;
+  padding: 10px;
+  color: #999;
+  font-size: 14px;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+::v-deep(.el-pagination) {
+  justify-content: center;
+}
+
+::v-deep(.el-pagination .btn) {
+  color: #667eea;
+}
+
+::v-deep(.el-pagination .active) {
+  background-color: #667eea;
+  color: white;
 }
 </style>

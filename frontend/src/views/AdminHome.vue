@@ -1,30 +1,28 @@
 <template>
   <div id="admin-home">
-    <el-container style="width: 1700px; height: 100vh;">
-      <!-- 侧边栏 -->
-      <el-aside width="200px" class="aside">
-        <div class="logo">选课管理系统</div>
-        <el-menu
-          default-active="student-management"
-          @select="handleSelect"
-        >
-          <el-menu-item index="student-management">学生管理</el-menu-item>
-          <el-menu-item index="course-management">课程管理</el-menu-item>
-          <el-menu-item index="teacher-management">教师管理</el-menu-item>
-          <el-menu-item index="major-management">专业管理</el-menu-item>
-          <el-menu-item index="college-management">学院管理</el-menu-item>
-          <el-menu-item index="course-allocation">课程分配管理</el-menu-item>
-          <el-menu-item index="student-course-selection">学生选课管理</el-menu-item>
-          <el-menu-item index="statistics-analysis">统计分析</el-menu-item>
-        </el-menu>
-      </el-aside>
+    <div class="admin-wrapper">
+      <!-- 顶部导航栏 -->
+      <navbar :current-page-name="currentPageName"></navbar>
+      
+      <!-- 主内容区域 -->
+      <div class="main-wrapper">
+        <!-- 侧边栏菜单 -->
+        <aside class="admin-sidebar">
+          <div class="sidebar-logo">选课管理系统</div>
+          <nav class="sidebar-menu">
+            <button 
+              v-for="item in menuItems"
+              :key="item.id"
+              :class="['menu-item', { active: selectedMenu === item.id }]"
+              @click="selectedMenu = item.id"
+            >
+              {{ item.label }}
+            </button>
+          </nav>
+        </aside>
 
-      <!-- 内容区域 -->
-      <el-container class="admin-container">
-        <el-header></el-header>
-        <navbar :currentPageName="currentPageName"></navbar>
-        <el-main class="main-content">
-          <!-- 根据选中的菜单项显示对应的组件 -->
+        <!-- 内容容器 -->
+        <div class="content-area">
           <student-management v-if="selectedMenu === 'student-management'"></student-management>
           <course-management v-else-if="selectedMenu === 'course-management'"></course-management>
           <teacher-management v-else-if="selectedMenu === 'teacher-management'"></teacher-management>
@@ -33,14 +31,13 @@
           <course-allocation v-else-if="selectedMenu === 'course-allocation'"></course-allocation>
           <student-course-selection v-else-if="selectedMenu === 'student-course-selection'"></student-course-selection>
           <statistics-analysis v-else-if="selectedMenu === 'statistics-analysis'"></statistics-analysis>
-        </el-main>
-      </el-container>
-    </el-container>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-// 导入各个管理组件
 import StudentManagement from '@/components/admin-components/StudentManagement.vue';
 import CourseManagement from '@/components/admin-components/CourseManagement.vue';
 import TeacherManagement from '@/components/admin-components/TeacherManagement.vue';
@@ -66,12 +63,21 @@ export default {
   },
   data() {
     return {
-      selectedMenu: 'student-management', // 默认选中的菜单项
+      selectedMenu: 'student-management',
+      menuItems: [
+        { id: 'student-management', label: '学生管理' },
+        { id: 'course-management', label: '课程管理' },
+        { id: 'teacher-management', label: '教师管理' },
+        { id: 'major-management', label: '专业管理' },
+        { id: 'college-management', label: '学院管理' },
+        { id: 'course-allocation', label: '课程分配管理' },
+        { id: 'student-course-selection', label: '学生选课管理' },
+        { id: 'statistics-analysis', label: '统计分析' },
+      ],
     };
   },
   computed: {
     currentPageName() {
-      // 根据选中的菜单项返回对应的页面名称
       const pageNames = {
         'student-management': '学生管理',
         'course-management': '课程管理',
@@ -85,60 +91,81 @@ export default {
       return pageNames[this.selectedMenu] || '未知页面';
     },
   },
-  methods: {
-    handleSelect(key) {
-      this.selectedMenu = key;
-    },
-  },
 };
 </script>
 
 <style scoped>
 #admin-home {
-  height: 100vh; /* 页面高度固定为视窗高度 */
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
 
-/* 侧边栏样式 */
-.aside {
-  background-color: #6a005f; /* 紫色 */
-  color: white; /* 确保文字颜色清晰 */
-  height: 100%; /* 让侧边栏高度占满页面 */
-  min-height: 100vh; /* 确保侧边栏一直延伸到底部 */
+.admin-wrapper {
+  width: 100%;
+  min-height: 100vh;
   display: flex;
-  flex-direction: column; /* 让菜单垂直排列 */
+  flex-direction: column;
 }
 
-/* 侧边栏 logo 样式 */
-.logo {
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.admin-sidebar {
+  width: 200px;
+  background-color: #2c3e50;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.sidebar-logo {
   text-align: center;
-  font-size: 20px;
-  font-weight: bold;
-  padding: 20px 0;
-  color: white; /* 确保 logo 文字可见 */
+  font-size: 16px;
+  font-weight: 600;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
-/* 菜单项选中状态 */
-.el-menu-item.is-active {
-  background-color: #a5519c !important; /* 深一点的紫色 */
-  color: white !important;
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
 }
 
-/* 菜单项悬停效果 */
-.el-menu-item:hover {
-  background-color: #cd8dc6 !important; /* 浅紫色 */
+.menu-item {
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: #bbb;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
 }
 
-/* 主内容区域微调 */
-.el-main {
-  margin-left: 10px;
-  margin-top: -10px; /* 向上移动20px */
-  padding: 15px;
-  background-color: #F9F9F9; /* 浅灰色内容背景 */
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 轻微的阴影效果 */
+.menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: white;
 }
 
-.admin-container {
-  margin-left: 10px;
+.menu-item.active {
+  background-color: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+  border-left-color: #667eea;
+  font-weight: 600;
+}
+
+.content-area {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+  background-color: white;
 }
 </style>

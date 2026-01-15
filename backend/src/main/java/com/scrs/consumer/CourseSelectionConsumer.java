@@ -2,6 +2,7 @@ package com.scrs.consumer;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.scrs.pojo.Course;
 import com.scrs.pojo.Student;
 import com.scrs.pojo.StudentCourse;
@@ -46,7 +47,7 @@ public class CourseSelectionConsumer {
 
             log.info("处理选课: 学生ID={}, 课程ID={}", sid, cid);
 
-            // 检查是否已经选过该课程
+            // 检查是否已经选过该课程（status=1表示已选）
             QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("sid", sid);
             queryWrapper.eq("cid", cid);
@@ -54,8 +55,16 @@ public class CourseSelectionConsumer {
             StudentCourse existingCourse = studentCourseService.getOne(queryWrapper);
             if (existingCourse != null) {
                 log.warn("学生{}已经选过课程{}", sid, cid);
+                rollbackRedisStock(cid);
                 return;
             }
+            
+            // 检查是否有退选记录（status=0）
+            QueryWrapper<StudentCourse> withdrawnQuery = new QueryWrapper<>();
+            withdrawnQuery.eq("sid", sid);
+            withdrawnQuery.eq("cid", cid);
+            withdrawnQuery.eq("status", 0);
+            StudentCourse withdrawnCourse = studentCourseService.getOne(withdrawnQuery);
 
             // 获取学生和课程信息
             Student student = studentService.getById(sid);
@@ -73,24 +82,52 @@ public class CourseSelectionConsumer {
             // 检查课程库存
             if (course.getNum() == null || course.getStock() == null) {
                 log.error("课程{}库存信息不完整", cid);
+                // 回滚Redis
+                rollbackRedisStock(cid);
                 return;
             }
 
             if (course.getNum() >= course.getStock()) {
                 log.warn("课程{}已经选满", cid);
+                // 回滚Redis
+                rollbackRedisStock(cid);
                 return;
             }
 
-            // 更新课程选课人数
-            course.setNum(course.getNum() + 1);
-            courseService.updateById(course);
+            // 使用乐观锁更新课程选课人数（防止并发问题）
+            log.info("开始更新课程{}, 当前num={}, stock={}", cid, course.getNum(), course.getStock());
+            UpdateWrapper<Course> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.setSql("num = num + 1")
+                    .eq("id", cid)
+                    .lt("num", course.getStock()); // 确保不超过库存
+            boolean updated = courseService.update(new Course(), updateWrapper);
+            log.info("更新结果: {}", updated);
+
+            if (!updated) {
+                log.warn("课程{}更新失败，可能已选满", cid);
+                // 回滚Redis
+                rollbackRedisStock(cid);
+                return;
+            }
 
             // 保存选课记录
-            StudentCourse newStudentCourse = new StudentCourse();
-            newStudentCourse.setSid(sid);
-            newStudentCourse.setCid(cid);
-            newStudentCourse.setStatus(1);
-            boolean saveResult = studentCourseService.save(newStudentCourse);
+            log.info("开始保存选课记录: sid={}, cid={}", sid, cid);
+            boolean saveResult;
+            if (withdrawnCourse != null) {
+                // 如果有退选记录，直接更新status=1
+                log.info("发现退选记录，更新status为1");
+                withdrawnCourse.setStatus(1);
+                saveResult = studentCourseService.updateById(withdrawnCourse);
+            } else {
+                // 否则插入新记录
+                log.info("插入新选课记录");
+                StudentCourse newStudentCourse = new StudentCourse();
+                newStudentCourse.setSid(sid);
+                newStudentCourse.setCid(cid);
+                newStudentCourse.setStatus(1);
+                saveResult = studentCourseService.save(newStudentCourse);
+            }
+            log.info("保存选课记录结果: {}", saveResult);
 
             if (saveResult) {
                 log.info("选课成功: 学生ID={}, 课程ID={}", sid, cid);
@@ -103,13 +140,29 @@ public class CourseSelectionConsumer {
                 }
             } else {
                 log.error("保存选课记录失败: 学生ID={}, 课程ID={}", sid, cid);
-                // 回滚课程人数
-                course.setNum(course.getNum() - 1);
-                courseService.updateById(course);
+                // 回滚数据库和Redis
+                UpdateWrapper<Course> rollbackWrapper = new UpdateWrapper<>();
+                rollbackWrapper.setSql("num = num - 1").eq("id", cid);
+                courseService.update(new Course(), rollbackWrapper);
+                rollbackRedisStock(cid);
             }
 
         } catch (Exception e) {
-            log.error("处理选课消息失败: {}", message, e);
+            log.error("处理选课消息失败: {}, 异常类型: {}, 异常信息: {}", message, e.getClass().getName(), e.getMessage());
+            e.printStackTrace(); // 打印完整堆栈
+        }
+    }
+
+    /**
+     * 回滚Redis库存
+     */
+    private void rollbackRedisStock(Integer cid) {
+        try {
+            String numKey = "course:num:" + cid;
+            stringRedisTemplate.opsForValue().decrement(numKey);
+            log.info("回滚Redis库存: courseId={}", cid);
+        } catch (Exception e) {
+            log.error("回滚Redis库存失败: courseId={}", cid, e);
         }
     }
 }
