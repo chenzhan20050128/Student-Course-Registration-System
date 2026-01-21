@@ -70,9 +70,9 @@
           <el-select v-model="newCourseAllocation.cid" placeholder="请选择课程">
             <el-option
               v-for="course in courseList"
-              :key="course.id"
-              :label="course.cname"
-              :value="course.id"
+              :key="course.courseId"
+              :label="course.courseName"
+              :value="course.courseId"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -120,10 +120,10 @@ const fetchCourseAllocations = () => {
           teacherName: teacher ? teacher.tname : '',
           phone: teacher ? teacher.phone : '',
           email: teacher ? teacher.email : '',
-          courseName: course ? course.cname : '',
-          address: course ? course.address : '',
-          enrollment: course ? `${course.num}/${course.stock}` : '',
-          major: course ? course.major : ''
+          courseName: course ? course.courseName : '',
+          campus: course ? course.campus : '',
+          enrollment: course ? `${course.enrolledCount}/${course.capacity}` : '',
+          college: course ? course.college : ''
         }
       })
       total.value = response.data.data.total

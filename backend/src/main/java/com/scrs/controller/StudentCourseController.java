@@ -106,15 +106,15 @@ public class StudentCourseController {
             return R.error("课程不存在");
         }
 
-        if (course.getNum() == null || course.getStock() == null) {
+        if (course.getEnrolledCount() == null || course.getCapacity() == null) {
             return R.error("课程信息不完整");
         }
 
-        if (course.getNum() >= course.getStock()) {
+        if (course.getEnrolledCount() >= course.getCapacity()) {
             return R.error("该课程已经选满");
         }
 
-        course.setNum(course.getNum() + 1);
+        course.setEnrolledCount(course.getEnrolledCount() + 1);
         courseService.updateById(course);
 
         StudentCourse newStudentCourse = new StudentCourse();
@@ -154,8 +154,8 @@ public class StudentCourseController {
 
         // 减少课程选课人数
         Course course = courseService.getById(cid);
-        if (course != null && course.getNum() != null && course.getNum() > 0) {
-            course.setNum(course.getNum() - 1);
+        if (course != null && course.getEnrolledCount() != null && course.getEnrolledCount() > 0) {
+            course.setEnrolledCount(course.getEnrolledCount() - 1);
             courseService.updateById(course);
 
             // 更新 Redis 排行榜
@@ -199,7 +199,7 @@ public class StudentCourseController {
         Student student = studentService.getById(sid);
         Course course = courseService.getById(cid);
         if (student.getMajor() != null) {
-            if (!student.getMajor().equals(course.getMajor())) {
+            if (!student.getMajor().equals(course.getCollege())) {
                 // model.addAttribute("msg", "该学生的专业与课程不符");
                 return R.error("该学生的专业与课程不符");
             }
@@ -249,7 +249,7 @@ public class StudentCourseController {
             Course course = courseService.getById(cid);
             if (course != null) {
                 stringRedisTemplate.opsForValue().set(stockKey,
-                        String.valueOf(course.getStock() - (course.getNum() == null ? 0 : course.getNum())));
+                        String.valueOf(course.getCapacity() - (course.getEnrolledCount() == null ? 0 : course.getEnrolledCount())));
             } else {
                 return R.error("课程不存在");
             }

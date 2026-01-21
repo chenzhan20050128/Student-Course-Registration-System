@@ -75,7 +75,7 @@ public class CourseController {
 
             PageHelper.startPage(pageNum, pageSize);
             LambdaQueryWrapper<Course> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.like(Course::getCname, name);
+            queryWrapper.like(Course::getCourseName, name);
             PageInfo pageInfo = new PageInfo<>(courseService.list(queryWrapper));
             return R.success(pageInfo);
         }
@@ -162,7 +162,7 @@ public class CourseController {
             // 如果在文件传输过程中出现IO异常，则打印异常栈跟踪以进行调试
             e.printStackTrace();
         }
-        course.setCimage(filename);
+        // cimage字段已移除
     }
 
     private void transfileBook(Course course, MultipartFile fileBook) throws IOException {
@@ -191,7 +191,7 @@ public class CourseController {
             // 如果在文件传输过程中出现IO异常，则打印异常栈跟踪以进行调试
             e.printStackTrace();
         }
-        course.setCbook(filename);
+        // cbook字段已移除
     }
 
     @GetMapping("/preUpdateCourse/{id}")
@@ -284,8 +284,8 @@ public class CourseController {
         }
         PageHelper.startPage(pageNum, pageSize);
         QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
-        if (course.getMajor() != null) {
-            queryWrapper.eq("major", course.getMajor());
+        if (course.getCollege() != null) {
+            queryWrapper.eq("college", course.getCollege());
         }
         PageInfo pageInfo = new PageInfo(courseService.list(queryWrapper));
         model.addAttribute("pageInfo", pageInfo);
@@ -313,8 +313,8 @@ public class CourseController {
         }
         PageHelper.startPage(pageNum, pageSize);
         QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
-        if (course.getTeacher() != null) {
-            queryWrapper.eq("teacher", course.getTeacher());
+        if (course.getInstructorName() != null) {
+            queryWrapper.eq("instructor_name", course.getInstructorName());
         }
         PageInfo pageInfo = new PageInfo(courseService.list(queryWrapper));
         model.addAttribute("pageInfo", pageInfo);
@@ -356,8 +356,8 @@ public class CourseController {
         for (Course course : list) {
             // 使用 num (选课人数) 作为分数，Member 为课程 ID
             // 如果 num 为 null，默认为 0
-            double score = course.getNum() == null ? 0 : course.getNum();
-            stringRedisTemplate.opsForZSet().add(COURSE_RANK_KEY, course.getId().toString(), score);
+            double score = course.getEnrolledCount() == null ? 0 : course.getEnrolledCount();
+            stringRedisTemplate.opsForZSet().add(COURSE_RANK_KEY, course.getCourseId().toString(), score);
         }
         // 设置过期时间，例如 1 天，避免数据长期不一致
         stringRedisTemplate.expire(COURSE_RANK_KEY, 1, TimeUnit.DAYS);

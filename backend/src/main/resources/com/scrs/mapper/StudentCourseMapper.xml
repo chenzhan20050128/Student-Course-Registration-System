@@ -5,49 +5,63 @@
 
 <mapper namespace="com.scrs.mapper.StudentCourseMapper">
     <resultMap id="studentCourse" type="com.scrs.pojo.StudentCourse">
-        <id property="id" column="id"/>
-        <result property="sid" column="sid"/>
-        <result column="cid" property="cid"/>
+        <id property="id" column="sc_id"/>
+        <result property="sid" column="sc_sid"/>
+        <result column="sc_cid" property="cid"/>
         <result column="status" property="status"/>
         <association property="student" javaType="com.scrs.pojo.Student">
-            <id column="id" property="id"/>
+            <id column="s_id" property="id"/>
             <result property="sname" column="sname"/>
             <result column="password" property="password"/>
             <result column="sex" property="sex"/>
-            <result column="college" property="college"/>
+            <result column="s_college" property="college"/>
             <result property="age" column="age"/>
             <result property="major" column="major"/>
             <result property="simage" column="simage"/>
         </association>
         <association property="course" javaType="com.scrs.pojo.Course">
-            <id column="id" property="id"/>
-            <result property="cname" column="cname"/>
-            <result property="major" column="major"/>
-            <result property="address" column="address"/>
-            <result property="num" column="num"/>
-            <result property="stock" column="stock"/>
-            <result column="cimage" property="cimage"/>
-            <result property="cbook" column="cbook"/>
+            <id column="c_id" property="courseId"/>
+            <result property="courseName" column="course_name"/>
+            <result property="college" column="c_college"/>
+            <result property="campus" column="campus"/>
+            <result property="enrolledCount" column="enrolled_count"/>
+            <result property="capacity" column="capacity"/>
+            <result property="credits" column="credits"/>
+            <result property="instructorName" column="instructor_name"/>
+            <result property="description" column="description"/>
+            <result property="classroom" column="classroom"/>
+            <result property="startWeek" column="start_week"/>
+            <result property="endWeek" column="end_week"/>
+            <result property="type" column="type"/>
         </association>
     </resultMap>
     <select id="listStudentCourse" resultType="com.scrs.pojo.StudentCourse" resultMap="studentCourse">
     SELECT
-        sc.id,
-        sc.sid,
-        sc.cid,
+        sc.id as sc_id,
+        sc.sid as sc_sid,
+        sc.cid as sc_cid,
         sc.status,
+        s.id as s_id,
         s.sname,
         s.simage,
-        s.college,
-        c.major AS course_major,
-        c.stock,
-        c.cname,
-        c.cimage,
-        c.address
+        s.college as s_college,
+        c.id as c_id,
+        c.college as c_college,
+        c.capacity,
+        c.course_name,
+        c.campus,
+        c.enrolled_count,
+        c.credits,
+        c.instructor_name,
+        c.description,
+        c.classroom,
+        c.start_week,
+        c.end_week,
+        c.type
     FROM
         student_course sc
     JOIN student s ON sc.sid = s.id
-    JOIN course c ON sc.cid = c.id
+    JOIN course c ON sc.cid = c.course_id
     <where>
         <if test="id != null and id != ''">
             sc.id = #{id}
@@ -69,27 +83,29 @@
         s.sex,
         s.age,
         s.major,
-        s.college,
+        s.college as s_college,
         s.simage,
-        c.id as c_id,
-        c.cname,
-        c.major,
-        c.address,
-        c.num,
-        c.stock,
-        c.cimage,
-        c.cbook,
-        c.teacher,
-        c.credit
+        c.course_id as c_id,
+        c.course_name as course_name,
+        c.college as c_college,
+        c.campus as campus,
+        c.enrolled_count as enrolled_count,
+        c.capacity as capacity,
+        c.credits as credits,
+        c.instructor_name as instructor_name,
+        c.description as description,
+        c.classroom as classroom,
+        c.start_week as start_week,
+        c.end_week as end_week,
+        c.type as type
     FROM
-        student_course sc,
-        student s,
-        course c
-    <where>
-        s.id = sc.sid and c.id = sc.cid and s.id = #{userId} and sc.status = 1
+        student_course sc
+    JOIN student s ON s.id = sc.sid
+    JOIN course c ON c.course_id = sc.cid
+    WHERE
+        s.id = #{userId} and sc.status = 1
         <if test="cname != null and cname != ''">
-            and c.cname = #{cname}
+            and c.course_name = #{cname}
         </if>
-    </where>
 </select>
 </mapper>

@@ -10,10 +10,10 @@
     </div>
 
     <div v-else class="records-list">
-      <div v-for="record in studentCourses" :key="record.course.id" class="record-card">
+      <div v-for="record in studentCourses" :key="record.course.courseId" class="record-card">
         <div class="record-card-header">
           <div class="header-left">
-            <h3 class="record-course-name">{{ record.course.cname }}</h3>
+            <h3 class="record-course-name">{{ record.course.courseName }}</h3>
             <span :class="['status-badge', { active: record.status === 1, dropped: record.status === 0 }]">
               {{ record.status === 1 ? '已选课' : '已退选' }}
             </span>
@@ -23,26 +23,26 @@
         <div class="record-meta">
           <div class="meta-row">
             <span class="meta-label">课程编号:</span>
-            <span class="meta-value">{{ record.course.id }}</span>
+            <span class="meta-value">{{ record.course.courseId }}</span>
           </div>
           <div class="meta-row">
             <span class="meta-label">授课教师:</span>
-            <span class="meta-value">{{ record.course.teacher }}</span>
+            <span class="meta-value">{{ record.course.instructorName }}</span>
           </div>
           <div class="meta-row">
             <span class="meta-label">教学地点:</span>
-            <span class="meta-value">{{ record.course.address }}</span>
+            <span class="meta-value">{{ record.course.campus }}</span>
           </div>
           <div class="meta-row">
             <span class="meta-label">选课人数:</span>
-            <span class="meta-value">{{ record.course.num }} / {{ record.course.stock }}</span>
+            <span class="meta-value">{{ record.course.enrolledCount }} / {{ record.course.capacity }}</span>
           </div>
         </div>
 
         <div class="record-actions">
           <button 
             v-if="record.status === 1"
-            @click="deselectCourse(record.course.id)"
+            @click="deselectCourse(record.course.courseId)"
             class="deselect-btn"
           >
             退选
@@ -112,10 +112,10 @@ export default {
           this.total = response.data.data.total;
         }
         this.studentCourses.forEach(course => {
-          const matchingCourse = this.studentCoursesAll.find(c => c.cname === course.course.cname);
+          const matchingCourse = this.studentCoursesAll.find(c => c.courseName === course.course.courseName);
           if (matchingCourse) {
-            course.course.teacher = matchingCourse.teacher;
-            course.course.id = matchingCourse.id;
+            course.course.instructorName = matchingCourse.instructorName;
+            course.course.courseId = matchingCourse.courseId;
           }
         });
       } catch (error) {

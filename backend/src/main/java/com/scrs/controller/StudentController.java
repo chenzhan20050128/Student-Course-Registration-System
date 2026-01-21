@@ -3,7 +3,6 @@ package com.scrs.controller;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.scrs.annotation.ApiCount;
@@ -273,9 +272,10 @@ public class StudentController {
     @GetMapping("/listCourseByMajorName")
     public R<PageInfo> listCourse(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
             @RequestParam(value = "pageSize", defaultValue = "6") Integer pageSize,
-            @RequestParam(required = false) String majorName) {
+            @RequestParam(required = false) String majorName,
+            @RequestParam(required = false) String courseName) {
         System.out.println("=== listCourseByMajorName 被调用 ===");
-        System.out.println("pageNum: " + pageNum + ", pageSize: " + pageSize + ", majorName(原始): " + majorName);
+        System.out.println("pageNum: " + pageNum + ", pageSize: " + pageSize + ", majorName(原始): " + majorName + ", courseName: " + courseName);
 
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
@@ -303,10 +303,14 @@ public class StudentController {
         PageHelper.startPage(pageNum, pageSize);
         LambdaQueryWrapper<Course> courseLambdaQueryWrapper = new LambdaQueryWrapper<>();
         if (actualMajorName != null && !actualMajorName.isEmpty()) {
-            courseLambdaQueryWrapper.eq(Course::getMajor, actualMajorName);
+            courseLambdaQueryWrapper.eq(Course::getCollege, actualMajorName);
+        }
+        // 添加课程名称模糊查询
+        if (courseName != null && !courseName.isEmpty()) {
+            courseLambdaQueryWrapper.like(Course::getCourseName, courseName);
         }
         List<Course> courses = courseService.list(courseLambdaQueryWrapper);
-        System.out.println("使用专业名称查询: " + actualMajorName + ", 查询到课程数量: " + courses.size());
+        System.out.println("使用专业名称查询: " + actualMajorName + ", 课程名: " + courseName + ", 查询到课程数量: " + courses.size());
 
         PageInfo<Course> pageInfo = new PageInfo<>(courses);
         return R.success(pageInfo);
@@ -338,28 +342,23 @@ public class StudentController {
     @GetMapping("/selectCourse")
     @ApiCount("学生选课")
     public R<String> selectCourse(@RequestParam Integer cid, @RequestParam Integer sid) {
-        // 1. Redis 预扣减库存（记录已选人数）
-        String numKey = "course:num:" + cid;
+        // 1. Redis 预扣减库存
         String stockKey = "course:stock:" + cid;
-        
-        // 每次都从数据库同步最新数据到Redis，确保一致性
-        Course course = courseService.getById(cid);
-        if (course == null) {
-            return R.error("课程不存在");
+        // 假设库存已经预热到 Redis 中，如果没有，需要先加载
+        if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(stockKey))) {
+            Course course = courseService.getById(cid);
+            if (course != null) {
+                stringRedisTemplate.opsForValue().set(stockKey,
+                        String.valueOf(course.getCapacity() - (course.getEnrolledCount() == null ? 0 : course.getEnrolledCount())));
+            } else {
+                return R.error("课程不存在");
+            }
         }
-        
-        // 强制同步Redis（每次选课前都同步，确保数据准确）
-        stringRedisTemplate.opsForValue().set(numKey, String.valueOf(course.getNum() == null ? 0 : course.getNum()));
-        stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(course.getStock()));
 
-        // 检查库存并递增已选人数
-        Long currentNum = stringRedisTemplate.opsForValue().increment(numKey);
-        String stockStr = stringRedisTemplate.opsForValue().get(stockKey);
-        Long stock = stockStr != null ? Long.parseLong(stockStr) : 0;
-        
-        if (currentNum == null || currentNum > stock) {
+        Long stock = stringRedisTemplate.opsForValue().decrement(stockKey);
+        if (stock != null && stock < 0) {
             // 库存不足，回滚
-            stringRedisTemplate.opsForValue().decrement(numKey);
+            stringRedisTemplate.opsForValue().increment(stockKey);
             return R.error("该课程已经选满");
         }
 
@@ -384,34 +383,15 @@ public class StudentController {
         QueryWrapper<StudentCourse> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("sid", sid);
         queryWrapper.eq("cid", cid);
-        queryWrapper.eq("status", 1); // 只查询已选课程
         StudentCourse one = studentCourseService.getOne(queryWrapper);
         if (one == null) {
-            return R.error("该学生没有选过该课程或已经退选");
+            return R.error("该学生没有选过该课程");
         }
-        
-        // 先更新选课状态为退选
-        one.setStatus(0);
+        one.setStatus(0);// 表示退选
+        Course course = courseService.getById(cid);
+        course.setEnrolledCount(course.getEnrolledCount() - 1);
+        courseService.updateById(course);
         studentCourseService.updateById(one);
-        
-        // 使用乐观锁更新数据库
-        UpdateWrapper<Course> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.setSql("num = num - 1")
-                .eq("id", cid)
-                .gt("num", 0); // 确保不会减到负数
-        boolean updated = courseService.update(new Course(), updateWrapper);
-        
-        if (!updated) {
-            // 回滚选课状态
-            one.setStatus(1);
-            studentCourseService.updateById(one);
-            return R.error("退选失败，请重试");
-        }
-        
-        // 同步更新Redis
-        String numKey = "course:num:" + cid;
-        stringRedisTemplate.opsForValue().decrement(numKey);
-        
         return R.success("退选成功");
     }
 }

@@ -25,8 +25,8 @@
         <el-table-column prop="studentName" label="学生姓名" width="120"></el-table-column>
         <el-table-column prop="college" label="所在学院" width="240"></el-table-column>
         <el-table-column prop="major" label="专业" width="300"></el-table-column>
-        <el-table-column prop="course.cname" label="课程名称" width="150"></el-table-column>
-        <el-table-column prop="course.address" label="上课地点" width="260"></el-table-column>
+        <el-table-column prop="course.courseName" label="课程名称" width="150"></el-table-column>
+        <el-table-column prop="course.campus" label="上课地点" width="260"></el-table-column>
         <el-table-column label="操作">
           <template v-slot="scope">
             <el-button size="mini" type="primary" class="edit-button" @click="openDialog('edit', scope.row)">修改</el-button>
@@ -68,9 +68,9 @@
           <el-select v-model="newStudentCourse.cid" placeholder="请选择课程">
             <el-option
               v-for="course in courseList"
-              :key="course.id"
-              :label="course.cname"
-              :value="course.id"
+              :key="course.courseId"
+              :label="course.courseName"
+              :value="course.courseId"
             ></el-option>
           </el-select>
         </el-form-item>

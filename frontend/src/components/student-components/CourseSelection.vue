@@ -5,65 +5,84 @@
       <span class="course-count">共 <strong>{{ total }}</strong> 门课程</span>
     </div>
 
+    <!-- 搜索框区域 -->
+    <div class="search-bar">
+      <el-input
+        v-model="searchCourseName"
+        placeholder="请输入课程名称搜索"
+        clearable
+        @clear="handleSearch"
+        @keyup.enter="handleSearch"
+        class="search-input"
+      >
+        <template #prefix>
+          <i class="el-icon-search"></i>
+        </template>
+      </el-input>
+      <el-button type="primary" @click="handleSearch" class="search-button">
+        搜索
+      </el-button>
+    </div>
+
     <div v-if="courses.length === 0" class="empty-state">
       <p>暂无课程数据</p>
     </div>
 
     <div v-else class="courses-grid">
-      <div v-for="course in courses" :key="course.id" class="course-card">
+      <div v-for="course in courses" :key="course.courseId" class="course-card">
         <!-- 已选标签 -->
-        <div v-if="selectedCourseIds.includes(parseInt(course.id))" class="selected-badge">
+        <div v-if="selectedCourseIds.includes(parseInt(course.courseId))" class="selected-badge">
           已选
         </div>
         
         <div class="course-card-header">
-          <h3 class="course-name">{{ course.cname }}</h3>
-          <span class="credit-badge">{{ course.credit }}分</span>
+          <h3 class="course-name">{{ course.courseName }}</h3>
+          <span class="credit-badge">{{ course.credits }}分</span>
         </div>
         
         <div class="course-meta">
           <div class="meta-row">
             <span class="meta-label">课程编号:</span>
-            <span class="meta-value">{{ course.id }}</span>
+            <span class="meta-value">{{ course.courseId }}</span>
           </div>
           <div class="meta-row">
             <span class="meta-label">开设专业:</span>
-            <span class="meta-value">{{ course.major }}</span>
+            <span class="meta-value">{{ course.college }}</span>
           </div>
           <div class="meta-row">
             <span class="meta-label">授课教师:</span>
-            <span class="meta-value">{{ course.teacher }}</span>
+            <span class="meta-value">{{ course.instructorName }}</span>
           </div>
           <div class="meta-row">
             <span class="meta-label">教学地点:</span>
-            <span class="meta-value">{{ course.address }}</span>
+            <span class="meta-value">{{ course.campus }}</span>
           </div>
         </div>
 
         <div class="course-capacity">
           <div class="capacity-header">
             <span>容量</span>
-            <span class="capacity-text">{{ course.num }} / {{ course.stock }}</span>
+            <span class="capacity-text">{{ course.enrolledCount }} / {{ course.capacity }}</span>
           </div>
           <div class="progress-bar">
             <div 
               class="progress-fill" 
               :style="{ 
-                width: capacityPercent(course.num, course.stock) + '%',
-                backgroundColor: capacityColor(course.num, course.stock)
+                width: capacityPercent(course.enrolledCount, course.capacity) + '%',
+                backgroundColor: capacityColor(course.enrolledCount, course.capacity)
               }"
             ></div>
           </div>
         </div>
 
         <button 
-          @click="selectCourse(course.id)"
+          @click="selectCourse(course.courseId)"
           :class="['select-btn', { 
-            disabled: course.num >= course.stock || selectedCourseIds.includes(parseInt(course.id))
+            disabled: course.enrolledCount >= course.capacity || selectedCourseIds.includes(parseInt(course.courseId))
           }]"
-          :disabled="course.num >= course.stock || selectedCourseIds.includes(parseInt(course.id))"
+          :disabled="course.enrolledCount >= course.capacity || selectedCourseIds.includes(parseInt(course.courseId))"
         >
-          {{ selectedCourseIds.includes(parseInt(course.id)) ? '已选' : (course.num >= course.stock ? '已满课' : '选课') }}
+          {{ selectedCourseIds.includes(parseInt(course.courseId)) ? '已选' : (course.enrolledCount >= course.capacity ? '已满课' : '选课') }}
         </button>
       </div>
     </div>
@@ -95,6 +114,7 @@ export default {
       majorName: '',
       selectedCourseIds: [],
       selectingCourseId: null, // 正在选课的课程ID，防止重复提交
+      searchCourseName: '', // 搜索的课程名
     };
   },
   methods: {
@@ -134,7 +154,7 @@ export default {
               return item.status === 1;
             })
             .map(item => {
-              const courseId = item.course?.id || item.cid || item.courseId;
+              const courseId = item.course?.courseId || item.courseId;
               console.log('提取课程ID:', item, '-> courseId:', courseId);
               // 统一转换为数字类型
               return parseInt(courseId);
@@ -172,13 +192,14 @@ export default {
           this.$message.error('获取学生信息失败');
           return;
         }
-        this.majorName = response2.data.data.student.major;
+        this.majorName = response2.data.data.student.college;
         
         const response = await axios.get('/student/listCourseByMajorName', {
           params: {
             pageNum: this.pageNum,
             pageSize: this.pageSize,
             majorName: this.majorName,
+            courseName: this.searchCourseName || undefined, // 添加课程名搜索参数
           },
         });
         
@@ -208,6 +229,11 @@ export default {
       this.pageNum = page;
       this.fetchCourses();
     },
+    handleSearch() {
+      // 搜索时重置到第一页
+      this.pageNum = 1;
+      this.fetchCourses();
+    },
     async selectCourse(courseId) {
       try {
         if (!this.id) {
@@ -228,15 +254,15 @@ export default {
         }
         
         // 前端检查容量
-        const course = this.courses.find(c => c.id === courseId);
-        if (course && course.num >= course.stock) {
+        const course = this.courses.find(c => c.courseId === courseId);
+        if (course && course.enrolledCount >= course.capacity) {
           this.$message.warning('该课程已满，无法选课');
-          console.log('前端检查：课程已满', course.num, '/', course.stock);
+          console.log('前端检查：课程已满', course.enrolledCount, '/', course.capacity);
           return;
         }
         
         this.selectingCourseId = courseId;
-        console.log('开始选课，课程ID:', courseId, '学生ID:', this.id, '当前容量:', course?.num, '/', course?.stock);
+        console.log('开始选课，课程ID:', courseId, '学生ID:', this.id, '当前容量:', course?.enrolledCount, '/', course?.capacity);
         
         const response = await axios.get('/student/selectCourse', {
           params: {
@@ -312,6 +338,31 @@ export default {
 .course-count strong {
   color: #667eea;
   font-weight: 600;
+}
+
+/* 搜索框样式 */
+.search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-button {
+  height: 40px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  font-weight: 500;
+}
+
+.search-button:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f91 100%);
 }
 
 .empty-state {

@@ -59,10 +59,10 @@
     <el-dialog v-model="showDialog" :title="dialogTitle" width="500px">
       <el-form :model="newCourse" label-width="120px" class="course-form">
         <el-form-item label="课程名" required>
-          <el-input v-model="newCourse.cname"></el-input>
+          <el-input v-model="newCourse.courseName"></el-input>
         </el-form-item>
         <el-form-item label="专业" required>
-          <el-select v-model="newCourse.major" placeholder="请选择专业">
+          <el-select v-model="newCourse.college" placeholder="请选择专业">
             <el-option
               v-for="major in majorList"
               :key="major.id"
@@ -72,25 +72,19 @@
           </el-select>
         </el-form-item>
         <el-form-item label="教师" required>
-          <el-input v-model="newCourse.teacher"></el-input>
+          <el-input v-model="newCourse.instructorName"></el-input>
         </el-form-item>
         <el-form-item label="地址" required>
-          <el-input v-model="newCourse.address"></el-input>
+          <el-input v-model="newCourse.campus"></el-input>
         </el-form-item>
         <el-form-item label="选课人数" required>
-          <el-input v-model="newCourse.num" type="number"></el-input>
+          <el-input v-model="newCourse.enrolledCount" type="number"></el-input>
         </el-form-item>
         <el-form-item label="选课容量" required>
-          <el-input v-model="newCourse.stock" type="number"></el-input>
+          <el-input v-model="newCourse.capacity" type="number"></el-input>
         </el-form-item>
         <el-form-item label="学分" required>
-          <el-input v-model="newCourse.credit" type="number"></el-input>
-        </el-form-item>
-        <el-form-item label="课程图片" required>
-          <el-input v-model="newCourse.cimage"></el-input>
-        </el-form-item>
-        <el-form-item label="课程书籍" required>
-          <el-input v-model="newCourse.cbook"></el-input>
+          <el-input v-model="newCourse.credits" type="number"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" class="edit-button" @click="saveCourse" v-if="!isEditing">提交</el-button>

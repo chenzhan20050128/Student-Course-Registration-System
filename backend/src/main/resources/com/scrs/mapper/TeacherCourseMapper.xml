@@ -29,15 +29,19 @@
 
         <!-- 关联 Course 对象 -->
         <association property="course" javaType="com.scrs.pojo.Course">
-            <result column="c_id" property="id"/>
-            <result column="c_major" property="major"/>
-            <result column="stock" property="stock"/>
-            <result column="cname" property="cname"/>
-            <result column="cimage" property="cimage"/>
-            <result column="address" property="address"/>
-            <result column="num" property="num"/>
-            <result column="cbook" property="cbook"/>
-            <result column="credit" property="credit"/>
+            <id column="c_id" property="courseId"/>
+            <result column="course_name" property="courseName"/>
+            <result column="college" property="college"/>
+            <result column="campus" property="campus"/>
+            <result column="enrolled_count" property="enrolledCount"/>
+            <result column="capacity" property="capacity"/>
+            <result column="credits" property="credits"/>
+            <result column="instructor_name" property="instructorName"/>
+            <result column="description" property="description"/>
+            <result column="classroom" property="classroom"/>
+            <result column="start_week" property="startWeek"/>
+            <result column="end_week" property="endWeek"/>
+            <result column="type" property="type"/>
         </association>
     </resultMap>
 
@@ -55,18 +59,25 @@
             t.age,
             t.major,
             t.timage,
-            c.id AS c_id,
-            c.major AS c_major,
-            c.stock,
-            c.cname,
-            c.cimage,
-            c.address
+            c.course_id AS c_id,
+            c.college as college,
+            c.capacity as capacity,
+            c.course_name as course_name,
+            c.campus as campus,
+            c.enrolled_count as enrolled_count,
+            c.credits as credits,
+            c.instructor_name as instructor_name,
+            c.description as description,
+            c.classroom as classroom,
+            c.start_week as start_week,
+            c.end_week as end_week,
+            c.type as type
         FROM
             teacher_course tc
         JOIN
             teacher t ON t.id = tc.tid
         JOIN
-            course c ON c.id = tc.cid
+            course c ON c.course_id = tc.cid
         WHERE
             tc.id = #{id}
     </select>
@@ -79,12 +90,12 @@
     select
         tc.id as tc_id, tc.tid as tc_tid, tc.cid as tc_cid,
         t.id as t_id, t.tname, t.password, t.email, t.sex, t.phone, t.age, t.major, t.timage,
-        c.id as c_id, c.cname, c.major, c.address, c.num, c.stock, c.cimage, c.cbook, c.credit, c.teacher
+        c.course_id as c_id, c.course_name as course_name, c.college as college, c.campus as campus, c.enrolled_count as enrolled_count, c.capacity as capacity, c.credits as credits, c.instructor_name as instructor_name, c.description as description, c.classroom as classroom, c.start_week as start_week, c.end_week as end_week, c.type as type
     from teacher_course tc, teacher t, course c
     <where>
-        t.id = tc.tid and c.id = tc.cid and tc.id = #{userId}
+        t.id = tc.tid and c.course_id = tc.cid and tc.id = #{userId}
         <if test="cname != null and cname != ''">
-            and c.cname = #{cname}
+            and c.course_name = #{cname}
         </if>
     </where>
 </select>

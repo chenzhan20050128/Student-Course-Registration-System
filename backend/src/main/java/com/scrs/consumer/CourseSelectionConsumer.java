@@ -58,7 +58,7 @@ public class CourseSelectionConsumer {
                 rollbackRedisStock(cid);
                 return;
             }
-            
+
             // 检查是否有退选记录（status=0）
             QueryWrapper<StudentCourse> withdrawnQuery = new QueryWrapper<>();
             withdrawnQuery.eq("sid", sid);
@@ -80,14 +80,14 @@ public class CourseSelectionConsumer {
             }
 
             // 检查课程库存
-            if (course.getNum() == null || course.getStock() == null) {
+            if (course.getEnrolledCount() == null || course.getCapacity() == null) {
                 log.error("课程{}库存信息不完整", cid);
                 // 回滚Redis
                 rollbackRedisStock(cid);
                 return;
             }
 
-            if (course.getNum() >= course.getStock()) {
+            if (course.getEnrolledCount() >= course.getCapacity()) {
                 log.warn("课程{}已经选满", cid);
                 // 回滚Redis
                 rollbackRedisStock(cid);
@@ -95,11 +95,11 @@ public class CourseSelectionConsumer {
             }
 
             // 使用乐观锁更新课程选课人数（防止并发问题）
-            log.info("开始更新课程{}, 当前num={}, stock={}", cid, course.getNum(), course.getStock());
+            log.info("开始更新课程{}, 当前enrolledCount={}, capacity={}", cid, course.getEnrolledCount(), course.getCapacity());
             UpdateWrapper<Course> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.setSql("num = num + 1")
-                    .eq("id", cid)
-                    .lt("num", course.getStock()); // 确保不超过库存
+            updateWrapper.setSql("enrolled_count = enrolled_count + 1")
+                    .eq("course_id", cid)
+                    .lt("enrolled_count", course.getCapacity()); // 确保不超过库存
             boolean updated = courseService.update(new Course(), updateWrapper);
             log.info("更新结果: {}", updated);
 

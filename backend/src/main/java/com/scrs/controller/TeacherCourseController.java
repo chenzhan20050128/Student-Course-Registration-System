@@ -80,7 +80,7 @@ public class TeacherCourseController {
         Integer cid = teacherCourse.getCid();
         Teacher teacher = teacherService.getById(tid);
         Course course = courseService.getById(cid);
-        if (!teacher.getMajor().equals(course.getMajor())) {
+        if (!teacher.getMajor().equals(course.getCollege())) {
             return R.error("该老师不是该课程的专业的老师");
         }
         TeacherCourse newTeacherCourse = new TeacherCourse();
@@ -113,7 +113,7 @@ public class TeacherCourseController {
         Integer cid = teacherCourse.getCid();
         Teacher teacher = teacherService.getById(tid);
         Course course = courseService.getById(cid);
-        if (!teacher.getMajor().equals(course.getMajor())) {
+        if (!teacher.getMajor().equals(course.getCollege())) {
             return R.error("该老师不是该课程的专业的老师");
         }
         TeacherCourse newTeacherCourse = new TeacherCourse();

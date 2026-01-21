@@ -76,13 +76,13 @@ CREATE TABLE `course` (
 -- ----------------------------
 -- Records of `course`
 -- ----------------------------
-INSERT INTO `course` (`id`, `cname`, `major`, `teacher`, `address`, `num`, `stock`, `cimage`, `cbook`, `credit`, `descr`) VALUES
-(1, 'Data Structure', 'Computer Science and Technology', 'Li Hua', 'Classroom A101', 20, 50, 'datastructure.jpg', 'algorithm_intro', 4, 'Course on data structures, explaining basic data organization and algorithms'),
-(2, 'Advanced Mathematics', 'Mathematics and Applied Mathematics', 'Xiao Yuanming', 'Classroom B202', 15, 60, 'calculus.jpg', 'calculus', 5, 'Basic mathematics course covering calculus and more'),
-(3, 'Software Engineering and Computing', 'Software Engineering', 'Liu Qin', 'Lab C301', 10, 40, 'se.jpg', 'se', 3, 'Basic theory of software engineering'),
-(4, 'Linear Algebra', 'Mathematics and Applied Mathematics', 'Nie Ziwei', 'Classroom A102', 30, 60, 'linearalgebra.jpg', 'linear_algebra', 3, 'Matrix theory and linear transformations'),
-(5, 'Operating System', 'Computer Science and Technology', 'Zhang Wei', 'Lab C302', 25, 30, 'operatingsystem.jpg', 'computer_systems', 4, 'Principles and applications of operating systems'),
-(6, 'Demand and Business Model Analysis', 'Software Engineering', 'Liu Tao', 'Lab C303', 25, 45, 'demand.jpg', 'demand', 4, 'Requirements engineering');
+# INSERT INTO `course` (`id`, `cname`, `major`, `teacher`, `address`, `num`, `stock`, `cimage`, `cbook`, `credit`, `descr`) VALUES
+# (1, 'Data Structure', 'Computer Science and Technology', 'Li Hua', 'Classroom A101', 20, 50, 'datastructure.jpg', 'algorithm_intro', 4, 'Course on data structures, explaining basic data organization and algorithms'),
+# (2, 'Advanced Mathematics', 'Mathematics and Applied Mathematics', 'Xiao Yuanming', 'Classroom B202', 15, 60, 'calculus.jpg', 'calculus', 5, 'Basic mathematics course covering calculus and more'),
+# (3, 'Software Engineering and Computing', 'Software Engineering', 'Liu Qin', 'Lab C301', 10, 40, 'se.jpg', 'se', 3, 'Basic theory of software engineering'),
+# (4, 'Linear Algebra', 'Mathematics and Applied Mathematics', 'Nie Ziwei', 'Classroom A102', 30, 60, 'linearalgebra.jpg', 'linear_algebra', 3, 'Matrix theory and linear transformations'),
+# (5, 'Operating System', 'Computer Science and Technology', 'Zhang Wei', 'Lab C302', 25, 30, 'operatingsystem.jpg', 'computer_systems', 4, 'Principles and applications of operating systems'),
+# (6, 'Demand and Business Model Analysis', 'Software Engineering', 'Liu Tao', 'Lab C303', 25, 45, 'demand.jpg', 'demand', 4, 'Requirements engineering');
 
 -- ----------------------------
 -- Table structure for `major`
