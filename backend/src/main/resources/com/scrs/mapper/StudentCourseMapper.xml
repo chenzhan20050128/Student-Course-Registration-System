@@ -45,7 +45,7 @@
         s.sname,
         s.simage,
         s.college as s_college,
-        c.id as c_id,
+        c.course_id as c_id,
         c.college as c_college,
         c.capacity,
         c.course_name,

@@ -59,30 +59,32 @@ INSERT INTO `college` (`id`, `cname`, `descr`) VALUES
 -- ----------------------------
 DROP TABLE IF EXISTS `course`;
 CREATE TABLE `course` (
-  `id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
-  `cname` VARCHAR(255) NOT NULL COMMENT 'Course name',
-  `major` VARCHAR(255) NOT NULL COMMENT 'Major',
-  `teacher` VARCHAR(255) NOT NULL COMMENT 'Teacher name',
-  `address` VARCHAR(255) NOT NULL COMMENT 'Classroom address',
-  `num` INT NOT NULL COMMENT 'Enrollment limit',
-  `stock` INT NOT NULL COMMENT 'Remaining slots',
-  `cimage` VARCHAR(255) DEFAULT NULL COMMENT 'Course image',
-  `cbook` VARCHAR(255) DEFAULT NULL COMMENT 'Textbook',
-  `credit` INT DEFAULT NULL COMMENT 'Credit',
-  `descr` VARCHAR(255) DEFAULT NULL COMMENT 'Description',
-  PRIMARY KEY (`id`)
+  `course_id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary key (Course ID)',
+  `course_name` VARCHAR(255) NOT NULL COMMENT 'Course name',
+  `college` VARCHAR(255) NOT NULL COMMENT 'College/Department',
+  `instructor_name` VARCHAR(255) NOT NULL COMMENT 'Instructor name',
+  `campus` VARCHAR(255) NOT NULL COMMENT 'Campus location',
+  `classroom` VARCHAR(255) DEFAULT NULL COMMENT 'Classroom number',
+  `enrolled_count` INT NOT NULL DEFAULT 0 COMMENT 'Current enrolled count',
+  `capacity` INT NOT NULL COMMENT 'Maximum capacity',
+  `credits` INT DEFAULT NULL COMMENT 'Course credits',
+  `description` VARCHAR(1023) DEFAULT NULL COMMENT 'Course description',
+  `start_week` INT DEFAULT NULL COMMENT 'Start week',
+  `end_week` INT DEFAULT NULL COMMENT 'End week',
+  `type` VARCHAR(50) DEFAULT NULL COMMENT 'Course type (required/elective)',
+  PRIMARY KEY (`course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Records of `course`
 -- ----------------------------
-# INSERT INTO `course` (`id`, `cname`, `major`, `teacher`, `address`, `num`, `stock`, `cimage`, `cbook`, `credit`, `descr`) VALUES
-# (1, 'Data Structure', 'Computer Science and Technology', 'Li Hua', 'Classroom A101', 20, 50, 'datastructure.jpg', 'algorithm_intro', 4, 'Course on data structures, explaining basic data organization and algorithms'),
-# (2, 'Advanced Mathematics', 'Mathematics and Applied Mathematics', 'Xiao Yuanming', 'Classroom B202', 15, 60, 'calculus.jpg', 'calculus', 5, 'Basic mathematics course covering calculus and more'),
-# (3, 'Software Engineering and Computing', 'Software Engineering', 'Liu Qin', 'Lab C301', 10, 40, 'se.jpg', 'se', 3, 'Basic theory of software engineering'),
-# (4, 'Linear Algebra', 'Mathematics and Applied Mathematics', 'Nie Ziwei', 'Classroom A102', 30, 60, 'linearalgebra.jpg', 'linear_algebra', 3, 'Matrix theory and linear transformations'),
-# (5, 'Operating System', 'Computer Science and Technology', 'Zhang Wei', 'Lab C302', 25, 30, 'operatingsystem.jpg', 'computer_systems', 4, 'Principles and applications of operating systems'),
-# (6, 'Demand and Business Model Analysis', 'Software Engineering', 'Liu Tao', 'Lab C303', 25, 45, 'demand.jpg', 'demand', 4, 'Requirements engineering');
+INSERT INTO `course` (`course_id`, `course_name`, `college`, `instructor_name`, `campus`, `classroom`, `enrolled_count`, `capacity`, `credits`, `description`, `start_week`, `end_week`, `type`) VALUES
+(1, 'Data Structure', 'Computer Science College', 'Li Hua', 'Main Campus', 'A101', 0, 50, 4, 'Course on data structures, explaining basic data organization and algorithms', 1, 16, 'Required'),
+(2, 'Advanced Mathematics', 'Mathematics College', 'Xiao Yuanming', 'Main Campus', 'B202', 0, 60, 5, 'Basic mathematics course covering calculus and more', 1, 16, 'Required'),
+(3, 'Software Engineering and Computing', 'Software College', 'Liu Qin', 'Main Campus', 'C301', 0, 40, 3, 'Basic theory of software engineering', 1, 16, 'Required'),
+(4, 'Linear Algebra', 'Mathematics College', 'Nie Ziwei', 'Main Campus', 'A102', 0, 60, 3, 'Matrix theory and linear transformations', 1, 16, 'Required'),
+(5, 'Operating System', 'Computer Science College', 'Zhang Wei', 'Main Campus', 'C302', 0, 30, 4, 'Principles and applications of operating systems', 1, 16, 'Required'),
+(6, 'Demand and Business Model Analysis', 'Software College', 'Liu Tao', 'Main Campus', 'C303', 0, 45, 4, 'Requirements engineering', 1, 16, 'Elective');
 
 -- ----------------------------
 -- Table structure for `major`
@@ -181,7 +183,7 @@ CREATE TABLE `teacher_course` (
   KEY `tid` (`tid`),
   KEY `cid` (`cid`),
   CONSTRAINT `teacher_course_ibfk_1` FOREIGN KEY (`tid`) REFERENCES `teacher` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `teacher_course_ibfk_2` FOREIGN KEY (`cid`) REFERENCES `course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `teacher_course_ibfk_2` FOREIGN KEY (`cid`) REFERENCES `course` (`course_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Insert records using the aforementioned mappings between courses and teachers
@@ -240,9 +242,9 @@ CREATE TABLE `student_course` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `sid` INT NOT NULL,
   `cid` INT NOT NULL,
-  `status` INT,
+  `status` INT DEFAULT 1 COMMENT '1=enrolled, 0=withdrawn',
   FOREIGN KEY (`sid`) REFERENCES `student`(`id`),
-  FOREIGN KEY (`cid`) REFERENCES `course`(`id`)
+  FOREIGN KEY (`cid`) REFERENCES `course`(`course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `student_course` (`sid`, `cid`, `status`) VALUES

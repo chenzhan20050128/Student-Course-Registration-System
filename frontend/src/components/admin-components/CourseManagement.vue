@@ -22,19 +22,19 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="40" v-if="showBatchDelete"></el-table-column>
-        <el-table-column prop="cname" label="课程名" width="150"></el-table-column>
-        <el-table-column prop="major" label="专业" width="150"></el-table-column>
-        <el-table-column prop="teacher" label="教师" width="120"></el-table-column>
-        <el-table-column prop="address" label="地址" width="150"></el-table-column>
-        <el-table-column prop="num" label="选课人数" width="90"></el-table-column>
-        <el-table-column prop="stock" label="选课容量" width="90"></el-table-column>
-        <el-table-column prop="credit" label="学分" width="90"></el-table-column>
-        <el-table-column prop="cimage" label="课程图片" width="90"></el-table-column>
-        <el-table-column prop="cbook" label="课程书籍" width="140"></el-table-column>
-        <el-table-column label="操作">
+        <el-table-column prop="courseName" label="课程名" width="150"></el-table-column>
+        <el-table-column prop="college" label="学院" width="150"></el-table-column>
+        <el-table-column prop="instructorName" label="教师" width="120"></el-table-column>
+        <el-table-column prop="campus" label="校区" width="150"></el-table-column>
+        <el-table-column prop="enrolledCount" label="已选人数" width="90"></el-table-column>
+        <el-table-column prop="capacity" label="课程容量" width="90"></el-table-column>
+        <el-table-column prop="credits" label="学分" width="90"></el-table-column>
+        <el-table-column prop="classroom" label="教室" width="90"></el-table-column>
+        <el-table-column prop="description" label="课程描述" width="140"></el-table-column>
+        <el-table-column label="操作" width="150">
           <template v-slot="scope">
-            <el-button size="mini" type="primary" class="edit-button" @click="openDialog('edit', scope.row)">修改</el-button>
-            <el-button size="mini" type="danger" class="delete-button" @click="handleDelete(scope.row.id)">删除</el-button>
+            <el-button size="mini" type="primary" class="edit-button" @click="openDialog('edit', scope.row)" style="margin-right: 8px;">修改</el-button>
+            <el-button size="mini" type="danger" class="delete-button" @click="handleDelete(scope.row.courseId)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -102,7 +102,7 @@ import axios from '@/http'
 
 const courseList = ref([])
 const majorList = ref([])
-const newCourse = ref({ cname: '', major: '', teacher: '', address: '', num: null, stock: null, credit: null, cimage: '', cbook: '' })
+const newCourse = ref({ courseName: '', college: '', instructorName: '', campus: '', classroom: '', enrolledCount: 0, capacity: null, credits: null, description: '', startWeek: 1, endWeek: 16, type: 'Required' })
 const pageNum = ref(1)
 const pageSize = ref(6)
 const total = ref(0)
@@ -141,7 +141,7 @@ const fetchMajors = () => {
 const openDialog = (action: string, course: any = null) => {
   if (action === 'add') {
     dialogTitle.value = '添加课程'
-    newCourse.value = { cname: '', major: '', teacher: '', address: '', num: null, stock: null, credit: null, cimage: '', cbook: '' }
+    newCourse.value = { courseName: '', college: '', instructorName: '', campus: '', classroom: '', enrolledCount: 0, capacity: null, credits: null, description: '', startWeek: 1, endWeek: 16, type: 'Required' }
     isEditing.value = false
   } else if (action === 'edit') {
     dialogTitle.value = '修改课程'
@@ -187,7 +187,7 @@ const handleDelete = (id: number) => {
 }
 
 const confirmBatchDelete = () => {
-  const ids = selectedCourses.value.map(course => course.id).join(',')
+  const ids = selectedCourses.value.map(course => course.courseId).join(',')
   axios.post('/course/deleteBatchCourse', { ids }).then((response: { data: { code: number, msg: string } }) => {
     if (response.data.code === 1) {
       ElMessage.success('批量删除课程成功')

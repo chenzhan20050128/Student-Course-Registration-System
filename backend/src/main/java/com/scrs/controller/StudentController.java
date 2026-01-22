@@ -275,7 +275,8 @@ public class StudentController {
             @RequestParam(required = false) String majorName,
             @RequestParam(required = false) String courseName) {
         System.out.println("=== listCourseByMajorName 被调用 ===");
-        System.out.println("pageNum: " + pageNum + ", pageSize: " + pageSize + ", majorName(原始): " + majorName + ", courseName: " + courseName);
+        System.out.println("pageNum: " + pageNum + ", pageSize: " + pageSize + ", majorName(原始): " + majorName
+                + ", courseName: " + courseName);
 
         if (pageNum == null || pageNum <= 0) {
             pageNum = 1;
@@ -349,7 +350,8 @@ public class StudentController {
             Course course = courseService.getById(cid);
             if (course != null) {
                 stringRedisTemplate.opsForValue().set(stockKey,
-                        String.valueOf(course.getCapacity() - (course.getEnrolledCount() == null ? 0 : course.getEnrolledCount())));
+                        String.valueOf(course.getCapacity()
+                                - (course.getEnrolledCount() == null ? 0 : course.getEnrolledCount())));
             } else {
                 return R.error("课程不存在");
             }
